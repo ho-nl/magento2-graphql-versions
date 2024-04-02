@@ -1,12 +1,15 @@
 name: Register Schema
 on:
   workflow_dispatch:
+    inputs:
+      magento_version:
+        description: 'Magento version'
+        required: true
+        default: '2.4.6-p3'
 
 jobs:
   register-schema:
     name: Register Magento 2 GraphQL Schema
-    env:
-      MAGENTO_VERSION: '2.4.6-p3'
     runs-on: ubuntu-latest
     services:
       mysql:
@@ -42,7 +45,7 @@ jobs:
       - name: Create empty composer project
         run: |
           echo ${{ secrets.AUTH_JSON }} >> auth.json
-          composer init -n --name reach-digital/register-schema --require magento/product-community-edition:${{ env.MAGENTO_VERSION }}
+          composer init -n --name reach-digital/register-schema --require magento/product-community-edition:${{ github.event.inputs.magento_version }}
           composer config repositories.magento '{"type": "composer", "url": "https://repo.magento.com/"}'
           composer config --no-plugins allow-plugins.magento/composer-dependency-version-audit-plugin true
           composer config --no-plugins allow-plugins.magento/inventory-composer-installer true
@@ -58,4 +61,4 @@ jobs:
       - name: Publish schema
         run: |
           npm i -g -D @graphql-hive/cli
-          hive schema:publish --commit=${{ env.MAGENTO_VERSION }} --registry.accessToken ${{secrets.HIVE_ACCESS_TOKEN}} schema.graphql
+          hive schema:publish --commit=${{ github.event.inputs.magento_version }} --registry.accessToken ${{secrets.HIVE_ACCESS_TOKEN}} schema.graphql
