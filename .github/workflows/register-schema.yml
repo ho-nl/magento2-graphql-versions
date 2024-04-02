@@ -5,6 +5,8 @@ on:
 jobs:
   register-schema:
     name: Register Magento 2 GraphQL Schema
+    env:
+      MAGENTO_VERSION: '2.4.6-p3'
     runs-on: ubuntu-latest
     services:
       mysql:
@@ -39,7 +41,8 @@ jobs:
           tools: composer:v2
       - name: Create empty composer project
         run: |
-          composer init -n --name reach-digital/register-schema --require magento/product-community-edition:2.4.6-p3
+          echo ${{ secrets.AUTH_JSON }} >> auth.json
+          composer init -n --name reach-digital/register-schema --require magento/product-community-edition:${{ env.MAGENTO_VERSION }}
           composer config repositories.magento '{"type": "composer", "url": "https://repo.magento.com/"}'
           composer config --no-plugins allow-plugins.magento/composer-dependency-version-audit-plugin true
           composer config --no-plugins allow-plugins.magento/inventory-composer-installer true
