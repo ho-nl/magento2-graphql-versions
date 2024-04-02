@@ -5,7 +5,11 @@ on:
       magento_version:
         description: 'Magento version'
         required: true
-        default: '2.4.6-p3'
+        default: '2.4.6'
+      php_version:
+        description: 'PHP version'
+        required: true
+        default: '8.1'
 
 jobs:
   register-schema:
@@ -36,10 +40,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Setup PHP 8.1
+      - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: 8.1
+          php-version: ${{ github.event.inputs.php_version }}
           extensions: "bcmath, ctype, curl, dom, gd, hash, iconv, intl, mbstring, openssl, pdo_mysql, simplexml, soap, xsl, zip, sockets, mcrypt"
           tools: composer:v2
       - name: Create empty composer project
