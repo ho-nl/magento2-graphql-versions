@@ -10,6 +10,14 @@ on:
         description: 'PHP version'
         required: true
         default: '8.1'
+      composer_version:
+        description: 'Composer version'
+        required: true
+        default: 'composer:v2'
+      mysql_version:
+        description: 'Mysql version'
+        required: true
+        default: '8.0'
 
 jobs:
   register-schema:
@@ -17,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       mysql:
-        image: mysql:8.0
+        image: mysql:${{ github.event.inputs.mysql_version }}
         env:
           MYSQL_ROOT_PASSWORD: 123123q
           MYSQL_DATABASE: magento
@@ -45,7 +53,7 @@ jobs:
         with:
           php-version: ${{ github.event.inputs.php_version }}
           extensions: "bcmath, ctype, curl, dom, gd, hash, iconv, intl, mbstring, openssl, pdo_mysql, simplexml, soap, xsl, zip, sockets, mcrypt"
-          tools: composer:v2
+          tools: ${{ github.event.inputs.composer_version }}
       - name: Create empty composer project
         run: |
           echo ${{ secrets.AUTH_JSON }} >> auth.json
