@@ -57,11 +57,7 @@ jobs:
       - name: Create empty composer project
         run: |
           echo ${{ secrets.AUTH_JSON }} >> auth.json
-          composer init -n --name reach-digital/register-schema --require magento/product-community-edition:${{ github.event.inputs.magento_version }}
-          composer config repositories.magento '{"type": "composer", "url": "https://repo.magento.com/"}'
-          sed -i '$ s/.$//' composer.json
-          echo ',"autoload":{"files": ["app/etc/NonComposerComponentRegistration.php"],"psr-0": {"": ["app/code/","generated/code/"]},"psr-4":{"Magento\\":"app/code/Magento/","Magento\\Framework\\": "lib/internal/Magento/Framework/","Magento\\Setup\\": "setup/src/Magento/Setup/", "Zend\\Mvc\\Controller\\": "setup/src/Zend/Mvc/Controller/"},"psr-0": {"": ["app/code/"]}}}' >> composer.json
-          cat composer.json
+          composer --require magento/product-community-edition:${{ github.event.inputs.magento_version }}
           composer install
       - name: Install Magento
         run: |
