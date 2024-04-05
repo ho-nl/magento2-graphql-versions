@@ -3,7 +3,7 @@ namespace ReachDigital\GraphQlCli\Model;
 
 class ExtendedSchema extends \GraphQl\Type\Schema
 {
-    public function getType(string $name): ?\GraphQL\Type\Definition\Type {
+    public function getType($name) {
         if ($name === 'Subscription') {
             return null;
         }
