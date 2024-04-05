@@ -60,7 +60,7 @@ jobs:
           composer install
       - name: Install Magento
         run: |
-          php bin/magento setup:install --cleanup-database --backend-frontname=admin --enable-debug-logging=true --amqp-host=localhost --amqp-port=5672 --amqp-user=guest --amqp-password=guest  --db-host=127.0.0.1 --db-name=magento --db-user=root --db-password=123123q --session-save=files --allow-parallel-generation --admin-user=admin --admin-password=Welkom1234 --admin-email=admin@test.com --admin-firstname=Admin --admin-lastname=Admin --search-engine=elasticsearch7 --elasticsearch-host=localhost --elasticsearch-port=9200 --magento-init-params="MAGE_MODE=developer"
+          php bin/magento setup:install --cleanup-database --backend-frontname=admin --amqp-host=localhost --amqp-port=5672 --amqp-user=guest --amqp-password=guest  --db-host=127.0.0.1 --db-name=magento --db-user=root --db-password=123123q --session-save=files --allow-parallel-generation --admin-user=admin --admin-password=Welkom1234 --admin-email=admin@test.com --admin-firstname=Admin --admin-lastname=Admin --search-engine=elasticsearch7 --elasticsearch-host=localhost --elasticsearch-port=9200 --magento-init-params="MAGE_MODE=developer"
           php bin/magento reach-digital:get-graphql-schema
       - name: Publish schema
         run: |
