@@ -57,7 +57,7 @@ jobs:
       - name: Create empty composer project
         run: |
           echo ${{ secrets.AUTH_JSON }} >> auth.json
-          composer --require magento/product-community-edition:${{ github.event.inputs.magento_version }}
+          composer require magento/product-community-edition:${{ github.event.inputs.magento_version }}
           composer install
       - name: Install Magento
         run: |
