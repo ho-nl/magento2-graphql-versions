@@ -87,13 +87,13 @@ class GetGraphQlSchema extends \Symfony\Component\Console\Command\Command
                 $schema = $generator->generate();
                 $extendedSchema = new \ReachDigital\GraphQlCli\Model\ExtendedSchema($schema->getConfig());
                 $schemaFile = fopen($this->directoryList->getRoot() . '/schema.graphql', 'w');
-                $content = \explode('\n', \GraphQL\Utils\SchemaPrinter::doPrint($extendedSchema));
+                $content = \explode("\n", \GraphQL\Utils\SchemaPrinter::doPrint($extendedSchema));
                 foreach ($content as $lineNumber => $line) {
                     if (\strpos($line, ' implements ') !== false) {
                         $content[$lineNumber] = \str_replace(', ', ' & ', $line);
                     }
                 }
-                fwrite($schemaFile, \implode('\n', $content));
+                fwrite($schemaFile, \implode("\n", $content));
                 fclose($schemaFile);
             });
 
