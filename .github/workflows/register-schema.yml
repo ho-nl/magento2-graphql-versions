@@ -65,6 +65,7 @@ jobs:
           composer config --no-plugins allow-plugins.laminas/laminas-dependency-plugin true
           sed -i '$ s/.$//' composer.json
           echo ',"autoload":{"files": ["app/etc/NonComposerComponentRegistration.php"],"psr-0": {"": ["app/code/","generated/code/"]},"psr-4":{"Magento\\":"app/code/Magento/","Magento\\Framework\\": "lib/internal/Magento/Framework/","Magento\\Setup\\": "setup/src/Magento/Setup/", "Zend\\Mvc\\Controller\\": "setup/src/Zend/Mvc/Controller/"},"psr-0": {"": ["app/code/"]}}}' >> composer.json
+          composer require magento/module-re-captcha-version-3-invisible:2.0.3 magento/module-inventory-configuration:1.2.3 magento/module-inventory:1.2.4 magento/module-re-captcha-webapi-graph-ql:1.0.2 magento/module-inventory-reservations:1.2.2
           composer install
       - name: Install Magento
         run: |
