@@ -69,6 +69,7 @@ jobs:
           composer install
           composer require yireo/magento2-replace-tools --dev
           composer replace:bulk:add yireo/magento2-replace-bundled
+          composer replace:bulk:add yireo/magento2-replace-sample-data
           composer replace:build
           composer update --lock
       - name: Install Magento
