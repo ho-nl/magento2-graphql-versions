@@ -81,4 +81,4 @@ jobs:
       - name: Publish schema
         run: |
           npm i -g -D @graphql-hive/cli
-          hive schema:publish --commit=${{ github.event.inputs.magento_version }} --registry.accessToken ${{secrets.HIVE_ACCESS_TOKEN_TEST}} schema.graphql
+          hive schema:publish --commit=${{ github.event.inputs.magento_version }} --registry.accessToken ${{secrets.HIVE_ACCESS_TOKEN_CLEAN}} schema.graphql
