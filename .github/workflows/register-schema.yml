@@ -67,7 +67,7 @@ jobs:
           sed -i '$ s/.$//' composer.json
           echo ',"replace":{"symfony/console":"4.4.0"},"autoload":{"files": ["app/etc/NonComposerComponentRegistration.php"],"psr-0": {"": ["app/code/","generated/code/"]},"psr-4":{"Magento\\":"app/code/Magento/","Magento\\Framework\\": "lib/internal/Magento/Framework/","Magento\\Setup\\": "setup/src/Magento/Setup/", "Zend\\Mvc\\Controller\\": "setup/src/Zend/Mvc/Controller/"},"psr-0": {"": ["app/code/"]}}}' >> composer.json
           composer install
-          composer require symfony/console:~5.1.0 --with-all-dependencies
+          composer require symfony/console:5.1.11 --with-all-dependencies
           composer require yireo/magento2-replace-tools --dev --with-all-dependencies
           composer replace:bulk:add yireo/magento2-replace-bundled
           composer replace:bulk:add yireo/magento2-replace-sample-data
