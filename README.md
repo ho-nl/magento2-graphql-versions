@@ -20,6 +20,25 @@ Dispatch the `register-schema.yml` workflow with the new `magento_version` (plus
 generates the schema, sorts it and commits + tags it. **Dispatch one version at a time, oldest
 first, and wait for each run to finish** — commit order is the diff chain.
 
+## Mage-OS
+
+The `mage-os` branch tracks the [Mage-OS](https://mage-os.org/) distribution the same way, with
+tags like `mage-os-3.2.0`. The branch forks from the `2.4.6` tag (Mage-OS 1.0.0's Magento base),
+so the first Mage-OS commit diffs against its Magento parent. Only feature releases (`x.y.0`) are
+tracked. To add a Mage-OS version, dispatch `register-schema.yml` **on the `mage-os` branch** with:
+
+```
+magento_version:  <mage-os version, e.g. 3.2.0>
+composer_package: mage-os/product-community-edition
+composer_repo:    https://repo.mage-os.org/
+label:            mage-os-<version>
+search_engine:    opensearch (all versions)
+php_version:      8.2 for 1.0.0, 8.3 from 1.1.0
+mysql_version:    8.0 for 1.x/2.x, 8.4 for 3.x
+```
+
+Comparing across distributions works through tags: `git diff 2.4.9 mage-os-3.2.0 -- schema.graphql`.
+
 ## Version compatibility
 
 Magento 2.4.8 removed Elasticsearch support entirely, so 2.4.8 and later must be run with

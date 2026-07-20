@@ -3,9 +3,21 @@ on:
   workflow_dispatch:
     inputs:
       magento_version:
-        description: 'Magento version'
+        description: 'Package version to install'
         required: true
         default: '2.4.6'
+      composer_package:
+        description: 'Distribution metapackage'
+        required: true
+        default: 'magento/product-community-edition'
+      composer_repo:
+        description: 'Composer repository URL'
+        required: true
+        default: 'https://repo.magento.com/'
+      label:
+        description: 'Commit message / tag (defaults to magento_version; e.g. mage-os-3.2.0)'
+        required: false
+        default: ''
       php_version:
         description: 'PHP version'
         required: true
@@ -70,12 +82,10 @@ jobs:
       - name: Create empty composer project
         run: |
           echo ${{ secrets.AUTH_JSON }} >> auth.json
-          composer init -n --name reach-digital/register-schema --require magento/product-community-edition:${{ github.event.inputs.magento_version }}
-          composer config repositories.magento '{"type": "composer", "url": "https://repo.magento.com/"}'
-          composer config --no-plugins allow-plugins.magento/composer-dependency-version-audit-plugin true
-          composer config --no-plugins allow-plugins.magento/inventory-composer-installer true
-          composer config --no-plugins allow-plugins.magento/magento-composer-installer true
-          composer config --no-plugins allow-plugins.laminas/laminas-dependency-plugin true
+          composer init -n --name reach-digital/register-schema --require ${{ github.event.inputs.composer_package }}:${{ github.event.inputs.magento_version }}
+          composer config repositories.dist '{"type": "composer", "url": "${{ github.event.inputs.composer_repo }}"}'
+          # Throwaway CI install; Mage-OS ships the same plugins under renamed packages, so allow all
+          composer config --no-plugins allow-plugins true
           # Old Magento releases have known advisories; installing them in throwaway CI is the point of this repo
           composer config policy.advisories.block false
           sed -i '$ s/.$//' composer.json
@@ -107,7 +117,9 @@ jobs:
             echo "Schema identical to previous version, nothing to commit"
             exit 0
           fi
-          git commit -m "${{ github.event.inputs.magento_version }}"
+          LABEL="${{ github.event.inputs.label }}"
+          [ -z "$LABEL" ] && LABEL="${{ github.event.inputs.magento_version }}"
+          git commit -m "$LABEL"
           git push origin HEAD:${{ github.ref_name }}
-          git tag -f "${{ github.event.inputs.magento_version }}"
-          git push -f origin "refs/tags/${{ github.event.inputs.magento_version }}"
+          git tag -f "$LABEL"
+          git push -f origin "refs/tags/$LABEL"

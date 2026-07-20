@@ -5,11 +5,13 @@
 // install, before setup:install.
 
 $file = 'vendor/magento/framework/Code/Generator/EntityAbstract.php';
-$src = file_get_contents($file);
-if ($src === false) {
-    fwrite(STDERR, "Could not read $file\n");
-    exit(1);
+if (!file_exists($file)) {
+    // Mage-OS installs the framework as vendor/mage-os/framework; its bases
+    // are all >= 2.4.6 so this patch is never needed there.
+    echo "$file not present (non-Magento distribution?), skipping patch\n";
+    exit(0);
 }
+$src = file_get_contents($file);
 if (strpos($src, 'ReflectionUnionType') !== false) {
     echo "EntityAbstract.php already handles union types, skipping patch\n";
     exit(0);

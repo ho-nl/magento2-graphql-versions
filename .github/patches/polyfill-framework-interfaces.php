@@ -62,6 +62,13 @@ interface ButtonLockInterface
 PHP,
 ];
 
+if (!is_dir('vendor/magento/framework')) {
+    // Mage-OS installs the framework as vendor/mage-os/framework; its bases
+    // are all >= 2.4.6 so these polyfills are never needed there.
+    echo "vendor/magento/framework not present (non-Magento distribution?), skipping polyfills\n";
+    exit(0);
+}
+
 foreach ($polyfills as $file => $source) {
     if (file_exists($file)) {
         echo "$file already exists, skipping\n";
