@@ -52,15 +52,47 @@ or on GitHub via the compare links below.
 | mage-os-3.0.0 | mage-os-3.1.0 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/mage-os-3.0.0...mage-os-3.1.0) |
 | mage-os-3.1.0 | mage-os-3.2.0 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/mage-os-3.1.0...mage-os-3.2.0) |
 
-### Magento vs Mage-OS
+Maintenance releases without schema changes (1.3.0, 2.1.0, 2.2.0, 2.3.0, 3.1.0, 3.2.0) are tagged
+on their predecessor's commit, so their compare links correctly show an empty diff. Each Mage-OS
+release tracks a Magento base: 1.0.0 → 2.4.6, 1.1.0 → 2.4.8, 1.2.0+ → 2.4.8-p1, 3.x → 2.4.9.
+
+### Magento core-only (bundled extensions removed)
+
+The `magento-core` branch tracks each Magento version installed with
+[yireo/magento2-replace-bundled](https://github.com/yireo/magento2-replace-tools), which keeps
+bundled third-party extensions (Braintree, Amazon Pay, dotdigital, Klarna, Vertex, Yotpo, …) out
+of the schema. Tags are `core-<version>`. 2.3.2 is missing: its republished module set produces an
+internally inconsistent schema (`CartItemInput` referenced but never defined) and cannot be built.
+
+| From | To | Schema diff |
+|-------|-------|-------------|
+| core-2.3.0 | core-2.3.1 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.3.0...core-2.3.1) |
+| core-2.3.1 | core-2.3.3 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.3.1...core-2.3.3) |
+| core-2.3.3 | core-2.3.4 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.3.3...core-2.3.4) |
+| core-2.3.4 | core-2.3.5 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.3.4...core-2.3.5) |
+| core-2.3.5 | core-2.4.0 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.3.5...core-2.4.0) |
+| core-2.4.0 | core-2.4.1 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.0...core-2.4.1) |
+| core-2.4.1 | core-2.4.2 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.1...core-2.4.2) |
+| core-2.4.2 | core-2.4.3 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.2...core-2.4.3) |
+| core-2.4.3 | core-2.4.4 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.3...core-2.4.4) |
+| core-2.4.4 | core-2.4.5 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.4...core-2.4.5) |
+| core-2.4.5 | core-2.4.6 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.5...core-2.4.6) |
+| core-2.4.6 | core-2.4.7 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.6...core-2.4.7) |
+| core-2.4.7 | core-2.4.8 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.7...core-2.4.8) |
+| core-2.4.8 | core-2.4.9 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.8...core-2.4.9) |
+
+### Cross-distribution
 
 Cross-distribution diffs use two-dot compare (direct diff between the tags, not the merge base):
 
-| Magento | Mage-OS | Schema diff |
+| Left | Right | Schema diff |
 |---------|---------|-------------|
 | 2.4.7 | mage-os-1.1.0 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/2.4.7..mage-os-1.1.0) |
 | 2.4.8 | mage-os-2.3.0 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/2.4.8..mage-os-2.3.0) |
 | 2.4.9 | mage-os-3.2.0 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/2.4.9..mage-os-3.2.0) |
+| 2.4.9 | core-2.4.9 | [what the bundled extensions add](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.9..2.4.9) |
+| 2.4.8 | core-2.4.8 | [what the bundled extensions add](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.8..2.4.8) |
+| 2.4.7 | core-2.4.7 | [what the bundled extensions add](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.7..2.4.7) |
 
 ## Adding a new version
 
@@ -88,6 +120,15 @@ mysql_version:    8.0 for 1.x/2.x, 8.4 for 3.x
 
 Comparing across distributions works through tags: `git diff 2.4.9 mage-os-3.2.0 -- schema.graphql`.
 
+## Magento core-only
+
+The `magento-core` branch rebuilds every Magento version with
+`extra_require=yireo/magento2-replace-bundled:^4` (`^3` for 2.3.x), labels `core-<version>`.
+Old versions additionally need: `composer_version=composer:v2` always (packagist dropped composer
+v1 metadata in 2025), `search_engine=none` + `mysql_version=5.7` for 2.3.x, and
+`extra_require="... react/promise:^2"` for 2.4.0 – 2.4.3 (their Elasticsearch client breaks with
+react/promise v3).
+
 ## Version compatibility
 
 Magento 2.4.8 removed Elasticsearch support entirely, so 2.4.8 and later must be run with
@@ -108,9 +149,13 @@ The workflow patches the installed Magento before `setup:install` (see `.github/
 - `polyfill-framework-interfaces.php` — Adobe republished old module packages (MSI,
   security-package) in place with code implementing framework interfaces that only exist in
   Magento ≥ 2.4.6; this polyfills the missing interfaces.
+- `allow-is-synchronous.php` — those republished modules also use the `is_synchronous`
+  communication.xml attribute that early 2.3.x XSDs don't allow.
 
-The workflow also disables composer's security-advisory blocking (composer ≥ 2.9 refuses to install
-old Magento versions otherwise).
+The workflow also disables composer's security-advisory blocking (composer ≥ 2.9 refuses to
+install old Magento versions otherwise), ignores the composer-plugin-api platform requirement
+(2.3.x/2.4.0/2.4.1 pin inert plugins to plugin-api v1), and normalizes legacy comma-separated
+`implements` lists in the SDL (Magento ≤ 2.3.3) before sorting.
 
 ## History
 
