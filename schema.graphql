@@ -1931,6 +1931,9 @@ interface CategoryInterface {
 
   """The display name of the category."""
   name: String
+  no_archive: Int
+  no_follow: Int
+  no_index: Int
 
   """The full category path."""
   path: String
@@ -2056,6 +2059,9 @@ type CategoryTree implements CategoryInterface & RoutableInterface {
 
   """The display name of the category."""
   name: String
+  no_archive: Int
+  no_follow: Int
+  no_index: Int
 
   """The full category path."""
   path: String
