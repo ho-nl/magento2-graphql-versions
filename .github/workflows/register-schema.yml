@@ -92,7 +92,7 @@ jobs:
           # Old Magento releases have known advisories; installing them in throwaway CI is the point of this repo
           composer config policy.advisories.block false
           sed -i '$ s/.$//' composer.json
-          echo ',"autoload":{"files": ["app/etc/NonComposerComponentRegistration.php"],"psr-0": {"": ["app/code/","generated/code/"]},"psr-4":{"Magento\\":"app/code/Magento/","Magento\\Framework\\": "lib/internal/Magento/Framework/","Magento\\Setup\\": "setup/src/Magento/Setup/", "Zend\\Mvc\\Controller\\": "setup/src/Zend/Mvc/Controller/"},"psr-0": {"": ["app/code/"]}}}' >> composer.json
+          echo ',"autoload":{"files": ["app/etc/NonComposerComponentRegistration.php"],"psr-0": {"": ["app/code/","generated/code/"]},"psr-4":{"Magento\\":"app/code/Magento/","Magento\\Framework\\": "lib/internal/Magento/Framework/","Magento\\Setup\\": "setup/src/Magento/Setup/", "MageOS\\Installer\\": "setup/src/MageOS/Installer/", "Zend\\Mvc\\Controller\\": "setup/src/Zend/Mvc/Controller/"},"psr-0": {"": ["app/code/"]}}}' >> composer.json
           composer install
       - name: Patch legacy Magento for current dependencies
         run: |
