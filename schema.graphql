@@ -913,6 +913,11 @@ type CmsPage {
   url_key: String
 }
 
+type ColorSwatchData implements SwatchDataInterface {
+  """Value of swatch item (HEX color code, image link or textual value)"""
+  value: String
+}
+
 type ComplexTextValue {
   """HTML format"""
   html: String!
@@ -1165,6 +1170,9 @@ type ConfigurableProductOptionsValues {
 
   """The label of the product on the current store"""
   store_label: String
+
+  """Swatch data for configurable product option"""
+  swatch_data: SwatchDataInterface
 
   """Indicates whether to use the default_label"""
   use_default_value: Boolean
@@ -3457,6 +3465,14 @@ type HttpQueryParameter {
   value: String
 }
 
+type ImageSwatchData implements SwatchDataInterface {
+  """Thumbnail swatch image URL"""
+  thumbnail: String
+
+  """Value of swatch item (HEX color code, image link or textual value)"""
+  value: String
+}
+
 type IsEmailAvailableOutput {
   """Is email availabel value"""
   is_email_available: Boolean
@@ -3505,7 +3521,7 @@ type MediaGalleryEntry {
   """Contains a ProductMediaGalleryEntriesContent object."""
   content: ProductMediaGalleryEntriesContent
 
-  """Whether the image is hidden from vie."""
+  """Whether the image is hidden from view."""
   disabled: Boolean
 
   """The path of the image on the server."""
@@ -3534,8 +3550,14 @@ type MediaGalleryEntry {
 
 """Contains basic information about a product image or video."""
 interface MediaGalleryInterface {
+  """Whether the image is hidden from view."""
+  disabled: Boolean
+
   """The label of the product image or video."""
   label: String
+
+  """The media item's position after it has been sorted."""
+  position: Int
 
   """The URL of the product image or video."""
   url: String
@@ -4154,8 +4176,14 @@ input ProductFilterInput {
 
 """Product image information. Contains the image URL and label."""
 type ProductImage implements MediaGalleryInterface {
+  """Whether the image is hidden from view."""
+  disabled: Boolean
+
   """The label of the product image or video."""
   label: String
+
+  """The media item's position after it has been sorted."""
+  position: Int
 
   """The URL of the product image or video."""
   url: String
@@ -4588,8 +4616,14 @@ type ProductTierPrices {
 
 """Contains information about a product video."""
 type ProductVideo implements MediaGalleryInterface {
+  """Whether the image is hidden from view."""
+  disabled: Boolean
+
   """The label of the product image or video."""
   label: String
+
+  """The media item's position after it has been sorted."""
+  position: Int
 
   """The URL of the product image or video."""
   url: String
@@ -5330,6 +5364,11 @@ type SwatchData {
   value: String
 }
 
+interface SwatchDataInterface {
+  """Value of swatch item (HEX color code, image link or textual value)"""
+  value: String
+}
+
 type SwatchLayerFilterItem implements LayerFilterItemInterface & SwatchLayerFilterItemInterface {
   """Count of items by filter."""
   items_count: Int @deprecated(reason: "Use AggregationOption.count instead.")
@@ -5347,6 +5386,11 @@ type SwatchLayerFilterItem implements LayerFilterItemInterface & SwatchLayerFilt
 interface SwatchLayerFilterItemInterface {
   """Data required to render swatch filter item"""
   swatch_data: SwatchData
+}
+
+type TextSwatchData implements SwatchDataInterface {
+  """Value of swatch item (HEX color code, image link or textual value)"""
+  value: String
 }
 
 """A price based on the quantity purchased."""
