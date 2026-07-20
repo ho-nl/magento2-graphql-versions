@@ -70,6 +70,15 @@ type AddProductsToWishlistOutput {
   wishlist: Wishlist!
 }
 
+""""""
+input AddReturnCommentInput {
+  """Comment text."""
+  comment: String!
+
+  """The RMA entity ID."""
+  rma_id: Int!
+}
+
 """Defines the simple and group products to add to the cart."""
 input AddSimpleProductsToCartInput {
   """The unique ID of a `Cart` object."""
@@ -602,6 +611,11 @@ input BillingAddressInput {
   customer_address_id: Int
 
   """
+  The unique ID from the customer's address book that uniquely identifies the address to be used for billing.
+  """
+  customer_address_uid: ID
+
+  """
   Indicates whether to set the billing address to be the same as the existing shipping address on the cart.
   """
   same_as_shipping: Boolean
@@ -622,6 +636,11 @@ type BillingCartAddress implements CartAddressInterface {
 
   """An object containing the country label and code."""
   country: CartAddressCountry!
+
+  """
+  The unique ID from the customer's address book that uniquely identifies the address.
+  """
+  customer_address_uid: ID
   customer_notes: String @deprecated(reason: "The field is used only in shipping address.")
 
   """The customer's fax number."""
@@ -631,7 +650,7 @@ type BillingCartAddress implements CartAddressInterface {
   firstname: String!
 
   """Id of the customer address."""
-  id: Int
+  id: Int @deprecated(reason: "Use `customer_address_uid` instead.")
 
   """The last name of the customer or guest."""
   lastname: String!
@@ -659,8 +678,8 @@ type BillingCartAddress implements CartAddressInterface {
   """The telephone number for the billing or shipping address."""
   telephone: String
 
-  """The unique id of the customer address."""
-  uid: String!
+  """The unique id of the customer cart address."""
+  uid: ID!
 
   """The VAT company number for billing or shipping address."""
   vat_id: String
@@ -1331,6 +1350,9 @@ type Cart {
   """Pricing details for the quote."""
   prices: CartPrices
 
+  """Provides applied cart rules in the current active cart"""
+  rules: [CartRuleStorefront]
+
   """Indicates which payment method was applied to the cart."""
   selected_payment_method: SelectedPaymentMethod
 
@@ -1403,7 +1425,7 @@ input CartAddressInput {
   suffix: String
 
   """The telephone number for the billing or shipping address."""
-  telephone: String
+  telephone: String!
 
   """The VAT company number for billing or shipping address."""
   vat_id: String
@@ -1420,6 +1442,11 @@ interface CartAddressInterface {
   """An object containing the country label and code."""
   country: CartAddressCountry!
 
+  """
+  The unique ID from the customer's address book that uniquely identifies the address.
+  """
+  customer_address_uid: ID
+
   """The customer's fax number."""
   fax: String
 
@@ -1427,7 +1454,7 @@ interface CartAddressInterface {
   firstname: String!
 
   """Id of the customer address."""
-  id: Int
+  id: Int @deprecated(reason: "Use `customer_address_uid` instead.")
 
   """The last name of the customer or guest."""
   lastname: String!
@@ -1455,8 +1482,8 @@ interface CartAddressInterface {
   """The telephone number for the billing or shipping address."""
   telephone: String
 
-  """The unique id of the customer address."""
-  uid: String!
+  """The unique id of the customer cart address."""
+  uid: ID!
 
   """The VAT company number for billing or shipping address."""
   vat_id: String
@@ -1697,6 +1724,12 @@ type CartPrices {
 
   """The subtotal with any discounts applied, but not taxes."""
   subtotal_with_discount_excluding_tax: Money
+}
+
+""""""
+type CartRuleStorefront {
+  """The unique ID for a `CartRule` object."""
+  uid: ID!
 }
 
 """Contains tax information about an item in the cart."""
@@ -2189,6 +2222,45 @@ enum CheckoutUserInputErrorCodes {
 
   """"""
   UNDEFINED
+}
+
+"""Contains details about errors encountered when a customer clear cart."""
+type ClearCartError {
+  """A localized error message"""
+  message: String!
+
+  """A cart-specific error type."""
+  type: ClearCartErrorType!
+}
+
+""""""
+enum ClearCartErrorType {
+  """"""
+  INACTIVE
+
+  """"""
+  NOT_FOUND
+
+  """"""
+  UNAUTHORISED
+
+  """"""
+  UNDEFINED
+}
+
+"""Assigns a specific `cart_id` to the empty cart."""
+input ClearCartInput {
+  """The unique ID of a `Cart` object."""
+  uid: ID!
+}
+
+"""Output of the request to clear the customer cart."""
+type ClearCartOutput {
+  """The cart after clear cart items."""
+  cart: Cart
+
+  """An array of errors encountered while clearing the cart item"""
+  errors: [ClearCartError]
 }
 
 """Contains details about a specific CMS block."""
@@ -3665,6 +3737,24 @@ type CreateGuestCartOutput {
   cart: Cart
 }
 
+""""""
+input CreateGuestReturnInput {
+  """The order billing email."""
+  email: String!
+
+  """Items to return."""
+  items: [CreateReturnItemInput]!
+
+  """The order increment ID."""
+  order_number: String!
+
+  """The return reason ID."""
+  reason_id: Int!
+
+  """The preferred resolution type ID."""
+  resolution_type_id: Int!
+}
+
 """
 Contains the secure information used to authorize transaction. Applies to Payflow Pro and Payments Pro payment methods.
 """
@@ -3713,6 +3803,39 @@ input CreateProductReviewInput {
 type CreateProductReviewOutput {
   """Product review details."""
   review: ProductReview!
+}
+
+""""""
+input CreateReturnInput {
+  """Items to return."""
+  items: [CreateReturnItemInput]!
+
+  """The order entity ID."""
+  order_id: Int!
+
+  """The return reason ID."""
+  reason_id: Int!
+
+  """The preferred resolution type ID."""
+  resolution_type_id: Int!
+}
+
+""""""
+input CreateReturnItemInput {
+  """Item condition ID."""
+  condition_id: Int
+
+  """The order item ID."""
+  order_item_id: Int!
+
+  """Quantity to return."""
+  qty_requested: Int!
+}
+
+""""""
+type CreateReturnOutput {
+  """The created return request."""
+  return: CustomerReturn
 }
 
 """Required fields for Payflow Pro and Payments Pro credit card payments."""
@@ -4469,10 +4592,13 @@ type Customer {
 
   """The customer's gender (Male - 1, Female - 2)."""
   gender: Int
+
+  """Customer group assigned to the customer"""
+  group: CustomerGroupStorefront
   group_id: Int @deprecated(reason: "Customer group should not be exposed in the storefront scenarios.")
 
-  """The ID assigned to the customer."""
-  id: Int @deprecated(reason: "`id` is not needed as part of `Customer`, because on the server side, it can be identified based on the customer token used for authentication. There is no need to know customer ID on the client side.")
+  """The unique ID assigned to the customer."""
+  id: ID!
 
   """
   Indicates whether the customer is subscribed to the company's newsletter.
@@ -4594,7 +4720,7 @@ type CustomerAddress {
   firstname: String
 
   """The ID of a `CustomerAddress` object."""
-  id: Int
+  id: Int @deprecated(reason: "Use `uid` instead.")
 
   """
   The family name of the person associated with the shipping/billing address.
@@ -4626,6 +4752,9 @@ type CustomerAddress {
 
   """The customer's telephone number."""
   telephone: String
+
+  """The unique ID for a `CustomerAddress` object."""
+  uid: ID
 
   """The customer's Value-added tax (VAT) number (for corporate customers)."""
   vat_id: String
@@ -4870,6 +4999,12 @@ type CustomerDownloadableProducts {
   items: [CustomerDownloadableProduct]
 }
 
+"""Data of customer group."""
+type CustomerGroupStorefront {
+  """The unique ID for a `CustomerGroup` object."""
+  uid: ID!
+}
+
 """An input object that assigns or updates customer attributes."""
 input CustomerInput {
   """The customer's date of birth."""
@@ -5051,6 +5186,51 @@ type CustomerOutput {
 type CustomerPaymentTokens {
   """An array of payment tokens."""
   items: [PaymentToken]!
+}
+
+""""""
+type CustomerReturn {
+  """Customer-visible comments."""
+  comments: [ReturnComment]
+
+  """Creation date."""
+  created_at: String
+
+  """The RMA increment ID (e.g. RMA-000001)."""
+  increment_id: String
+
+  """The items included in this return."""
+  items: [ReturnItem]
+
+  """The associated order increment ID."""
+  order_number: String
+
+  """The return reason."""
+  reason: ReturnLookupValue
+
+  """The preferred resolution type."""
+  resolution_type: ReturnLookupValue
+
+  """The RMA entity ID."""
+  rma_id: Int
+
+  """The current RMA status."""
+  status: ReturnLookupValue
+
+  """Last update date."""
+  updated_at: String
+}
+
+""""""
+type CustomerReturnsOutput {
+  """List of return requests."""
+  items: [CustomerReturn]
+
+  """Pagination info."""
+  page_info: SearchResultPageInfo
+
+  """Total number of return requests."""
+  total_count: Int
 }
 
 """Contains a customer authorization token."""
@@ -6607,6 +6787,18 @@ input GuestOrderCancelInput {
   token: String!
 }
 
+"""Input to retrieve an order based on details."""
+input GuestOrderInformationInput {
+  """Order billing address email."""
+  email: String!
+
+  """Order billing address lastname."""
+  lastname: String!
+
+  """Order number."""
+  number: String!
+}
+
 """
 Contains a set of relative URLs that PayPal uses in response to various actions during the authorization process. Magento prepends the base URL to this value to create a full URL. For example, if the full URL is https://www.example.com/path/to/page.html, the relative URL is path/to/page.html. Use this input for Payments Pro Hosted Solution payment method.
 """
@@ -6933,6 +7125,11 @@ interface MediaGalleryInterface {
   """The media item's position after it has been sorted."""
   position: Int
 
+  """
+  Array of image types. It can have the following values: image, small_image, thumbnail.
+  """
+  types: [String]
+
   """The URL of the product image or video."""
   url: String
 }
@@ -7006,6 +7203,9 @@ type Mutation {
     wishlistItems: [WishlistItemInput!]!
   ): AddProductsToWishlistOutput
 
+  """Add a comment to a return request."""
+  addReturnComment(input: AddReturnCommentInput!): ReturnComment
+
   """
   Add one or more simple products to the specified cart. We recommend using `addProductsToCart` instead.
   """
@@ -7062,6 +7262,18 @@ type Mutation {
     newPassword: String!
   ): Customer
 
+  """Remove all items from the specified cart."""
+  clearCart(
+    """An input object that defines cart ID of the shopper."""
+    input: ClearCartInput!
+  ): ClearCartOutput!
+
+  """Remove all the products from the specified wish list."""
+  clearWishlist(
+    """The ID of a wish list."""
+    wishlistId: ID!
+  ): RemoveProductsFromWishlistOutput
+
   """Cancel the specified guest customer order."""
   confirmCancelOrder(input: ConfirmCancelOrderInput!): CancelOrderOutput
 
@@ -7089,6 +7301,9 @@ type Mutation {
   """Create a billing or shipping address for a customer or guest."""
   createCustomerAddress(input: CustomerAddressInput!): CustomerAddress
 
+  """Create a return request for a customer order."""
+  createCustomerReturn(input: CreateReturnInput!): CreateReturnOutput
+
   """Create a customer account."""
   createCustomerV2(
     """An input object that defines the customer to be created."""
@@ -7103,6 +7318,9 @@ type Mutation {
 
   """Create a new shopping cart"""
   createGuestCart(input: CreateGuestCartInput): CreateGuestCartOutput
+
+  """Create a return request for a guest order."""
+  createGuestReturn(input: CreateGuestReturnInput!): CreateReturnOutput
 
   """
   Initiate a transaction and receive a token. Use this mutation for Payflow Pro and Payments Pro payment methods
@@ -7145,6 +7363,12 @@ type Mutation {
   deleteCustomerAddress(
     """The ID of the customer address to be deleted."""
     id: Int!
+  ): Boolean @deprecated(reason: "Use `deleteCustomerAddressV2` instead.")
+
+  """Delete the billing or shipping address of a customer."""
+  deleteCustomerAddressV2(
+    """The unique ID of the customer address to be deleted."""
+    uid: ID!
   ): Boolean
 
   """Delete a customer's payment token."""
@@ -7353,6 +7577,15 @@ type Mutation {
 
     """An input object that contains changes to the customer address."""
     input: CustomerAddressInput
+  ): CustomerAddress @deprecated(reason: "Use `updateCustomerAddressV2` instead.")
+
+  """Update the billing or shipping address of a customer or guest."""
+  updateCustomerAddressV2(
+    """An input object that contains changes to the customer address."""
+    input: CustomerAddressInput
+
+    """The unique ID of the customer address."""
+    uid: ID!
   ): CustomerAddress
 
   """Change the email address for the logged-in customer."""
@@ -7490,6 +7723,9 @@ input OrderInformationInput {
 
   """Order number."""
   number: String!
+
+  """Order billing address postcode"""
+  postcode: String
 }
 
 """"""
@@ -7719,6 +7955,9 @@ type OrderTotal {
 
   """The final total amount, including shipping, discounts, and taxes."""
   grand_total: Money!
+
+  """The grand total of the order, excluding taxes."""
+  grand_total_excl_tax: Money!
 
   """Details about the shipping and handling costs for the order."""
   shipping_handling: ShippingHandling
@@ -8163,6 +8402,33 @@ type PickupLocations {
   total_count: Int
 }
 
+"""An error encountered while placing an order."""
+type PlaceOrderError {
+  """An error code that is specific to place order."""
+  code: PlaceOrderErrorCodes!
+
+  """A localized error message."""
+  message: String!
+}
+
+""""""
+enum PlaceOrderErrorCodes {
+  """"""
+  CART_NOT_ACTIVE
+
+  """"""
+  CART_NOT_FOUND
+
+  """"""
+  GUEST_EMAIL_MISSING
+
+  """"""
+  UNABLE_TO_PLACE_ORDER
+
+  """"""
+  UNDEFINED
+}
+
 """Specifies the quote to be converted to an order."""
 input PlaceOrderInput {
   """The unique ID of a `Cart` object."""
@@ -8171,6 +8437,9 @@ input PlaceOrderInput {
 
 """Contains the results of the request to place an order."""
 type PlaceOrderOutput {
+  """An array of place order errors."""
+  errors: [PlaceOrderError]
+
   """The ID of the order."""
   order: Order @deprecated(reason: "Use `orderV2` instead.")
 
@@ -8484,6 +8753,11 @@ type ProductImage implements MediaGalleryInterface {
 
   """The media item's position after it has been sorted."""
   position: Int
+
+  """
+  Array of image types. It can have the following values: image, small_image, thumbnail.
+  """
+  types: [String]
 
   """The URL of the product image or video."""
   url: String
@@ -9059,6 +9333,11 @@ type ProductVideo implements MediaGalleryInterface {
   """The media item's position after it has been sorted."""
   position: Int
 
+  """
+  Array of image types. It can have the following values: image, small_image, thumbnail.
+  """
+  types: [String]
+
   """The URL of the product image or video."""
   url: String
 
@@ -9219,10 +9498,19 @@ type Query {
 
   """Return a list of downloadable products the customer has purchased."""
   customerDownloadableProducts: CustomerDownloadableProducts
+
+  """Provides Customer Group assigned to the Customer or Guest."""
+  customerGroup: CustomerGroupStorefront!
   customerOrders: CustomerOrders @deprecated(reason: "Use the `customer` query instead.")
 
   """Return a list of customer payment tokens stored in the vault."""
   customerPaymentTokens: CustomerPaymentTokens
+
+  """Get a single return request by ID for the logged-in customer."""
+  customerReturn(rma_id: Int!): CustomerReturn
+
+  """List return requests for the logged-in customer."""
+  customerReturns(currentPage: Int = 1, pageSize: Int = 20): CustomerReturnsOutput
 
   """
   Retrieve the secure PayPal URL for a Payments Pro Hosted Solution transaction.
@@ -9245,10 +9533,13 @@ type Query {
   """
   Retrieve guest order details based on number, email and billing last name.
   """
-  guestOrder(input: OrderInformationInput!): CustomerOrder!
+  guestOrder(input: GuestOrderInformationInput!): CustomerOrder!
 
   """Retrieve guest order details based on token."""
   guestOrderByToken(input: OrderTokenInput!): CustomerOrder!
+
+  """Get a single return request by ID for a guest order."""
+  guestReturn(email: String!, order_number: String!, rma_id: Int!): CustomerReturn
 
   """
   Check whether the specified email has already been used to create a customer account.
@@ -9317,6 +9608,9 @@ type Query {
 
   """Returns details about Google reCAPTCHA V3-Invisible configuration."""
   recaptchaV3Config: ReCaptchaConfigurationV3
+
+  """List comments for a return request (customer-visible only)."""
+  returnComments(currentPage: Int = 1, pageSize: Int = 50, rma_id: Int!): ReturnCommentsOutput
 
   """
   Return the full details for a specified product, category, or CMS page.
@@ -9540,6 +9834,75 @@ type ReorderItemsOutput {
 
   """An array of reordering errors."""
   userInputErrors: [CheckoutUserInputError]!
+}
+
+""""""
+type ReturnComment {
+  """Author display name."""
+  author_name: String
+
+  """Author type: customer or admin."""
+  author_type: String
+
+  """Comment text."""
+  comment: String
+
+  """The comment entity ID."""
+  comment_id: Int
+
+  """Comment creation date."""
+  created_at: String
+}
+
+""""""
+type ReturnCommentsOutput {
+  """List of comments."""
+  items: [ReturnComment]
+
+  """Pagination info."""
+  page_info: SearchResultPageInfo
+
+  """Total number of comments."""
+  total_count: Int
+}
+
+""""""
+type ReturnItem {
+  """Item condition."""
+  condition: ReturnLookupValue
+
+  """The RMA item entity ID."""
+  item_id: Int
+
+  """The original order item ID."""
+  order_item_id: Int
+
+  """The product name."""
+  product_name: String
+
+  """The product SKU."""
+  product_sku: String
+
+  """Quantity approved."""
+  qty_approved: Int
+
+  """Quantity requested for return."""
+  qty_requested: Int
+
+  """Quantity returned."""
+  qty_returned: Int
+}
+
+""""""
+type ReturnLookupValue {
+  """Unique code."""
+  code: String
+
+  """Entity ID."""
+  id: Int
+
+  """Store-localized label."""
+  label: String
 }
 
 """Contains the result of a request to revoke a customer token."""
@@ -9999,6 +10362,11 @@ input ShippingAddressInput {
   """
   customer_address_id: Int
 
+  """
+  The unique ID from the customer's address book that uniquely identifies the address to be used for shipping.
+  """
+  customer_address_uid: ID
+
   """Text provided by the shopper."""
   customer_notes: String
 
@@ -10026,6 +10394,11 @@ type ShippingCartAddress implements CartAddressInterface {
   """An object containing the country label and code."""
   country: CartAddressCountry!
 
+  """
+  The unique ID from the customer's address book that uniquely identifies the address.
+  """
+  customer_address_uid: ID
+
   """Text provided by the shopper."""
   customer_notes: String
 
@@ -10036,7 +10409,7 @@ type ShippingCartAddress implements CartAddressInterface {
   firstname: String!
 
   """Id of the customer address."""
-  id: Int
+  id: Int @deprecated(reason: "Use `customer_address_uid` instead.")
   items_weight: Float @deprecated(reason: "This information should not be exposed on the frontend.")
 
   """The last name of the customer or guest."""
@@ -10072,8 +10445,8 @@ type ShippingCartAddress implements CartAddressInterface {
   """The telephone number for the billing or shipping address."""
   telephone: String
 
-  """The unique id of the customer address."""
-  uid: String!
+  """The unique id of the customer cart address."""
+  uid: ID!
 
   """The VAT company number for billing or shipping address."""
   vat_id: String
@@ -10570,6 +10943,9 @@ type StoreConfig {
   """checkout/cart/delete_quote_after: quote lifetime in days."""
   cart_expires_in_days: Int
 
+  """Configuration data from checkout/cart/cart_merge_preference"""
+  cart_merge_preference: String!
+
   """
   checkout/cart_link/use_qty: what to show in the display cart summary, number of items or item quantities.
   """
@@ -10727,6 +11103,11 @@ type StoreConfig {
 
   """The landing page that is associated with the base URL."""
   front: String
+
+  """
+  Configuration data from customer/account_information/graphql_share_customer_group
+  """
+  graphql_share_customer_group: Boolean
 
   """The default number of products per page in Grid View."""
   grid_per_page: Int
@@ -10907,6 +11288,9 @@ type StoreConfig {
 
   """Email to a Friend configuration."""
   send_friend: SendFriendConfiguration
+
+  """Configuration data from promo/graphql/share_applied_cart_rule"""
+  share_applied_cart_rule: Boolean
 
   """Extended Config Data - tax/cart_display/full_summary"""
   shopping_cart_display_full_summary: Boolean
@@ -11667,6 +12051,9 @@ enum WishlistCartUserInputErrorType {
 
   """"""
   PRODUCT_NOT_FOUND
+
+  """"""
+  REQUIRED_PARAMETER_MISSING
 
   """"""
   UNDEFINED
