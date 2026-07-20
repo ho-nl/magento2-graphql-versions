@@ -11,7 +11,56 @@ Each version's commit is tagged with the version number, so comparing releases i
 git diff 2.4.8 2.4.9 -- schema.graphql
 ```
 
-or on GitHub: `https://github.com/ho-nl/magento2-graphql-versions/compare/2.4.8...2.4.9`
+or on GitHub via the compare links below.
+
+## Schema diffs
+
+### Magento Open Source
+
+| From | To | Schema diff |
+|-------|-------|-------------|
+| 2.3.0 | 2.3.1 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/2.3.0...2.3.1) |
+| 2.3.1 | 2.3.2 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/2.3.1...2.3.2) |
+| 2.3.2 | 2.3.3 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/2.3.2...2.3.3) |
+| 2.3.3 | 2.3.4 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/2.3.3...2.3.4) |
+| 2.3.4 | 2.3.5 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/2.3.4...2.3.5) |
+| 2.3.5 | 2.4.0 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/2.3.5...2.4.0) |
+| 2.4.0 | 2.4.1 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/2.4.0...2.4.1) |
+| 2.4.1 | 2.4.2 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/2.4.1...2.4.2) |
+| 2.4.2 | 2.4.3 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/2.4.2...2.4.3) |
+| 2.4.3 | 2.4.4 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/2.4.3...2.4.4) |
+| 2.4.4 | 2.4.5 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/2.4.4...2.4.5) |
+| 2.4.5 | 2.4.6 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/2.4.5...2.4.6) |
+| 2.4.6 | 2.4.7 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/2.4.6...2.4.7) |
+| 2.4.7 | 2.4.8 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/2.4.7...2.4.8) |
+| 2.4.8 | 2.4.9 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/2.4.8...2.4.9) |
+| 2.3.0 | 2.4.9 | [full range](https://github.com/ho-nl/magento2-graphql-versions/compare/2.3.0...2.4.9) |
+
+### Mage-OS
+
+| From | To | Schema diff |
+|-------|-------|-------------|
+| 2.4.6 (fork base) | mage-os-1.0.0 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/2.4.6...mage-os-1.0.0) |
+| mage-os-1.0.0 | mage-os-1.1.0 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/mage-os-1.0.0...mage-os-1.1.0) |
+| mage-os-1.1.0 | mage-os-1.2.0 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/mage-os-1.1.0...mage-os-1.2.0) |
+| mage-os-1.2.0 | mage-os-1.3.0 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/mage-os-1.2.0...mage-os-1.3.0) |
+| mage-os-1.3.0 | mage-os-2.0.0 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/mage-os-1.3.0...mage-os-2.0.0) |
+| mage-os-2.0.0 | mage-os-2.1.0 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/mage-os-2.0.0...mage-os-2.1.0) |
+| mage-os-2.1.0 | mage-os-2.2.0 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/mage-os-2.1.0...mage-os-2.2.0) |
+| mage-os-2.2.0 | mage-os-2.3.0 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/mage-os-2.2.0...mage-os-2.3.0) |
+| mage-os-2.3.0 | mage-os-3.0.0 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/mage-os-2.3.0...mage-os-3.0.0) |
+| mage-os-3.0.0 | mage-os-3.1.0 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/mage-os-3.0.0...mage-os-3.1.0) |
+| mage-os-3.1.0 | mage-os-3.2.0 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/mage-os-3.1.0...mage-os-3.2.0) |
+
+### Magento vs Mage-OS
+
+Cross-distribution diffs use two-dot compare (direct diff between the tags, not the merge base):
+
+| Magento | Mage-OS | Schema diff |
+|---------|---------|-------------|
+| 2.4.7 | mage-os-1.1.0 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/2.4.7..mage-os-1.1.0) |
+| 2.4.8 | mage-os-2.3.0 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/2.4.8..mage-os-2.3.0) |
+| 2.4.9 | mage-os-3.2.0 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/2.4.9..mage-os-3.2.0) |
 
 ## Adding a new version
 
