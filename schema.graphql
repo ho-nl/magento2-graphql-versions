@@ -1105,9 +1105,6 @@ type BundleProduct implements CustomizableProductInterface & PhysicalProductInte
     pageSize: Int = 20
   ): ProductReviews!
 
-  """Provides applied catalog rules in the current active cart"""
-  rules: [CatalogRule]
-
   """Indicates whether to ship bundle items together or individually."""
   ship_bundle_items: ShipBundleItemsEnum
 
@@ -1333,9 +1330,6 @@ type Cart {
 
   """Pricing details for the quote."""
   prices: CartPrices
-
-  """Provides applied cart rules in the current active cart"""
-  rules: [CartRule]
 
   """Indicates which payment method was applied to the cart."""
   selected_payment_method: SelectedPaymentMethod
@@ -1705,12 +1699,6 @@ type CartPrices {
   subtotal_with_discount_excluding_tax: Money
 }
 
-""""""
-type CartRule {
-  """Name of the cart price rule"""
-  name: String!
-}
-
 """Contains tax information about an item in the cart."""
 type CartTaxItem {
   """The amount of tax applied to the item."""
@@ -1864,12 +1852,6 @@ type CatalogAttributeMetadata implements CustomAttributeMetadataInterface {
   Whether a product or category attribute is used in product listing or not.
   """
   used_in_product_listing: Boolean
-}
-
-""""""
-type CatalogRule {
-  """Name of the catalog rule"""
-  name: String!
 }
 
 """
@@ -2603,9 +2585,6 @@ type ConfigurableProduct implements CustomizableProductInterface & PhysicalProdu
     """The maximum number of results to return at once. The default is 20."""
     pageSize: Int = 20
   ): ProductReviews!
-
-  """Provides applied catalog rules in the current active cart"""
-  rules: [CatalogRule]
 
   """A short description of the product. Its use depends on the theme."""
   short_description: ComplexTextValue
@@ -4484,9 +4463,6 @@ type Customer {
 
   """The customer's gender (Male - 1, Female - 2)."""
   gender: Int
-
-  """Name of the customer group assigned to the customer"""
-  group: CustomerGroup
   group_id: Int @deprecated(reason: "Customer group should not be exposed in the storefront scenarios.")
 
   """The ID assigned to the customer."""
@@ -4886,12 +4862,6 @@ type CustomerDownloadableProduct {
 type CustomerDownloadableProducts {
   """An array of purchased downloadable items."""
   items: [CustomerDownloadableProduct]
-}
-
-"""Data of customer group."""
-type CustomerGroup {
-  """The name of customer group."""
-  name: String
 }
 
 """An input object that assigns or updates customer attributes."""
@@ -5946,9 +5916,6 @@ type DownloadableProduct implements CustomizableProductInterface & ProductInterf
     pageSize: Int = 20
   ): ProductReviews!
 
-  """Provides applied catalog rules in the current active cart"""
-  rules: [CatalogRule]
-
   """A short description of the product. Its use depends on the theme."""
   short_description: ComplexTextValue
 
@@ -6520,9 +6487,6 @@ type GroupedProduct implements PhysicalProductInterface & ProductInterface & Rou
     """The maximum number of results to return at once. The default is 20."""
     pageSize: Int = 20
   ): ProductReviews!
-
-  """Provides applied catalog rules in the current active cart"""
-  rules: [CatalogRule]
 
   """A short description of the product. Its use depends on the theme."""
   short_description: ComplexTextValue
@@ -8655,9 +8619,6 @@ interface ProductInterface {
     pageSize: Int = 20
   ): ProductReviews!
 
-  """Provides applied catalog rules in the current active cart"""
-  rules: [CatalogRule]
-
   """A short description of the product. Its use depends on the theme."""
   short_description: ComplexTextValue
 
@@ -9135,15 +9096,6 @@ type Products {
 
 """"""
 type Query {
-  """Provides all active cart rules in the store."""
-  allCartRules: [CartRule]
-
-  """Provides all active catalog rules in the store."""
-  allCatalogRules: [CatalogRule]
-
-  """An array containing a list of all Customer Groups available."""
-  allCustomerGroups: [CustomerGroup]
-
   """
   Retrieve EAV attributes associated to a frontend form. Use countries query provided by DirectoryGraphQl module to retrieve region_id and country_id attribute options.
   """
@@ -9261,9 +9213,6 @@ type Query {
 
   """Return a list of downloadable products the customer has purchased."""
   customerDownloadableProducts: CustomerDownloadableProducts
-
-  """Provides name of the Customer Group assigned to the Customer or Guest."""
-  customerGroup: CustomerGroup!
   customerOrders: CustomerOrders @deprecated(reason: "Use the `customer` query instead.")
 
   """Return a list of customer payment tokens stored in the vault."""
@@ -10336,9 +10285,6 @@ type SimpleProduct implements CustomizableProductInterface & PhysicalProductInte
     pageSize: Int = 20
   ): ProductReviews!
 
-  """Provides applied catalog rules in the current active cart"""
-  rules: [CatalogRule]
-
   """A short description of the product. Its use depends on the theme."""
   short_description: ComplexTextValue
 
@@ -10776,16 +10722,6 @@ type StoreConfig {
   """The landing page that is associated with the base URL."""
   front: String
 
-  """
-  Configuration data from customer/account_information/graphql_share_all_customer_groups
-  """
-  graphql_share_all_customer_groups: Boolean!
-
-  """
-  Configuration data from customer/account_information/graphql_share_customer_group
-  """
-  graphql_share_customer_group: Boolean!
-
   """The default number of products per page in Grid View."""
   grid_per_page: Int
 
@@ -10965,18 +10901,6 @@ type StoreConfig {
 
   """Email to a Friend configuration."""
   send_friend: SendFriendConfiguration
-
-  """Configuration data from catalog/rule/share_all_catalog_rules"""
-  share_all_catalog_rules: Boolean!
-
-  """Configuration data from promo/graphql/share_all_sales_rule"""
-  share_all_sales_rule: Boolean!
-
-  """Configuration data from catalog/rule/share_applied_catalog_rules"""
-  share_applied_catalog_rules: Boolean!
-
-  """Configuration data from promo/graphql/share_applied_sales_rule"""
-  share_applied_sales_rule: Boolean!
 
   """Extended Config Data - tax/cart_display/full_summary"""
   shopping_cart_display_full_summary: Boolean
@@ -11549,9 +11473,6 @@ type VirtualProduct implements CustomizableProductInterface & ProductInterface &
     """The maximum number of results to return at once. The default is 20."""
     pageSize: Int = 20
   ): ProductReviews!
-
-  """Provides applied catalog rules in the current active cart"""
-  rules: [CatalogRule]
 
   """A short description of the product. Its use depends on the theme."""
   short_description: ComplexTextValue
