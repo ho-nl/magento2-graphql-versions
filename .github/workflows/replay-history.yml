@@ -1,0 +1,79 @@
+name: Replay Schema History
+# Fetches schema versions from the old Hive target (repo-level HIVE_ACCESS_TOKEN)
+# and republishes them to a new target (environment-level HIVE_ACCESS_TOKEN) in
+# ascending version order, rebuilding a clean diff history.
+on:
+  workflow_dispatch:
+    inputs:
+      versions:
+        description: 'Space-separated versions to replay, or "auto" to probe known Magento versions'
+        required: true
+        default: 'auto'
+      environment:
+        description: 'GitHub environment providing the Hive secrets for the destination target'
+        required: true
+        default: 'magento2-second'
+
+jobs:
+  fetch:
+    name: Fetch schemas from old target
+    runs-on: ubuntu-latest
+    outputs:
+      versions: ${{ steps.fetch.outputs.versions }}
+    steps:
+      - name: Install Hive CLI
+        run: npm i -g @graphql-hive/cli
+      - name: Fetch each version by commit action id
+        id: fetch
+        run: |
+          mkdir schemas
+          CANDIDATES="${{ github.event.inputs.versions }}"
+          if [ "$CANDIDATES" = "auto" ]; then
+            CANDIDATES=""
+            for i in $(seq 0 11); do CANDIDATES="$CANDIDATES 2.2.$i"; done
+            for i in $(seq 0 7); do CANDIDATES="$CANDIDATES 2.3.$i"; done
+            CANDIDATES="$CANDIDATES 2.3.7-p2 2.3.7-p3 2.3.7-p4"
+            for i in $(seq 0 9); do CANDIDATES="$CANDIDATES 2.4.$i"; done
+            CANDIDATES="$CANDIDATES 2.4.2-p1 2.4.2-p2 2.4.3-p1 2.4.3-p2 2.4.3-p3"
+          fi
+          FOUND=""
+          for v in $CANDIDATES; do
+            if hive schema:fetch --registry.accessToken ${{ secrets.HIVE_ACCESS_TOKEN }} --write "schemas/$v.graphql" "$v" > /dev/null 2>&1; then
+              echo "found:   $v"
+              FOUND="$FOUND $v"
+            else
+              echo "missing: $v"
+            fi
+          done
+          FOUND=$(echo $FOUND | tr ' ' '\n' | grep -v '^$' | sort -V | tr '\n' ' ')
+          echo "Replay order:$FOUND"
+          echo "versions=$FOUND" >> "$GITHUB_OUTPUT"
+          if [ -z "$FOUND" ]; then echo "No versions could be fetched"; exit 1; fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: schemas
+          path: schemas
+
+  publish:
+    name: Publish schemas to new target in order
+    needs: fetch
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: schemas
+          path: schemas
+      - name: Install Hive CLI
+        run: npm i -g @graphql-hive/cli
+      - name: Publish sequentially in ascending version order
+        env:
+          HIVE_TARGET: ${{ secrets.HAVE_PROJECT_ID }}
+        run: |
+          set -e
+          TARGET_ARG=""
+          if [ -n "$HIVE_TARGET" ]; then TARGET_ARG="--target=$HIVE_TARGET"; fi
+          for v in ${{ needs.fetch.outputs.versions }}; do
+            echo "=== Publishing $v ==="
+            hive schema:publish --commit="$v" --registry.accessToken ${{ secrets.HIVE_ACCESS_TOKEN }} $TARGET_ARG "schemas/$v.graphql"
+          done
