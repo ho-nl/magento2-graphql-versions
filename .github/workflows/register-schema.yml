@@ -103,11 +103,15 @@ jobs:
           fi
           sed -i '$ s/.$//' composer.json
           echo ',"autoload":{"files": ["app/etc/NonComposerComponentRegistration.php"],"psr-0": {"": ["app/code/","generated/code/"]},"psr-4":{"Magento\\":"app/code/Magento/","Magento\\Framework\\": "lib/internal/Magento/Framework/","Magento\\Setup\\": "setup/src/Magento/Setup/", "MageOS\\Installer\\": "setup/src/MageOS/Installer/", "Zend\\Mvc\\Controller\\": "setup/src/Zend/Mvc/Controller/"},"psr-0": {"": ["app/code/"]}}}' >> composer.json
-          composer install
+          # composer-plugin-api is ignored because old releases pin plugins to plugin-api v1
+          # (laminas-dependency-plugin in 2.4.0/2.4.1, inventory-composer-installer in 2.3.x);
+          # those plugins are inert for a fresh metapackage install.
+          composer install --ignore-platform-req=composer-plugin-api
       - name: Patch legacy Magento for current dependencies
         run: |
           php .github/patches/acsd-59280-union-types.php
           php .github/patches/polyfill-framework-interfaces.php
+          php .github/patches/allow-is-synchronous.php
       - name: Install Magento
         run: |
           if [ "${{ github.event.inputs.search_engine }}" = "opensearch" ]; then
