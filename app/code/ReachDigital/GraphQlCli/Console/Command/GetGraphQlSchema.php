@@ -14,11 +14,6 @@ use Magento\Framework\App\ObjectManager;
 class GetGraphQlSchema extends \Symfony\Component\Console\Command\Command
 {
     /**
-     * @var \Magento\Framework\GraphQl\Schema\SchemaGenerator
-     */
-    private $generator;
-
-    /**
      * @var \Magento\Framework\App\State
      */
     private $state;
@@ -26,28 +21,22 @@ class GetGraphQlSchema extends \Symfony\Component\Console\Command\Command
     private $configLoader;
 
     /**
-     * @var \Magento\Framework\Filesystem
-     */
-    private $filesystem;
-
-    /**
      * @var \Magento\Framework\App\Filesystem\DirectoryList
      */
     private $directoryList;
 
+    // Only lazy/lightweight dependencies here: Magento's console instantiates every
+    // command eagerly and silently drops commands whose DI graph throws. The
+    // SchemaGenerator is fetched in execute() from the graphql-area object manager.
     public function __construct(
-        \Magento\Framework\GraphQl\Schema\SchemaGenerator $generator,
         \Magento\Framework\App\State\Proxy $state,
         \Magento\Framework\App\ObjectManager\ConfigLoader $configLoader,
-        \Magento\Framework\Filesystem $filesystem,
         \Magento\Framework\App\Filesystem\DirectoryList $directoryList
     )
     {
         parent::__construct();
-        $this->generator = $generator;
         $this->state = $state;
         $this->configLoader = $configLoader;
-        $this->filesystem = $filesystem;
         $this->directoryList = $directoryList;
     }
 
