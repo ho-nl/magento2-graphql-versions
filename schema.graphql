@@ -136,7 +136,7 @@ type BundleProduct implements CustomizableProductInterface & PhysicalProductInte
   """
   Detailed information about the product. The value can include simple HTML tags.
   """
-  description: String
+  description: ComplexTextValue
 
   """Indicates whether the bundle product has a dynamic price"""
   dynamic_price: Boolean
@@ -156,10 +156,7 @@ type BundleProduct implements CustomizableProductInterface & PhysicalProductInte
   id: Int
 
   """The relative path to the main image on the product page"""
-  image: String
-
-  """The label assigned to a product image"""
-  image_label: String
+  image: ProductImage
 
   """An array containing information about individual bundle items"""
   items: [BundleItem]
@@ -220,7 +217,7 @@ type BundleProduct implements CustomizableProductInterface & PhysicalProductInte
   ship_bundle_items: ShipBundleItemsEnum
 
   """A short description of the product. Its use depends on the theme."""
-  short_description: String
+  short_description: ComplexTextValue
 
   """
   A number or code assigned to a product to identify the product, options, price, and manufacturer
@@ -228,10 +225,7 @@ type BundleProduct implements CustomizableProductInterface & PhysicalProductInte
   sku: String
 
   """The relative path to the small image, which is used on catalog pages"""
-  small_image: String
-
-  """The label assigned to a product's small image"""
-  small_image_label: String
+  small_image: ProductImage
 
   """The beginning date that a product has a special price"""
   special_from_date: String
@@ -249,10 +243,7 @@ type BundleProduct implements CustomizableProductInterface & PhysicalProductInte
   swatch_image: String
 
   """The relative path to the product's thumbnail image"""
-  thumbnail: String
-
-  """The label assigned to a product's thumbnail image"""
-  thumbnail_label: String
+  thumbnail: ProductImage
 
   """
   The price when tier pricing is in effect and the items purchased threshold has been reached
@@ -273,6 +264,9 @@ type BundleProduct implements CustomizableProductInterface & PhysicalProductInte
 
   """The part of the URL that precedes the url_key"""
   url_path: String
+
+  """URL rewrites list"""
+  url_rewrites: [UrlRewrite]
 
   """An array of websites in which the product is available"""
   websites: [Website]
@@ -495,6 +489,11 @@ type CmsPage {
   url_key: String
 }
 
+type ComplexTextValue {
+  """HTML format"""
+  html: String!
+}
+
 """
 ConfigurableAttributeOption contains the value_index (and other related information) assigned to a configurable product option
 """
@@ -534,7 +533,7 @@ type ConfigurableProduct implements CustomizableProductInterface & PhysicalProdu
   """
   Detailed information about the product. The value can include simple HTML tags.
   """
-  description: String
+  description: ComplexTextValue
 
   """Indicates whether a gift message is available"""
   gift_message_available: String
@@ -543,10 +542,7 @@ type ConfigurableProduct implements CustomizableProductInterface & PhysicalProdu
   id: Int
 
   """The relative path to the main image on the product page"""
-  image: String
-
-  """The label assigned to a product image"""
-  image_label: String
+  image: ProductImage
 
   """A number representing the product's manufacturer"""
   manufacturer: Int
@@ -598,7 +594,7 @@ type ConfigurableProduct implements CustomizableProductInterface & PhysicalProdu
   product_links: [ProductLinksInterface]
 
   """A short description of the product. Its use depends on the theme."""
-  short_description: String
+  short_description: ComplexTextValue
 
   """
   A number or code assigned to a product to identify the product, options, price, and manufacturer
@@ -606,10 +602,7 @@ type ConfigurableProduct implements CustomizableProductInterface & PhysicalProdu
   sku: String
 
   """The relative path to the small image, which is used on catalog pages"""
-  small_image: String
-
-  """The label assigned to a product's small image"""
-  small_image_label: String
+  small_image: ProductImage
 
   """The beginning date that a product has a special price"""
   special_from_date: String
@@ -627,10 +620,7 @@ type ConfigurableProduct implements CustomizableProductInterface & PhysicalProdu
   swatch_image: String
 
   """The relative path to the product's thumbnail image"""
-  thumbnail: String
-
-  """The label assigned to a product's thumbnail image"""
-  thumbnail_label: String
+  thumbnail: ProductImage
 
   """
   The price when tier pricing is in effect and the items purchased threshold has been reached
@@ -651,6 +641,9 @@ type ConfigurableProduct implements CustomizableProductInterface & PhysicalProdu
 
   """The part of the URL that precedes the url_key"""
   url_path: String
+
+  """URL rewrites list"""
+  url_rewrites: [UrlRewrite]
 
   """An array of variants of products"""
   variants: [ConfigurableVariant]
@@ -721,6 +714,762 @@ An array containing all the simple product variants of a configurable product
 type ConfigurableVariant {
   attributes: [ConfigurableAttributeOption]
   product: SimpleProduct
+}
+
+type Country {
+  available_regions: [Region]
+  full_name_english: String
+  full_name_locale: String
+  id: String
+  three_letter_abbreviation: String
+  two_letter_abbreviation: String
+}
+
+"""The list of countries codes"""
+enum CountryCodeEnum {
+  """Andorra"""
+  AD
+
+  """United Arab Emirates"""
+  AE
+
+  """Afghanistan"""
+  AF
+
+  """Antigua & Barbuda"""
+  AG
+
+  """Anguilla"""
+  AI
+
+  """Albania"""
+  AL
+
+  """Armenia"""
+  AM
+
+  """Netherlands Antilles"""
+  AN
+
+  """Angola"""
+  AO
+
+  """Antarctica"""
+  AQ
+
+  """Argentina"""
+  AR
+
+  """American Samoa"""
+  AS
+
+  """Austria"""
+  AT
+
+  """Australia"""
+  AU
+
+  """Aruba"""
+  AW
+
+  """Åland Islands"""
+  AX
+
+  """Azerbaijan"""
+  AZ
+
+  """Bosnia & Herzegovina"""
+  BA
+
+  """Barbados"""
+  BB
+
+  """Bangladesh"""
+  BD
+
+  """Belgium"""
+  BE
+
+  """Burkina Faso"""
+  BF
+
+  """Bulgaria"""
+  BG
+
+  """Bahrain"""
+  BH
+
+  """Burundi"""
+  BI
+
+  """Benin"""
+  BJ
+
+  """St. Barthélemy"""
+  BL
+
+  """Bermuda"""
+  BM
+
+  """Brunei"""
+  BN
+
+  """Bolivia"""
+  BO
+
+  """Brazil"""
+  BR
+
+  """Bahamas"""
+  BS
+
+  """Bhutan"""
+  BT
+
+  """Bouvet Island"""
+  BV
+
+  """Botswana"""
+  BW
+
+  """Belarus"""
+  BY
+
+  """Belize"""
+  BZ
+
+  """Canada"""
+  CA
+
+  """Cocos (Keeling) Islands"""
+  CC
+
+  """Congo - Kinshasa"""
+  CD
+
+  """Central African Republic"""
+  CF
+
+  """Congo -Brazzaville"""
+  CG
+
+  """Switzerland"""
+  CH
+
+  """Côte d’Ivoire"""
+  CI
+
+  """Cook Islands"""
+  CK
+
+  """Chile"""
+  CL
+
+  """Cameroon"""
+  CM
+
+  """China"""
+  CN
+
+  """Colombia"""
+  CO
+
+  """Costa Rica"""
+  CR
+
+  """Cuba"""
+  CU
+
+  """Cape Verde"""
+  CV
+
+  """Christmas Island"""
+  CX
+
+  """Cyprus"""
+  CY
+
+  """Czech Republic"""
+  CZ
+
+  """Germany"""
+  DE
+
+  """Djibouti"""
+  DJ
+
+  """Denmark"""
+  DK
+
+  """Dominica"""
+  DM
+
+  """Dominican Republic"""
+  DO
+
+  """Algeria"""
+  DZ
+
+  """Ecuador"""
+  EC
+
+  """Estonia"""
+  EE
+
+  """Egypt"""
+  EG
+
+  """Western Sahara"""
+  EH
+
+  """Eritrea"""
+  ER
+
+  """Spain"""
+  ES
+
+  """Ethiopia"""
+  ET
+
+  """Finland"""
+  FI
+
+  """Fiji"""
+  FJ
+
+  """Falkland Islands"""
+  FK
+
+  """Micronesia"""
+  FM
+
+  """Faroe Islands"""
+  FO
+
+  """France"""
+  FR
+
+  """Gabon"""
+  GA
+
+  """United Kingdom"""
+  GB
+
+  """Grenada"""
+  GD
+
+  """Georgia"""
+  GE
+
+  """French Guiana"""
+  GF
+
+  """Guernsey"""
+  GG
+
+  """Ghana"""
+  GH
+
+  """Gibraltar"""
+  GI
+
+  """Greenland"""
+  GL
+
+  """Gambia"""
+  GM
+
+  """Guinea"""
+  GN
+
+  """Guadeloupe"""
+  GP
+
+  """Equatorial Guinea"""
+  GQ
+
+  """Greece"""
+  GR
+
+  """South Georgia & South Sandwich Islands"""
+  GS
+
+  """Guatemala"""
+  GT
+
+  """Guam"""
+  GU
+
+  """Guinea-Bissau"""
+  GW
+
+  """Guyana"""
+  GY
+
+  """Hong Kong SAR China"""
+  HK
+
+  """Heard &amp; McDonald Islands"""
+  HM
+
+  """Honduras"""
+  HN
+
+  """Croatia"""
+  HR
+
+  """Haiti"""
+  HT
+
+  """Hungary"""
+  HU
+
+  """Indonesia"""
+  ID
+
+  """Ireland"""
+  IE
+
+  """Israel"""
+  IL
+
+  """Isle of Man"""
+  IM
+
+  """India"""
+  IN
+
+  """British Indian Ocean Territory"""
+  IO
+
+  """Iraq"""
+  IQ
+
+  """Iran"""
+  IR
+
+  """Iceland"""
+  IS
+
+  """Italy"""
+  IT
+
+  """Jersey"""
+  JE
+
+  """Jamaica"""
+  JM
+
+  """Jordan"""
+  JO
+
+  """Japan"""
+  JP
+
+  """Kenya"""
+  KE
+
+  """Kyrgyzstan"""
+  KG
+
+  """Cambodia"""
+  KH
+
+  """Kiribati"""
+  KI
+
+  """Comoros"""
+  KM
+
+  """St. Kitts & Nevis"""
+  KN
+
+  """North Korea"""
+  KP
+
+  """South Korea"""
+  KR
+
+  """Kuwait"""
+  KW
+
+  """Cayman Islands"""
+  KY
+
+  """Kazakhstan"""
+  KZ
+
+  """Laos"""
+  LA
+
+  """Lebanon"""
+  LB
+
+  """St. Lucia"""
+  LC
+
+  """Liechtenstein"""
+  LI
+
+  """Sri Lanka"""
+  LK
+
+  """Liberia"""
+  LR
+
+  """Lesotho"""
+  LS
+
+  """Lithuania"""
+  LT
+
+  """Luxembourg"""
+  LU
+
+  """Latvia"""
+  LV
+
+  """Libya"""
+  LY
+
+  """Morocco"""
+  MA
+
+  """Monaco"""
+  MC
+
+  """Moldova"""
+  MD
+
+  """Montenegro"""
+  ME
+
+  """St. Martin"""
+  MF
+
+  """Madagascar"""
+  MG
+
+  """Marshall Islands"""
+  MH
+
+  """Macedonia"""
+  MK
+
+  """Mali"""
+  ML
+
+  """Myanmar (Burma)"""
+  MM
+
+  """Mongolia"""
+  MN
+
+  """Macau SAR China"""
+  MO
+
+  """Northern Mariana Islands"""
+  MP
+
+  """Martinique"""
+  MQ
+
+  """Mauritania"""
+  MR
+
+  """Montserrat"""
+  MS
+
+  """Malta"""
+  MT
+
+  """Mauritius"""
+  MU
+
+  """Maldives"""
+  MV
+
+  """Malawi"""
+  MW
+
+  """Mexico"""
+  MX
+
+  """Malaysia"""
+  MY
+
+  """Mozambique"""
+  MZ
+
+  """Namibia"""
+  NA
+
+  """New Caledonia"""
+  NC
+
+  """Niger"""
+  NE
+
+  """Norfolk Island"""
+  NF
+
+  """Nigeria"""
+  NG
+
+  """Nicaragua"""
+  NI
+
+  """Netherlands"""
+  NL
+
+  """Norway"""
+  NO
+
+  """Nepal"""
+  NP
+
+  """Nauru"""
+  NR
+
+  """Niue"""
+  NU
+
+  """New Zealand"""
+  NZ
+
+  """Oman"""
+  OM
+
+  """Panama"""
+  PA
+
+  """Peru"""
+  PE
+
+  """French Polynesia"""
+  PF
+
+  """Papua New Guinea"""
+  PG
+
+  """Philippines"""
+  PH
+
+  """Pakistan"""
+  PK
+
+  """Poland"""
+  PL
+
+  """St. Pierre & Miquelon"""
+  PM
+
+  """Pitcairn Islands"""
+  PN
+
+  """Palestinian Territories"""
+  PS
+
+  """Portugal"""
+  PT
+
+  """Palau"""
+  PW
+
+  """Paraguay"""
+  PY
+
+  """Qatar"""
+  QA
+
+  """Réunion"""
+  RE
+
+  """Romania"""
+  RO
+
+  """Serbia"""
+  RS
+
+  """Russia"""
+  RU
+
+  """Rwanda"""
+  RW
+
+  """Saudi Arabia"""
+  SA
+
+  """Solomon Islands"""
+  SB
+
+  """Seychelles"""
+  SC
+
+  """Sudan"""
+  SD
+
+  """Sweden"""
+  SE
+
+  """Singapore"""
+  SG
+
+  """St. Helena"""
+  SH
+
+  """Slovenia"""
+  SI
+
+  """Svalbard & Jan Mayen"""
+  SJ
+
+  """Slovakia"""
+  SK
+
+  """Sierra Leone"""
+  SL
+
+  """San Marino"""
+  SM
+
+  """Senegal"""
+  SN
+
+  """Somalia"""
+  SO
+
+  """Suriname"""
+  SR
+
+  """São Tomé & Príncipe"""
+  ST
+
+  """El Salvador"""
+  SV
+
+  """Syria"""
+  SY
+
+  """Swaziland"""
+  SZ
+
+  """Turks & Caicos Islands"""
+  TC
+
+  """Chad"""
+  TD
+
+  """French Southern Territories"""
+  TF
+
+  """Togo"""
+  TG
+
+  """Thailand"""
+  TH
+
+  """Tajikistan"""
+  TJ
+
+  """Tokelau"""
+  TK
+
+  """Timor-Leste"""
+  TL
+
+  """Turkmenistan"""
+  TM
+
+  """Tunisia"""
+  TN
+
+  """Tonga"""
+  TO
+
+  """Turkey"""
+  TR
+
+  """Trinidad & Tobago"""
+  TT
+
+  """Tuvalu"""
+  TV
+
+  """Taiwan"""
+  TW
+
+  """Tanzania"""
+  TZ
+
+  """Ukraine"""
+  UA
+
+  """Uganda"""
+  UG
+
+  """U.S. Outlying Islands"""
+  UM
+
+  """United States"""
+  US
+
+  """Uruguay"""
+  UY
+
+  """Uzbekistan"""
+  UZ
+
+  """Vatican City"""
+  VA
+
+  """St. Vincent & Grenadines"""
+  VC
+
+  """Venezuela"""
+  VE
+
+  """British Virgin Islands"""
+  VG
+
+  """U.S. Virgin Islands"""
+  VI
+
+  """Vietnam"""
+  VN
+
+  """Vanuatu"""
+  VU
+
+  """Wallis & Futuna"""
+  WF
+
+  """Samoa"""
+  WS
+
+  """Yemen"""
+  YE
+
+  """Mayotte"""
+  YT
+
+  """South Africa"""
+  ZA
+
+  """Zambia"""
+  ZM
+
+  """Zimbabwe"""
+  ZW
+}
+
+type Currency {
+  available_currency_codes: [String]
+  base_currency_code: String
+  base_currency_symbol: String
+  default_display_currecy_code: String
+  default_display_currecy_symbol: String
+  exchange_rates: [ExchangeRate]
 }
 
 """The list of available currency codes"""
@@ -970,6 +1719,9 @@ type CustomerAddress {
   """The customer's country"""
   country_id: String
 
+  """Address custom attributes"""
+  custom_attributes: [CustomerAddressAttribute]
+
   """The customer ID"""
   customer_id: Int
 
@@ -978,6 +1730,9 @@ type CustomerAddress {
 
   """Indicates whether the address is the default shipping address"""
   default_shipping: Boolean
+
+  """Address extension attributes"""
+  extension_attributes: [CustomerAddressAttribute]
 
   """The fax number"""
   fax: String
@@ -1025,6 +1780,81 @@ type CustomerAddress {
   vat_id: String
 }
 
+type CustomerAddressAttribute {
+  """Attribute code"""
+  attribute_code: String
+
+  """Attribute value"""
+  value: String
+}
+
+input CustomerAddressAttributeInput {
+  """Attribute code"""
+  attribute_code: String!
+
+  """Attribute value"""
+  value: String!
+}
+
+input CustomerAddressInput {
+  """The city or town"""
+  city: String
+
+  """The customer's company"""
+  company: String
+
+  """The customer's country"""
+  country_id: CountryCodeEnum
+
+  """Address custom attributes"""
+  custom_attributes: [CustomerAddressAttributeInput]
+
+  """Indicates whether the address is the default billing address"""
+  default_billing: Boolean
+
+  """Indicates whether the address is the default shipping address"""
+  default_shipping: Boolean
+
+  """The fax number"""
+  fax: String
+
+  """
+  The first name of the person associated with the shipping/billing address
+  """
+  firstname: String
+
+  """
+  The family name of the person associated with the shipping/billing address
+  """
+  lastname: String
+
+  """
+  The middle name of the person associated with the shipping/billing address
+  """
+  middlename: String
+
+  """The customer's ZIP or postal code"""
+  postcode: String
+
+  """An honorific, such as Dr., Mr., or Mrs."""
+  prefix: String
+
+  """An object containing the region name, region code, and region ID"""
+  region: CustomerAddressRegionInput
+
+  """An array of strings that define the street number and name"""
+  street: [String]
+
+  """A value such as Sr., Jr., or III"""
+  suffix: String
+
+  """The telephone number"""
+  telephone: String
+
+  """The customer's Tax/VAT number (for corporate customers)"""
+  vat_id: String
+}
+
 """CustomerAddressRegion defines the customer's state or province"""
 type CustomerAddressRegion {
   """The state or province name"""
@@ -1037,10 +1867,98 @@ type CustomerAddressRegion {
   region_id: Int
 }
 
+"""CustomerAddressRegionInput defines the customer's state or province"""
+input CustomerAddressRegionInput {
+  """The state or province name"""
+  region: String
+
+  """The address region code"""
+  region_code: String
+
+  """Uniquely identifies the region"""
+  region_id: Int
+}
+
+type CustomerDownloadableProduct {
+  date: String
+  download_url: String
+  order_increment_id: String
+  remaining_downloads: String
+  status: String
+}
+
+type CustomerDownloadableProducts {
+  """List of purchased downloadable items"""
+  items: [CustomerDownloadableProduct]
+}
+
+input CustomerInput {
+  """The customer's date of birth"""
+  dob: String
+
+  """The customer's email address. Required"""
+  email: String
+
+  """The customer's first name"""
+  firstname: String
+
+  """The customer's gender(Male - 1, Female - 2)"""
+  gender: Int
+
+  """
+  Indicates whether the customer is subscribed to the company's newsletter
+  """
+  is_subscribed: Boolean
+
+  """The customer's family name"""
+  lastname: String
+
+  """The customer's middle name"""
+  middlename: String
+
+  """The customer's password"""
+  password: String
+
+  """An honorific, such as Dr., Mr., or Mrs."""
+  prefix: String
+
+  """A value such as Sr., Jr., or III"""
+  suffix: String
+
+  """The customer's Tax/VAT number (for corporate customers)"""
+  taxvat: String
+}
+
+"""Order mapping fields"""
+type CustomerOrder {
+  created_at: String
+  grand_total: Float
+  id: Int
+  increment_id: String
+  status: String
+}
+
+type CustomerOrders {
+  """Array of orders"""
+  items: [CustomerOrder]
+}
+
+type CustomerOutput {
+  customer: Customer!
+}
+
+type CustomerToken {
+  """The customer token"""
+  token: String
+}
+
 """
 CustomizableAreaOption contains information about a text area that is defined as part of a customizable option
 """
 type CustomizableAreaOption implements CustomizableOptionInterface {
+  """Option ID"""
+  option_id: Int
+
   """The Stock Keeping Unit of the base product"""
   product_sku: String
 
@@ -1080,6 +1998,9 @@ type CustomizableAreaValue {
 CustomizableDateOption contains information about a date picker that is defined as part of a customizable option
 """
 type CustomizableDateOption implements CustomizableOptionInterface {
+  """Option ID"""
+  option_id: Int
+
   """The Stock Keeping Unit of the base product"""
   product_sku: String
 
@@ -1114,6 +2035,9 @@ type CustomizableDateValue {
 CustomizableDropDownOption contains information about a drop down menu that is defined as part of a customizable option
 """
 type CustomizableDropDownOption implements CustomizableOptionInterface {
+  """Option ID"""
+  option_id: Int
+
   """Indicates whether the option is required"""
   required: Boolean
 
@@ -1154,6 +2078,9 @@ type CustomizableDropDownValue {
 CustomizableFieldOption contains information about a text field that is defined as part of a customizable option
 """
 type CustomizableFieldOption implements CustomizableOptionInterface {
+  """Option ID"""
+  option_id: Int
+
   """The Stock Keeping Unit of the base product"""
   product_sku: String
 
@@ -1193,6 +2120,9 @@ type CustomizableFieldValue {
 CustomizableFileOption contains information about a file picker that is defined as part of a customizable option
 """
 type CustomizableFileOption implements CustomizableOptionInterface {
+  """Option ID"""
+  option_id: Int
+
   """The Stock Keeping Unit of the base product"""
   product_sku: String
 
@@ -1236,6 +2166,9 @@ type CustomizableFileValue {
 The CustomizableOptionInterface contains basic information about a customizable option. It can be implemented by several types of configurable options.
 """
 interface CustomizableOptionInterface {
+  """Option ID"""
+  option_id: Int
+
   """Indicates whether the option is required"""
   required: Boolean
 
@@ -1258,6 +2191,9 @@ interface CustomizableProductInterface {
 CustomizableRadioOption contains information about a set of radio buttons that are defined as part of a customizable option
 """
 type CustomizableRadioOption implements CustomizableOptionInterface {
+  """Option ID"""
+  option_id: Int
+
   """Indicates whether the option is required"""
   required: Boolean
 
@@ -1320,7 +2256,7 @@ type DownloadableProduct implements CustomizableProductInterface & ProductInterf
   """
   Detailed information about the product. The value can include simple HTML tags.
   """
-  description: String
+  description: ComplexTextValue
 
   """
   An array containing information about the links for this downloadable product
@@ -1339,10 +2275,7 @@ type DownloadableProduct implements CustomizableProductInterface & ProductInterf
   id: Int
 
   """The relative path to the main image on the product page"""
-  image: String
-
-  """The label assigned to a product image"""
-  image_label: String
+  image: ProductImage
 
   """
   A value of 1 indicates that each link in the array must be purchased separately
@@ -1402,7 +2335,7 @@ type DownloadableProduct implements CustomizableProductInterface & ProductInterf
   product_links: [ProductLinksInterface]
 
   """A short description of the product. Its use depends on the theme."""
-  short_description: String
+  short_description: ComplexTextValue
 
   """
   A number or code assigned to a product to identify the product, options, price, and manufacturer
@@ -1410,10 +2343,7 @@ type DownloadableProduct implements CustomizableProductInterface & ProductInterf
   sku: String
 
   """The relative path to the small image, which is used on catalog pages"""
-  small_image: String
-
-  """The label assigned to a product's small image"""
-  small_image_label: String
+  small_image: ProductImage
 
   """The beginning date that a product has a special price"""
   special_from_date: String
@@ -1431,10 +2361,7 @@ type DownloadableProduct implements CustomizableProductInterface & ProductInterf
   swatch_image: String
 
   """The relative path to the product's thumbnail image"""
-  thumbnail: String
-
-  """The label assigned to a product's thumbnail image"""
-  thumbnail_label: String
+  thumbnail: ProductImage
 
   """
   The price when tier pricing is in effect and the items purchased threshold has been reached
@@ -1455,6 +2382,9 @@ type DownloadableProduct implements CustomizableProductInterface & ProductInterf
 
   """The part of the URL that precedes the url_key"""
   url_path: String
+
+  """URL rewrites list"""
+  url_rewrites: [UrlRewrite]
 
   """An array of websites in which the product is available"""
   websites: [Website]
@@ -1538,6 +2468,11 @@ type EntityUrl {
   type: UrlRewriteEntityTypeEnum
 }
 
+type ExchangeRate {
+  currency_to: String
+  rate: Float
+}
+
 """FilterTypeInput specifies which action will be performed in a query"""
 input FilterTypeInput {
   """Equals"""
@@ -1608,7 +2543,7 @@ type GroupedProduct implements PhysicalProductInterface & ProductInterface {
   """
   Detailed information about the product. The value can include simple HTML tags.
   """
-  description: String
+  description: ComplexTextValue
 
   """Indicates whether a gift message is available"""
   gift_message_available: String
@@ -1617,10 +2552,7 @@ type GroupedProduct implements PhysicalProductInterface & ProductInterface {
   id: Int
 
   """The relative path to the main image on the product page"""
-  image: String
-
-  """The label assigned to a product image"""
-  image_label: String
+  image: ProductImage
 
   """An array containing grouped product items"""
   items: [GroupedProductItem]
@@ -1672,7 +2604,7 @@ type GroupedProduct implements PhysicalProductInterface & ProductInterface {
   product_links: [ProductLinksInterface]
 
   """A short description of the product. Its use depends on the theme."""
-  short_description: String
+  short_description: ComplexTextValue
 
   """
   A number or code assigned to a product to identify the product, options, price, and manufacturer
@@ -1680,10 +2612,7 @@ type GroupedProduct implements PhysicalProductInterface & ProductInterface {
   sku: String
 
   """The relative path to the small image, which is used on catalog pages"""
-  small_image: String
-
-  """The label assigned to a product's small image"""
-  small_image_label: String
+  small_image: ProductImage
 
   """The beginning date that a product has a special price"""
   special_from_date: String
@@ -1701,10 +2630,7 @@ type GroupedProduct implements PhysicalProductInterface & ProductInterface {
   swatch_image: String
 
   """The relative path to the product's thumbnail image"""
-  thumbnail: String
-
-  """The label assigned to a product's thumbnail image"""
-  thumbnail_label: String
+  thumbnail: ProductImage
 
   """
   The price when tier pricing is in effect and the items purchased threshold has been reached
@@ -1725,6 +2651,9 @@ type GroupedProduct implements PhysicalProductInterface & ProductInterface {
 
   """The part of the URL that precedes the url_key"""
   url_path: String
+
+  """URL rewrites list"""
+  url_rewrites: [UrlRewrite]
 
   """An array of websites in which the product is available"""
   websites: [Website]
@@ -1747,6 +2676,15 @@ type GroupedProductItem {
 
   """The quantity of this grouped product item"""
   qty: Float
+}
+
+"""The object details of target path parameters"""
+type HttpQueryParameter {
+  """Parameter name"""
+  name: String
+
+  """Parameter value"""
+  value: String
 }
 
 type LayerFilter {
@@ -1831,13 +2769,35 @@ type Money {
 }
 
 type Mutation {
+  """Changes the password for the logged-in customer"""
+  changeCustomerPassword(currentPassword: String!, newPassword: String!): Customer
+
+  """Create customer account"""
+  createCustomer(input: CustomerInput!): CustomerOutput
+
+  """Create customer address"""
+  createCustomerAddress(input: CustomerAddressInput!): CustomerAddress
+
   """Creates empty shopping cart for guest or logged in user"""
   createEmptyCart: String
 
-  """
-  Mutation type cannot be declared without fields. The placeholder will be removed when at least one mutation field is declared.
-  """
-  placeholderMutation: String
+  """Delete customer address"""
+  deleteCustomerAddress(id: Int!): Boolean
+
+  """Retrieve the customer token"""
+  generateCustomerToken(email: String!, password: String!): CustomerToken
+
+  """Revoke the customer token"""
+  revokeCustomerToken: RevokeCustomerTokenOutput
+
+  """Recommends Product by Sending Single/Multiple Email"""
+  sendEmailToFriend(input: SendEmailToFriendInput): SendEmailToFriendOutput
+
+  """Update the customer's personal information"""
+  updateCustomer(input: CustomerInput!): CustomerOutput
+
+  """Update customer address"""
+  updateCustomerAddress(id: Int!, input: CustomerAddressInput): CustomerAddress
 }
 
 """
@@ -2052,6 +3012,12 @@ input ProductFilterInput {
   weight: FilterTypeInput
 }
 
+"""Product image information. Contains image relative path, URL and label"""
+type ProductImage {
+  label: String
+  url: String
+}
+
 """
 The ProductInterface contains attributes that are common to all types of products. Note that descriptions may not be available for custom and EAV
 """
@@ -2074,7 +3040,7 @@ interface ProductInterface {
   """
   Detailed information about the product. The value can include simple HTML tags.
   """
-  description: String
+  description: ComplexTextValue
 
   """Indicates whether a gift message is available"""
   gift_message_available: String
@@ -2083,10 +3049,7 @@ interface ProductInterface {
   id: Int
 
   """The relative path to the main image on the product page"""
-  image: String
-
-  """The label assigned to a product image"""
-  image_label: String
+  image: ProductImage
 
   """A number representing the product's manufacturer"""
   manufacturer: Int
@@ -2135,7 +3098,7 @@ interface ProductInterface {
   product_links: [ProductLinksInterface]
 
   """A short description of the product. Its use depends on the theme."""
-  short_description: String
+  short_description: ComplexTextValue
 
   """
   A number or code assigned to a product to identify the product, options, price, and manufacturer
@@ -2143,10 +3106,7 @@ interface ProductInterface {
   sku: String
 
   """The relative path to the small image, which is used on catalog pages"""
-  small_image: String
-
-  """The label assigned to a product's small image"""
-  small_image_label: String
+  small_image: ProductImage
 
   """The beginning date that a product has a special price"""
   special_from_date: String
@@ -2164,10 +3124,7 @@ interface ProductInterface {
   swatch_image: String
 
   """The relative path to the product's thumbnail image"""
-  thumbnail: String
-
-  """The label assigned to a product's thumbnail image"""
-  thumbnail_label: String
+  thumbnail: ProductImage
 
   """
   The price when tier pricing is in effect and the items purchased threshold has been reached
@@ -2188,6 +3145,9 @@ interface ProductInterface {
 
   """The part of the URL that precedes the url_key"""
   url_path: String
+
+  """URL rewrites list"""
+  url_rewrites: [UrlRewrite]
 
   """An array of websites in which the product is available"""
   websites: [Website]
@@ -2485,6 +3445,15 @@ type Query {
     id: Int
   ): CmsPage
 
+  """The countries query provides information for all countries."""
+  countries: [Country]
+
+  """The countries query provides information for a single country."""
+  country(id: String): Country
+
+  """The currency query returns information about store currency."""
+  currency: Currency
+
   """
   The customAttributeMetadata query returns the attribute type, given an attribute code and entity type
   """
@@ -2492,6 +3461,12 @@ type Query {
 
   """The customer query returns information about a customer account"""
   customer: Customer
+
+  """The query returns the contents of a customer's downloadable products"""
+  customerDownloadableProducts: CustomerDownloadableProducts
+
+  """List of customer orders"""
+  customerOrders: CustomerOrders
 
   """
   The products query searches for products that match the criteria specified in the search and filter attributes
@@ -2521,9 +3496,22 @@ type Query {
   storeConfig: StoreConfig
 
   """
-  The urlResolver query returns the canonical URL for a specified product, category or CMS page
+  The urlResolver query returns the relative URL for a specified product, category or CMS page
   """
   urlResolver(url: String!): EntityUrl
+
+  """The wishlist query returns the contents of a customer's wish list"""
+  wishlist: WishlistOutput
+}
+
+type Region {
+  code: String
+  id: Int
+  name: String
+}
+
+type RevokeCustomerTokenOutput {
+  result: Boolean!
 }
 
 """SearchResultPageInfo provides navigation for the query response"""
@@ -2533,6 +3521,42 @@ type SearchResultPageInfo {
 
   """Specifies the maximum number of items to return"""
   page_size: Int
+
+  """Total pages"""
+  total_pages: Int
+}
+
+input SendEmailToFriendInput {
+  product_id: Int!
+  recipients: [SendEmailToFriendRecipientInput]!
+  sender: SendEmailToFriendSenderInput!
+}
+
+type SendEmailToFriendOutput {
+  recipients: [SendEmailToFriendRecipient]
+  sender: SendEmailToFriendSender
+}
+
+type SendEmailToFriendRecipient {
+  email: String!
+  name: String!
+}
+
+input SendEmailToFriendRecipientInput {
+  email: String!
+  name: String!
+}
+
+type SendEmailToFriendSender {
+  email: String!
+  message: String!
+  name: String!
+}
+
+input SendEmailToFriendSenderInput {
+  email: String!
+  message: String!
+  name: String!
 }
 
 """
@@ -2565,7 +3589,7 @@ type SimpleProduct implements CustomizableProductInterface & PhysicalProductInte
   """
   Detailed information about the product. The value can include simple HTML tags.
   """
-  description: String
+  description: ComplexTextValue
 
   """Indicates whether a gift message is available"""
   gift_message_available: String
@@ -2574,10 +3598,7 @@ type SimpleProduct implements CustomizableProductInterface & PhysicalProductInte
   id: Int
 
   """The relative path to the main image on the product page"""
-  image: String
-
-  """The label assigned to a product image"""
-  image_label: String
+  image: ProductImage
 
   """A number representing the product's manufacturer"""
   manufacturer: Int
@@ -2629,7 +3650,7 @@ type SimpleProduct implements CustomizableProductInterface & PhysicalProductInte
   product_links: [ProductLinksInterface]
 
   """A short description of the product. Its use depends on the theme."""
-  short_description: String
+  short_description: ComplexTextValue
 
   """
   A number or code assigned to a product to identify the product, options, price, and manufacturer
@@ -2637,10 +3658,7 @@ type SimpleProduct implements CustomizableProductInterface & PhysicalProductInte
   sku: String
 
   """The relative path to the small image, which is used on catalog pages"""
-  small_image: String
-
-  """The label assigned to a product's small image"""
-  small_image_label: String
+  small_image: ProductImage
 
   """The beginning date that a product has a special price"""
   special_from_date: String
@@ -2658,10 +3676,7 @@ type SimpleProduct implements CustomizableProductInterface & PhysicalProductInte
   swatch_image: String
 
   """The relative path to the product's thumbnail image"""
-  thumbnail: String
-
-  """The label assigned to a product's thumbnail image"""
-  thumbnail_label: String
+  thumbnail: ProductImage
 
   """
   The price when tier pricing is in effect and the items purchased threshold has been reached
@@ -2682,6 +3697,9 @@ type SimpleProduct implements CustomizableProductInterface & PhysicalProductInte
 
   """The part of the URL that precedes the url_key"""
   url_path: String
+
+  """URL rewrites list"""
+  url_rewrites: [UrlRewrite]
 
   """An array of websites in which the product is available"""
   websites: [Website]
@@ -2719,6 +3737,9 @@ type SortFields {
 
 """The type contains information about a store config"""
 type StoreConfig {
+  """Footer Miscellaneous HTML"""
+  absolute_footer: String
+
   """Base currency code"""
   base_currency_code: String
 
@@ -2734,17 +3755,65 @@ type StoreConfig {
   """Base URL for the store"""
   base_url: String
 
+  """CMS Home Page"""
+  cms_home_page: String
+
+  """CMS No Cookies Page"""
+  cms_no_cookies: String
+
+  """CMS No Route Page"""
+  cms_no_route: String
+
   """A code assigned to the store to identify it"""
   code: String
 
+  """Copyright"""
+  copyright: String
+
+  """Default Meta Description"""
+  default_description: String
+
   """Default display currency code"""
   default_display_currency_code: String
+
+  """Default Meta Keywords"""
+  default_keywords: String
+
+  """Default Page Title"""
+  default_title: String
+
+  """Display Demo Store Notice"""
+  demonotice: Int
+
+  """Default Web URL"""
+  front: String
+
+  """Scripts and Style Sheets"""
+  head_includes: String
+
+  """Favicon Icon"""
+  head_shortcut_icon: String
+
+  """Logo Image"""
+  header_logo_src: String
 
   """The ID number assigned to the store"""
   id: Int
 
   """Store locale"""
   locale: String
+
+  """Logo Image Alt"""
+  logo_alt: String
+
+  """Logo Attribute Height"""
+  logo_height: Int
+
+  """Logo Attribute Width"""
+  logo_width: Int
+
+  """Default No-route URL"""
+  no_route: String
 
   """Secure base link URL for the store"""
   secure_base_link_url: String
@@ -2758,14 +3827,26 @@ type StoreConfig {
   """Secure base URL for the store"""
   secure_base_url: String
 
+  """Show Breadcrumbs for CMS Pages"""
+  show_cms_breadcrumbs: Int
+
   """Timezone of the store"""
   timezone: String
+
+  """Page Title Prefix"""
+  title_prefix: String
+
+  """Page Title Suffix"""
+  title_suffix: String
 
   """The ID number assigned to the website store belongs"""
   website_id: Int
 
   """The unit of weight"""
   weight_unit: String
+
+  """Welcome Text"""
+  welcome: String
 }
 
 type SwatchData {
@@ -2793,6 +3874,15 @@ type SwatchLayerFilterItem implements LayerFilterItemInterface & SwatchLayerFilt
 interface SwatchLayerFilterItemInterface {
   """Data required to render swatch filter item"""
   swatch_data: SwatchData
+}
+
+"""The object contains URL rewrite details"""
+type UrlRewrite {
+  """Request parameters"""
+  parameters: [HttpQueryParameter]
+
+  """Request URL"""
+  url: String
 }
 
 """This enumeration defines the entity type."""
@@ -2824,7 +3914,7 @@ type VirtualProduct implements CustomizableProductInterface & ProductInterface {
   """
   Detailed information about the product. The value can include simple HTML tags.
   """
-  description: String
+  description: ComplexTextValue
 
   """Indicates whether a gift message is available"""
   gift_message_available: String
@@ -2833,10 +3923,7 @@ type VirtualProduct implements CustomizableProductInterface & ProductInterface {
   id: Int
 
   """The relative path to the main image on the product page"""
-  image: String
-
-  """The label assigned to a product image"""
-  image_label: String
+  image: ProductImage
 
   """A number representing the product's manufacturer"""
   manufacturer: Int
@@ -2888,7 +3975,7 @@ type VirtualProduct implements CustomizableProductInterface & ProductInterface {
   product_links: [ProductLinksInterface]
 
   """A short description of the product. Its use depends on the theme."""
-  short_description: String
+  short_description: ComplexTextValue
 
   """
   A number or code assigned to a product to identify the product, options, price, and manufacturer
@@ -2896,10 +3983,7 @@ type VirtualProduct implements CustomizableProductInterface & ProductInterface {
   sku: String
 
   """The relative path to the small image, which is used on catalog pages"""
-  small_image: String
-
-  """The label assigned to a product's small image"""
-  small_image_label: String
+  small_image: ProductImage
 
   """The beginning date that a product has a special price"""
   special_from_date: String
@@ -2917,10 +4001,7 @@ type VirtualProduct implements CustomizableProductInterface & ProductInterface {
   swatch_image: String
 
   """The relative path to the product's thumbnail image"""
-  thumbnail: String
-
-  """The label assigned to a product's thumbnail image"""
-  thumbnail_label: String
+  thumbnail: ProductImage
 
   """
   The price when tier pricing is in effect and the items purchased threshold has been reached
@@ -2942,6 +4023,9 @@ type VirtualProduct implements CustomizableProductInterface & ProductInterface {
   """The part of the URL that precedes the url_key"""
   url_path: String
 
+  """URL rewrites list"""
+  url_rewrites: [UrlRewrite]
+
   """An array of websites in which the product is available"""
   websites: [Website]
 }
@@ -2951,7 +4035,7 @@ type Website {
   """A code assigned to the website to identify it"""
   code: String
 
-  """The default group id that the website has"""
+  """The default group ID that the website has"""
   default_group_id: String
 
   """The ID number assigned to the website"""
@@ -2960,9 +4044,43 @@ type Website {
   """Specifies if this is the default website"""
   is_default: Boolean
 
-  """The website name. Websites use this name to identify it easyer."""
+  """The website name. Websites use this name to identify it easier."""
   name: String
 
   """The attribute to use for sorting websites"""
   sort_order: Int
+}
+
+type WishlistItem {
+  """The time when the customer added the item to the wish list"""
+  added_at: String
+
+  """The customer's comment about this item"""
+  description: String
+
+  """The wish list item ID"""
+  id: Int
+  product: ProductInterface
+
+  """The quantity of this wish list item"""
+  qty: Float
+}
+
+type WishlistOutput {
+  """An array of items in the customer's wish list"""
+  items: [WishlistItem]
+
+  """The number of items in the wish list"""
+  items_count: Int
+
+  """
+  When multiple wish lists are enabled, the name the customer assigns to the wishlist
+  """
+  name: String
+
+  """An encrypted code that Magento uses to link to the wish list"""
+  sharing_code: String
+
+  """The time of the last modification to the wish list"""
+  updated_at: String
 }
