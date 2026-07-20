@@ -30,6 +30,10 @@ on:
         description: 'GitHub environment providing the Hive secrets'
         required: true
         default: 'magento2-second'
+      target:
+        description: 'Hive target ref (org/project/target)'
+        required: true
+        default: 'reach-digital/magento2-second/m2'
 
 jobs:
   register-schema:
@@ -100,10 +104,6 @@ jobs:
           ls .
           cat schema.graphql
       - name: Publish schema
-        env:
-          HIVE_TARGET: ${{ secrets.HAVE_PROJECT_ID }}
         run: |
           npm i -g -D @graphql-hive/cli
-          TARGET_ARG=""
-          if [ -n "$HIVE_TARGET" ]; then TARGET_ARG="--target=$HIVE_TARGET"; fi
-          hive schema:publish --commit=${{ github.event.inputs.magento_version }} --registry.accessToken ${{secrets.HIVE_ACCESS_TOKEN}} $TARGET_ARG schema.graphql
+          hive schema:publish --commit=${{ github.event.inputs.magento_version }} --author "Reach Digital" --registry.accessToken ${{secrets.HIVE_ACCESS_TOKEN}} --target=${{ github.event.inputs.target }} schema.graphql
