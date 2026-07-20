@@ -245,6 +245,122 @@ type Attribute {
 }
 
 """
+List of all entity types. Populated by the modules introducing EAV entities.
+"""
+enum AttributeEntityTypeEnum {
+  """"""
+  CATALOG_CATEGORY @deprecated
+
+  """"""
+  CATALOG_PRODUCT @deprecated
+
+  """"""
+  CUSTOMER @deprecated
+
+  """"""
+  CUSTOMER_ADDRESS @deprecated
+}
+
+"""An input object that specifies the filters used for attributes."""
+input AttributeFilterInput {
+  """
+  Whether a product or category attribute can be compared against another or not.
+  """
+  is_comparable: Boolean
+
+  """Whether a product or category attribute can be filtered or not."""
+  is_filterable: Boolean
+
+  """
+  Whether a product or category attribute can be filtered in search or not.
+  """
+  is_filterable_in_search: Boolean
+
+  """Whether a product or category attribute can use HTML on front or not."""
+  is_html_allowed_on_front: Boolean
+
+  """Whether a product or category attribute can be searched or not."""
+  is_searchable: Boolean
+
+  """
+  Whether a product or category attribute can be used for price rules or not.
+  """
+  is_used_for_price_rules: Boolean
+
+  """
+  Whether a product or category attribute is used for promo rules or not.
+  """
+  is_used_for_promo_rules: Boolean
+
+  """
+  Whether a product or category attribute is visible in advanced search or not.
+  """
+  is_visible_in_advanced_search: Boolean
+
+  """Whether a product or category attribute is visible on front or not."""
+  is_visible_on_front: Boolean
+
+  """Whether a product or category attribute has WYSIWYG enabled or not."""
+  is_wysiwyg_enabled: Boolean
+
+  """
+  Whether a product or category attribute is used in product listing or not.
+  """
+  used_in_product_listing: Boolean
+}
+
+"""EAV attribute frontend input types."""
+enum AttributeFrontendInputEnum {
+  """"""
+  BOOLEAN @deprecated
+
+  """"""
+  DATE @deprecated
+
+  """"""
+  DATETIME @deprecated
+
+  """"""
+  FILE @deprecated
+
+  """"""
+  GALLERY @deprecated
+
+  """"""
+  HIDDEN @deprecated
+
+  """"""
+  IMAGE @deprecated
+
+  """"""
+  MEDIA_IMAGE @deprecated
+
+  """"""
+  MULTILINE @deprecated
+
+  """"""
+  MULTISELECT @deprecated
+
+  """"""
+  PRICE @deprecated
+
+  """"""
+  SELECT @deprecated
+
+  """"""
+  TEXT @deprecated
+
+  """"""
+  TEXTAREA @deprecated
+
+  """"""
+  UNDEFINED @deprecated
+
+  """"""
+  WEIGHT @deprecated
+}
+
+"""
 Defines the attribute characteristics to search for the `attribute_code` and `entity_type` to search.
 """
 input AttributeInput {
@@ -257,6 +373,68 @@ input AttributeInput {
   entity_type: String
 }
 
+"""Specifies selected option for a select or multiselect attribute value."""
+input AttributeInputSelectedOption {
+  """The attribute option value."""
+  value: String!
+}
+
+"""Base EAV implementation of CustomAttributeMetadataInterface."""
+type AttributeMetadata implements CustomAttributeMetadataInterface {
+  """
+  The unique identifier for an attribute code. This value should be in lowercase letters without spaces.
+  """
+  code: ID!
+
+  """Default attribute value."""
+  default_value: String
+
+  """The type of entity that defines the attribute."""
+  entity_type: AttributeEntityTypeEnum!
+
+  """The frontend class of the attribute."""
+  frontend_class: String
+
+  """The frontend input type of the attribute."""
+  frontend_input: AttributeFrontendInputEnum
+
+  """Whether the attribute value is required."""
+  is_required: Boolean!
+
+  """Whether the attribute value must be unique."""
+  is_unique: Boolean!
+
+  """The label assigned to the attribute."""
+  label: String
+
+  """Attribute options."""
+  options: [CustomAttributeOptionInterface]!
+}
+
+"""Attribute metadata retrieval error."""
+type AttributeMetadataError {
+  """Attribute metadata retrieval error message."""
+  message: String!
+
+  """Attribute metadata retrieval error type."""
+  type: AttributeMetadataErrorType!
+}
+
+"""Attribute metadata retrieval error types."""
+enum AttributeMetadataErrorType {
+  """The requested attribute was not found."""
+  ATTRIBUTE_NOT_FOUND @deprecated
+
+  """The requested entity was not found."""
+  ENTITY_NOT_FOUND @deprecated
+
+  """The filter cannot be applied as it does not belong to the entity"""
+  FILTER_NOT_FOUND @deprecated
+
+  """Not categorized error, see the error message."""
+  UNDEFINED @deprecated
+}
+
 """Defines an attribute option."""
 type AttributeOption {
   """The label assigned to the attribute option."""
@@ -264,6 +442,90 @@ type AttributeOption {
 
   """The attribute option value."""
   value: String
+}
+
+"""Base EAV implementation of CustomAttributeOptionInterface."""
+type AttributeOptionMetadata implements CustomAttributeOptionInterface {
+  """Is the option value default."""
+  is_default: Boolean!
+
+  """The label assigned to the attribute option."""
+  label: String!
+
+  """The attribute option value."""
+  value: String!
+}
+
+""""""
+type AttributeSelectedOption implements AttributeSelectedOptionInterface {
+  """The attribute selected option label."""
+  label: String!
+
+  """The attribute selected option value."""
+  value: String!
+}
+
+""""""
+interface AttributeSelectedOptionInterface {
+  """The attribute selected option label."""
+  label: String!
+
+  """The attribute selected option value."""
+  value: String!
+}
+
+""""""
+type AttributeSelectedOptions implements AttributeValueInterface {
+  """The attribute code."""
+  code: ID!
+  selected_options: [AttributeSelectedOptionInterface]!
+}
+
+""""""
+type AttributeValue implements AttributeValueInterface {
+  """The attribute code."""
+  code: ID!
+
+  """The attribute value."""
+  value: String!
+}
+
+"""Specifies the value for attribute."""
+input AttributeValueInput {
+  """The code of the attribute."""
+  attribute_code: String!
+
+  """
+  An array containing selected options for a select or multiselect attribute.
+  """
+  selected_options: [AttributeInputSelectedOption]
+
+  """The value assigned to the attribute."""
+  value: String
+}
+
+""""""
+interface AttributeValueInterface {
+  """The attribute code."""
+  code: ID!
+}
+
+"""Metadata of EAV attributes associated to form"""
+type AttributesFormOutput {
+  """Errors of retrieving certain attributes metadata."""
+  errors: [AttributeMetadataError]!
+
+  """Requested attributes metadata."""
+  items: [CustomAttributeMetadataInterface]!
+}
+
+"""Metadata of EAV attributes."""
+type AttributesMetadataOutput {
+  """Errors of retrieving certain attributes metadata."""
+  errors: [AttributeMetadataError]!
+
+  """Requested attributes metadata."""
+  items: [CustomAttributeMetadataInterface]!
 }
 
 """
@@ -362,20 +624,34 @@ type BillingCartAddress implements CartAddressInterface {
   country: CartAddressCountry!
   customer_notes: String @deprecated(reason: "The field is used only in shipping address.")
 
+  """The customer's fax number."""
+  fax: String
+
   """The first name of the customer or guest."""
   firstname: String!
 
   """The last name of the customer or guest."""
   lastname: String!
 
+  """
+  The middle name of the person associated with the billing/shipping address.
+  """
+  middlename: String
+
   """The ZIP or postal code of the billing or shipping address."""
   postcode: String
+
+  """An honorific, such as Dr., Mr., or Mrs."""
+  prefix: String
 
   """An object containing the region label and code."""
   region: CartAddressRegion
 
   """An array containing the street for the billing or shipping address."""
   street: [String]!
+
+  """A value such as Sr., Jr., or III."""
+  suffix: String
 
   """The telephone number for the billing or shipping address."""
   telephone: String
@@ -385,33 +661,6 @@ type BillingCartAddress implements CartAddressInterface {
 
   """The VAT company number for billing or shipping address."""
   vat_id: String
-}
-
-""""""
-input BraintreeCcVaultInput {
-  """"""
-  device_data: String
-
-  """"""
-  public_hash: String!
-}
-
-""""""
-input BraintreeInput {
-  """
-  Contains a fingerprint provided by Braintree JS SDK and should be sent with sale transaction details to the Braintree payment gateway.
-  """
-  device_data: String
-
-  """
-  States whether an entered by a customer credit/debit card should be tokenized for later usage. Required only if Vault is enabled for Braintree payment integration.
-  """
-  is_active_payment_token_enabler: Boolean!
-
-  """
-  The one-time payment token generated by Braintree payment gateway based on card details. Required field to make sale transaction.
-  """
-  payment_method_nonce: String!
 }
 
 """
@@ -698,6 +947,9 @@ type BundleProduct implements CustomizableProductInterface & PhysicalProductInte
   """Crosssell Products"""
   crosssell_products: [ProductInterface]
 
+  """Product custom attributes."""
+  custom_attributesV2(filters: AttributeFilterInput): ProductCustomAttributes
+
   """
   Detailed information about the product. The value can include simple HTML tags.
   """
@@ -774,6 +1026,9 @@ type BundleProduct implements CustomizableProductInterface & PhysicalProductInte
 
   """Indicates the price of an item."""
   price: ProductPrices @deprecated(reason: "Use `price_range` for product price information.")
+
+  """The price details of the main product"""
+  price_details: PriceDetails
 
   """The range of prices for the product"""
   price_range: PriceRange!
@@ -951,6 +1206,29 @@ type BundleWishlistItem implements WishlistItemInterface {
   quantity: Float!
 }
 
+"""Defines the order to cancel."""
+input CancelOrderInput {
+  """Order ID."""
+  order_id: ID!
+
+  """Cancellation reason."""
+  reason: String!
+}
+
+"""Contains the updated customer order and error message if any."""
+type CancelOrderOutput {
+  """Error encountered while cancelling the order."""
+  error: String
+
+  """Updated customer order."""
+  order: CustomerOrder
+}
+
+""""""
+type CancellationReason {
+  description: String!
+}
+
 """
 Contains the contents and other details about a guest or customer cart.
 """
@@ -1016,14 +1294,25 @@ input CartAddressInput {
   """The country code and label for the billing or shipping address."""
   country_code: String!
 
+  """The customer's fax number."""
+  fax: String
+
   """The first name of the customer or guest."""
   firstname: String!
 
   """The last name of the customer or guest."""
   lastname: String!
 
+  """
+  The middle name of the person associated with the billing/shipping address.
+  """
+  middlename: String
+
   """The ZIP or postal code of the billing or shipping address."""
   postcode: String
+
+  """An honorific, such as Dr., Mr., or Mrs."""
+  prefix: String
 
   """
   A string that defines the state or province of the billing or shipping address.
@@ -1043,6 +1332,9 @@ input CartAddressInput {
   """An array containing the street for the billing or shipping address."""
   street: [String]!
 
+  """A value such as Sr., Jr., or III."""
+  suffix: String
+
   """The telephone number for the billing or shipping address."""
   telephone: String
 
@@ -1061,20 +1353,34 @@ interface CartAddressInterface {
   """An object containing the country label and code."""
   country: CartAddressCountry!
 
+  """The customer's fax number."""
+  fax: String
+
   """The first name of the customer or guest."""
   firstname: String!
 
   """The last name of the customer or guest."""
   lastname: String!
 
+  """
+  The middle name of the person associated with the billing/shipping address.
+  """
+  middlename: String
+
   """The ZIP or postal code of the billing or shipping address."""
   postcode: String
+
+  """An honorific, such as Dr., Mr., or Mrs."""
+  prefix: String
 
   """An object containing the region label and code."""
   region: CartAddressRegion
 
   """An array containing the street for the billing or shipping address."""
   street: [String]!
+
+  """A value such as Sr., Jr., or III."""
+  suffix: String
 
   """The telephone number for the billing or shipping address."""
   telephone: String
@@ -1105,6 +1411,15 @@ type CartDiscount {
 
   """The description of the discount."""
   label: [String]!
+}
+
+""""""
+enum CartDiscountType {
+  """"""
+  ITEM @deprecated
+
+  """"""
+  SHIPPING @deprecated
 }
 
 """"""
@@ -1298,6 +1613,119 @@ enum CartUserInputErrorType {
 
   """"""
   UNDEFINED @deprecated
+}
+
+""""""
+enum CatalogAttributeApplyToEnum {
+  """"""
+  BUNDLE @deprecated
+
+  """"""
+  CATEGORY @deprecated
+
+  """"""
+  CONFIGURABLE @deprecated
+
+  """"""
+  DOWNLOADABLE @deprecated
+
+  """"""
+  GROUPED @deprecated
+
+  """"""
+  SIMPLE @deprecated
+
+  """"""
+  VIRTUAL @deprecated
+}
+
+"""Swatch attribute metadata."""
+type CatalogAttributeMetadata implements CustomAttributeMetadataInterface {
+  """To which catalog types an attribute can be applied."""
+  apply_to: [CatalogAttributeApplyToEnum]
+
+  """
+  The unique identifier for an attribute code. This value should be in lowercase letters without spaces.
+  """
+  code: ID!
+
+  """Default attribute value."""
+  default_value: String
+
+  """The type of entity that defines the attribute."""
+  entity_type: AttributeEntityTypeEnum!
+
+  """The frontend class of the attribute."""
+  frontend_class: String
+
+  """The frontend input type of the attribute."""
+  frontend_input: AttributeFrontendInputEnum
+
+  """
+  Whether a product or category attribute can be compared against another or not.
+  """
+  is_comparable: Boolean
+
+  """Whether a product or category attribute can be filtered or not."""
+  is_filterable: Boolean
+
+  """
+  Whether a product or category attribute can be filtered in search or not.
+  """
+  is_filterable_in_search: Boolean
+
+  """Whether a product or category attribute can use HTML on front or not."""
+  is_html_allowed_on_front: Boolean
+
+  """Whether the attribute value is required."""
+  is_required: Boolean!
+
+  """Whether a product or category attribute can be searched or not."""
+  is_searchable: Boolean
+
+  """Whether the attribute value must be unique."""
+  is_unique: Boolean!
+
+  """
+  Whether a product or category attribute can be used for price rules or not.
+  """
+  is_used_for_price_rules: Boolean
+
+  """
+  Whether a product or category attribute is used for promo rules or not.
+  """
+  is_used_for_promo_rules: Boolean
+
+  """
+  Whether a product or category attribute is visible in advanced search or not.
+  """
+  is_visible_in_advanced_search: Boolean
+
+  """Whether a product or category attribute is visible on front or not."""
+  is_visible_on_front: Boolean
+
+  """Whether a product or category attribute has WYSIWYG enabled or not."""
+  is_wysiwyg_enabled: Boolean
+
+  """The label assigned to the attribute."""
+  label: String
+
+  """Attribute options."""
+  options: [CustomAttributeOptionInterface]!
+
+  """Input type of the swatch attribute option."""
+  swatch_input_type: SwatchInputTypeEnum
+
+  """Whether update product preview image or not."""
+  update_product_preview_image: Boolean
+
+  """Whether use product image for swatch or not."""
+  use_product_image_for_swatch: Boolean
+
+  """
+  Whether a product or category attribute is used in product listing or not.
+  """
+  used_in_product_listing: Boolean
 }
 
 """
@@ -1843,6 +2271,9 @@ type ConfigurableProduct implements CustomizableProductInterface & PhysicalProdu
   """Crosssell Products"""
   crosssell_products: [ProductInterface]
 
+  """Product custom attributes."""
+  custom_attributesV2(filters: AttributeFilterInput): ProductCustomAttributes
+
   """
   Detailed information about the product. The value can include simple HTML tags.
   """
@@ -2189,6 +2620,27 @@ type ConfigurableWishlistItem implements WishlistItemInterface {
 
   """The quantity of this wish list item."""
   quantity: Float!
+}
+
+""""""
+input ContactUsInput {
+  """The shopper's comment to the merchant."""
+  comment: String!
+
+  """The email address of the shopper."""
+  email: String!
+
+  """The full name of the shopper."""
+  name: String!
+
+  """The shopper's telephone number."""
+  telephone: String
+}
+
+"""Contains the status of the request."""
+type ContactUsOutput {
+  """Indicates whether the request was successful."""
+  status: Boolean!
 }
 
 """"""
@@ -3665,6 +4117,50 @@ type CustomAttributeMetadata {
   items: [Attribute]
 }
 
+"""An interface containing fields that define the EAV attribute."""
+interface CustomAttributeMetadataInterface {
+  """
+  The unique identifier for an attribute code. This value should be in lowercase letters without spaces.
+  """
+  code: ID!
+
+  """Default attribute value."""
+  default_value: String
+
+  """The type of entity that defines the attribute."""
+  entity_type: AttributeEntityTypeEnum!
+
+  """The frontend class of the attribute."""
+  frontend_class: String
+
+  """The frontend input type of the attribute."""
+  frontend_input: AttributeFrontendInputEnum
+
+  """Whether the attribute value is required."""
+  is_required: Boolean!
+
+  """Whether the attribute value must be unique."""
+  is_unique: Boolean!
+
+  """The label assigned to the attribute."""
+  label: String
+
+  """Attribute options."""
+  options: [CustomAttributeOptionInterface]!
+}
+
+""""""
+interface CustomAttributeOptionInterface {
+  """Is the option value default."""
+  is_default: Boolean!
+
+  """The label assigned to the attribute option."""
+  label: String!
+
+  """The attribute option value."""
+  value: String!
+}
+
 """Defines the customer name, addresses, and other details."""
 type Customer {
   """An array containing the customer's shipping and billing addresses."""
@@ -3678,6 +4174,9 @@ type Customer {
 
   """Timestamp indicating when the account was created."""
   created_at: String
+
+  """Customer's custom attributes."""
+  custom_attributes(attributeCodes: [ID!]): [AttributeValueInterface]
 
   """The customer's date of birth."""
   date_of_birth: String
@@ -3794,7 +4293,10 @@ type CustomerAddress {
 
   """The customer's country."""
   country_id: String @deprecated(reason: "Use `country_code` instead.")
-  custom_attributes: [CustomerAddressAttribute] @deprecated(reason: "Custom attributes should not be put into a container.")
+  custom_attributes: [CustomerAddressAttribute] @deprecated(reason: "Use custom_attributesV2 instead.")
+
+  """Custom attributes assigned to the customer address."""
+  custom_attributesV2(attributeCodes: [ID!]): [AttributeValueInterface]!
 
   """The customer ID"""
   customer_id: Int @deprecated(reason: "`customer_id` is not needed as part of `CustomerAddress`. The `id` is a unique identifier for the addresses.")
@@ -3865,7 +4367,7 @@ type CustomerAddressAttribute {
   """The name assigned to the customer address attribute."""
   attribute_code: String
 
-  """The valuue assigned to the customer address attribute."""
+  """The value assigned to the customer address attribute."""
   value: String
 }
 
@@ -3892,8 +4394,11 @@ input CustomerAddressInput {
   """Deprecated: use `country_code` instead."""
   country_id: CountryCodeEnum
 
-  """Deprecated: Custom attributes should not be put into container."""
+  """Deprecated. Use custom_attributesV2 instead."""
   custom_attributes: [CustomerAddressAttributeInput]
+
+  """Custom attributes assigned to the customer address."""
+  custom_attributesV2: [AttributeValueInput]
 
   """Indicates whether the address is the default billing address."""
   default_billing: Boolean
@@ -3965,10 +4470,57 @@ input CustomerAddressRegionInput {
   region_id: Int
 }
 
+"""Customer attribute metadata."""
+type CustomerAttributeMetadata implements CustomAttributeMetadataInterface {
+  """
+  The unique identifier for an attribute code. This value should be in lowercase letters without spaces.
+  """
+  code: ID!
+
+  """Default attribute value."""
+  default_value: String
+
+  """The type of entity that defines the attribute."""
+  entity_type: AttributeEntityTypeEnum!
+
+  """The frontend class of the attribute."""
+  frontend_class: String
+
+  """The frontend input type of the attribute."""
+  frontend_input: AttributeFrontendInputEnum
+
+  """The template used for the input of the attribute (e.g., 'date')."""
+  input_filter: InputFilterEnum
+
+  """Whether the attribute value is required."""
+  is_required: Boolean!
+
+  """Whether the attribute value must be unique."""
+  is_unique: Boolean!
+
+  """The label assigned to the attribute."""
+  label: String
+
+  """The number of lines of the attribute value."""
+  multiline_count: Int
+
+  """Attribute options."""
+  options: [CustomAttributeOptionInterface]!
+
+  """The position of the attribute in the form."""
+  sort_order: Int
+
+  """The validation rules of the attribute value."""
+  validate_rules: [ValidationRule]
+}
+
 """An input object for creating a customer."""
 input CustomerCreateInput {
   """Indicates whether the customer has enabled remote shopping assistance."""
   allow_remote_shopping_assistance: Boolean
+
+  """The customer's custom attributes."""
+  custom_attributes: [AttributeValueInput]
 
   """The customer's date of birth."""
   date_of_birth: String
@@ -4195,6 +4747,9 @@ type CustomerToken {
 input CustomerUpdateInput {
   """Indicates whether the customer has enabled remote shopping assistance."""
   allow_remote_shopping_assistance: Boolean
+
+  """The customer's custom attributes."""
+  custom_attributes: [AttributeValueInput]
 
   """The customer's date of birth."""
   date_of_birth: String
@@ -4587,6 +5142,9 @@ input CustomizableOptionInput {
   """The customizable option ID of the product."""
   id: Int
 
+  """The unique ID for a `CartItemInterface` object."""
+  uid: ID
+
   """The string value of the option."""
   value_string: String!
 }
@@ -4684,11 +5242,14 @@ type DeletePaymentTokenOutput {
 }
 
 """
-Defines an individual discount. A discount can be applied to the cart as a whole or to an item.
+Defines an individual discount. A discount can be applied to the cart as a whole or to an item, shipping.
 """
 type Discount {
   """The amount of the discount."""
   amount: Money!
+
+  """The type of the entity the discount is applied to."""
+  applied_to: CartDiscountType!
 
   """A description of the discount."""
   label: String!
@@ -4891,6 +5452,9 @@ type DownloadableProduct implements CustomizableProductInterface & ProductInterf
 
   """Crosssell Products"""
   crosssell_products: [ProductInterface]
+
+  """Product custom attributes."""
+  custom_attributesV2(filters: AttributeFilterInput): ProductCustomAttributes
 
   """
   Detailed information about the product. The value can include simple HTML tags.
@@ -5233,12 +5797,26 @@ input FilterEqualTypeInput {
   in: [String]
 }
 
+""""""
+enum FilterMatchTypeEnum {
+  """"""
+  FULL @deprecated
+
+  """"""
+  PARTIAL @deprecated
+}
+
 """Defines a filter that performs a fuzzy search."""
 input FilterMatchTypeInput {
   """
-  Use this attribute to exactly match the specified string. For example, to filter on a specific SKU, specify a value such as `24-MB01`.
+  Use this attribute to fuzzy match the specified string. For example, to filter on a specific SKU, specify a value such as `24-MB01`.
   """
   match: String
+
+  """
+  Filter match type for fine-tuned results. Possible values FULL or PARTIAL. If match_type is not provided, returned results will default to FULL match.
+  """
+  match_type: FilterMatchTypeEnum
 }
 
 """
@@ -5416,6 +5994,9 @@ type GroupedProduct implements PhysicalProductInterface & ProductInterface & Rou
 
   """Crosssell Products"""
   crosssell_products: [ProductInterface]
+
+  """Product custom attributes."""
+  custom_attributesV2(filters: AttributeFilterInput): ProductCustomAttributes
 
   """
   Detailed information about the product. The value can include simple HTML tags.
@@ -5668,6 +6249,26 @@ type ImageSwatchData implements SwatchDataInterface {
 
   """The value can be represented as color (HEX code), image link, or text."""
   value: String
+}
+
+"""List of templates/filters applied to customer attribute input."""
+enum InputFilterEnum {
+  """Forces attribute input to follow the date format."""
+  DATE @deprecated
+
+  """Escape HTML Entities."""
+  ESCAPEHTML @deprecated
+
+  """There are no templates or filters to be applied."""
+  NONE @deprecated
+
+  """Strip HTML Tags."""
+  STRIPTAGS @deprecated
+
+  """
+  Strip whitespace (or other characters) from the beginning and end of the input.
+  """
+  TRIM @deprecated
 }
 
 """Contains an error message when an internal error occurred."""
@@ -6032,6 +6633,9 @@ type Mutation {
   """Assign a logged-in customer to the specified guest shopping cart."""
   assignCustomerToGuestCart(cart_id: String!): Cart!
 
+  """Cancel the specified customer order."""
+  cancelOrder(input: CancelOrderInput!): CancelOrderOutput
+
   """Change the password for the logged-in customer."""
   changeCustomerPassword(
     """The customer's original password."""
@@ -6041,8 +6645,11 @@ type Mutation {
     newPassword: String!
   ): Customer
 
-  """Creates Client Token for Braintree Javascript SDK initialization."""
-  createBraintreeClientToken: String!
+  """Send a 'Contact Us' email to the merchant."""
+  contactUs(
+    """An input object that defines shopper information."""
+    input: ContactUsInput!
+  ): ContactUsOutput
 
   """
   Create a new compare list. The compare list is saved for logged in customers.
@@ -6724,12 +7331,6 @@ input PayflowProUrlInput {
 
 """Defines the payment method."""
 input PaymentMethodInput {
-  """"""
-  braintree: BraintreeInput
-
-  """"""
-  braintree_cc_vault: BraintreeCcVaultInput
-
   """The internal name for the payment method."""
   code: String!
 
@@ -7051,7 +7652,7 @@ enum PriceAdjustmentCodesEnum {
   WEEE @deprecated(reason: "WEEE code is deprecated. Use `fixed_product_taxes.label` instead.")
 
   """"""
-  WEEE_TAX @deprecated(reason: "Use `fixed_product_taxes` instead. Tax is included or excluded in price. The tax is not shown separtely in Catalog.")
+  WEEE_TAX @deprecated(reason: "Use `fixed_product_taxes` instead.  Tax is included or excluded in price. The tax is not shown separtely in Catalog.")
 }
 
 """
@@ -7063,6 +7664,20 @@ enum PriceAdjustmentDescriptionEnum {
 
   """"""
   INCLUDED @deprecated
+}
+
+"""
+Can be used to retrieve the main price details in case of bundle product
+"""
+type PriceDetails {
+  """The percentage of discount applied to the main product price"""
+  discount_percentage: Float
+
+  """The final price after applying the discount to the main product"""
+  main_final_price: Float
+
+  """The regular price of the main product"""
+  main_price: Float
 }
 
 """
@@ -7118,6 +7733,9 @@ input ProductAttributeFilterInput {
   """Filter product by the unique ID for a `CategoryInterface` object."""
   category_uid: FilterEqualTypeInput
 
+  """Filter product by category URL path."""
+  category_url_path: FilterEqualTypeInput
+
   """The part of the URL that identifies the product"""
   url_key: FilterEqualTypeInput
 }
@@ -7131,6 +7749,15 @@ input ProductAttributeSortInput {
 
   """Sort by the search relevance score (default)."""
   relevance: SortEnum
+}
+
+"""Product custom attributes"""
+type ProductCustomAttributes {
+  """Errors when retrieving custom attributes metadata."""
+  errors: [AttributeMetadataError]!
+
+  """Requested custom attributes"""
+  items: [AttributeValueInterface]!
 }
 
 """Contains the discount applied to a product price."""
@@ -7325,6 +7952,9 @@ interface ProductInterface {
 
   """Crosssell Products"""
   crosssell_products: [ProductInterface]
+
+  """Product custom attributes."""
+  custom_attributesV2(filters: AttributeFilterInput): ProductCustomAttributes
 
   """
   Detailed information about the product. The value can include simple HTML tags.
@@ -7890,6 +8520,23 @@ type Products {
 
 """"""
 type Query {
+  """
+  Retrieve EAV attributes associated to a frontend form. For region_id and country_id attributes information use DirectoryGraphQl module.
+  """
+  attributesForm(
+    """Form code."""
+    formCode: String!
+  ): AttributesFormOutput!
+
+  """Returns a list of attributes metadata for a given entity type."""
+  attributesList(
+    """Entity type."""
+    entityType: AttributeEntityTypeEnum!
+
+    """Identifies which filter inputs to search for and return."""
+    filters: AttributeFilterInput
+  ): AttributesMetadataOutput
+
   """Get a list of available store views and their config information."""
   availableStores(
     """Filter store views by the current store group."""
@@ -7977,7 +8624,10 @@ type Query {
     An input object that specifies the attribute code and entity type to search.
     """
     attributes: [AttributeInput!]!
-  ): CustomAttributeMetadata
+  ): CustomAttributeMetadata @deprecated(reason: "Use `customAttributeMetadataV2` query instead.")
+
+  """Retrieve EAV attributes metadata."""
+  customAttributeMetadataV2(attributes: [AttributeInput!]): AttributesMetadataOutput!
 
   """Return detailed information about a customer account."""
   customer: Customer
@@ -8074,6 +8724,9 @@ type Query {
     sort: ProductAttributeSortInput
   ): Products
 
+  """Returns details about Google reCAPTCHA V3-Invisible configuration."""
+  recaptchaV3Config: ReCaptchaConfigurationV3
+
   """
   Return the full details for a specified product, category, or CMS page.
   """
@@ -8093,6 +8746,71 @@ type Query {
 
   """Return the contents of a customer's wish list."""
   wishlist: WishlistOutput @deprecated(reason: "Moved under `Customer.wishlist`.")
+}
+
+"""Contains reCAPTCHA V3-Invisible configuration details."""
+type ReCaptchaConfigurationV3 {
+  """The position of the invisible reCAPTCHA badge on each page."""
+  badge_position: String!
+
+  """The message that appears to the user if validation fails."""
+  failure_message: String!
+
+  """
+  A list of forms on the storefront that have been configured to use reCAPTCHA V3.
+  """
+  forms: [ReCaptchaFormEnum]!
+
+  """Return whether recaptcha is enabled or not"""
+  is_enabled: Boolean!
+
+  """
+  A two-character code that specifies the language that is used for Google reCAPTCHA text and messaging.
+  """
+  language_code: String
+
+  """
+  The minimum score that identifies a user interaction as a potential risk.
+  """
+  minimum_score: Float!
+
+  """
+  The website key generated when the Google reCAPTCHA account was registered.
+  """
+  website_key: String!
+}
+
+""""""
+enum ReCaptchaFormEnum {
+  """"""
+  BRAINTREE @deprecated
+
+  """"""
+  CONTACT @deprecated
+
+  """"""
+  CUSTOMER_CREATE @deprecated
+
+  """"""
+  CUSTOMER_EDIT @deprecated
+
+  """"""
+  CUSTOMER_FORGOT_PASSWORD @deprecated
+
+  """"""
+  CUSTOMER_LOGIN @deprecated
+
+  """"""
+  NEWSLETTER @deprecated
+
+  """"""
+  PLACE_ORDER @deprecated
+
+  """"""
+  PRODUCT_REVIEW @deprecated
+
+  """"""
+  SENDFRIEND @deprecated
 }
 
 """"""
@@ -8174,6 +8892,24 @@ type RevokeCustomerTokenOutput {
 
 """Routable entities serve as the model for a rendered page."""
 interface RoutableInterface {
+  """
+  Contains 0 when there is no redirect error. A value of 301 indicates the URL of the requested resource has been changed permanently, while a value of 302 indicates a temporary redirect.
+  """
+  redirect_code: Int!
+
+  """
+  The internal relative URL. If the specified URL is a redirect, the query returns the redirected URL, not the original.
+  """
+  relative_url: String
+
+  """One of PRODUCT, CATEGORY, or CMS_PAGE."""
+  type: UrlRewriteEntityTypeEnum
+}
+
+"""
+Default implementation of RoutableInterface. This type is returned when the URL is not linked to an entity.
+"""
+type RoutableUrl implements RoutableInterface {
   """
   Contains 0 when there is no redirect error. A value of 301 indicates the URL of the requested resource has been changed permanently, while a value of 302 indicates a temporary redirect.
   """
@@ -8627,16 +9363,27 @@ type ShippingCartAddress implements CartAddressInterface {
   """Text provided by the shopper."""
   customer_notes: String
 
+  """The customer's fax number."""
+  fax: String
+
   """The first name of the customer or guest."""
   firstname: String!
   items_weight: Float @deprecated(reason: "This information should not be exposed on the frontend.")
 
   """The last name of the customer or guest."""
   lastname: String!
+
+  """
+  The middle name of the person associated with the billing/shipping address.
+  """
+  middlename: String
   pickup_location_code: String
 
   """The ZIP or postal code of the billing or shipping address."""
   postcode: String
+
+  """An honorific, such as Dr., Mr., or Mrs."""
+  prefix: String
 
   """An object containing the region label and code."""
   region: CartAddressRegion
@@ -8646,6 +9393,9 @@ type ShippingCartAddress implements CartAddressInterface {
 
   """An array containing the street for the billing or shipping address."""
   street: [String]!
+
+  """A value such as Sr., Jr., or III."""
+  suffix: String
 
   """The telephone number for the billing or shipping address."""
   telephone: String
@@ -8746,6 +9496,9 @@ type SimpleProduct implements CustomizableProductInterface & PhysicalProductInte
 
   """Crosssell Products"""
   crosssell_products: [ProductInterface]
+
+  """Product custom attributes."""
+  custom_attributesV2(filters: AttributeFilterInput): ProductCustomAttributes
 
   """
   Detailed information about the product. The value can include simple HTML tags.
@@ -9021,9 +9774,6 @@ type StoreConfig {
   """The store’s fully-qualified base URL."""
   base_url: String
 
-  """Braintree cc vault status."""
-  braintree_cc_vault_active: String
-
   """The default sort order of the search results list."""
   catalog_default_sort_by: String
 
@@ -9097,6 +9847,9 @@ type StoreConfig {
   Indicates whether the `parent` or child (`itself`) thumbnail should be used in the cart for configurable products.
   """
   configurable_thumbnail_source: String
+
+  """Indicates whether the Contact Us form in enabled."""
+  contact_enabled: Boolean!
 
   """The copyright statement that appears at the bottom of each page."""
   copyright: String
@@ -9190,10 +9943,19 @@ type StoreConfig {
   """The minimum number of characters required for a valid password."""
   minimum_password_length: String
 
+  """Indicates whether newsletters are enabled."""
+  newsletter_enabled: Boolean!
+
   """
   The default page that displays when a 404 'Page not Found' error occurs.
   """
   no_route: String
+
+  """Indicates whether orders can be cancelled by customers or not."""
+  order_cancellation_enabled: Boolean!
+
+  """An array containing available cancellation reasons."""
+  order_cancellation_reasons: [CancellationReason]!
 
   """Payflow Pro vault status."""
   payment_payflowpro_cc_vault_active: String
@@ -9402,6 +10164,63 @@ interface SwatchDataInterface {
   value: String
 }
 
+"""Swatch attribute metadata input types."""
+enum SwatchInputTypeEnum {
+  """"""
+  BOOLEAN @deprecated
+
+  """"""
+  DATE @deprecated
+
+  """"""
+  DATETIME @deprecated
+
+  """"""
+  DROPDOWN @deprecated
+
+  """"""
+  FILE @deprecated
+
+  """"""
+  GALLERY @deprecated
+
+  """"""
+  HIDDEN @deprecated
+
+  """"""
+  IMAGE @deprecated
+
+  """"""
+  MEDIA_IMAGE @deprecated
+
+  """"""
+  MULTILINE @deprecated
+
+  """"""
+  MULTISELECT @deprecated
+
+  """"""
+  PRICE @deprecated
+
+  """"""
+  SELECT @deprecated
+
+  """"""
+  TEXT @deprecated
+
+  """"""
+  TEXTAREA @deprecated
+
+  """"""
+  UNDEFINED @deprecated
+
+  """"""
+  VISUAL @deprecated
+
+  """"""
+  WEIGHT @deprecated
+}
+
 """"""
 type SwatchLayerFilterItem implements LayerFilterItemInterface & SwatchLayerFilterItemInterface {
   """The count of items per filter."""
@@ -9512,6 +10331,45 @@ enum UseInLayeredNavigationOptions {
   NO @deprecated
 }
 
+"""Defines a customer attribute validation rule."""
+type ValidationRule {
+  """Validation rule name applied to a customer attribute."""
+  name: ValidationRuleEnum
+
+  """Validation rule value."""
+  value: String
+}
+
+"""List of validation rule names applied to a customer attribute."""
+enum ValidationRuleEnum {
+  """"""
+  DATE_RANGE_MAX @deprecated
+
+  """"""
+  DATE_RANGE_MIN @deprecated
+
+  """"""
+  FILE_EXTENSIONS @deprecated
+
+  """"""
+  INPUT_VALIDATION @deprecated
+
+  """"""
+  MAX_FILE_SIZE @deprecated
+
+  """"""
+  MAX_IMAGE_HEIGHT @deprecated
+
+  """"""
+  MAX_IMAGE_WIDTH @deprecated
+
+  """"""
+  MAX_TEXT_LENGTH @deprecated
+
+  """"""
+  MIN_TEXT_LENGTH @deprecated
+}
+
 """Contains required input for payment methods with Vault support."""
 input VaultTokenInput {
   """The public hash of the payment token."""
@@ -9565,6 +10423,9 @@ type VirtualProduct implements CustomizableProductInterface & ProductInterface &
 
   """Crosssell Products"""
   crosssell_products: [ProductInterface]
+
+  """Product custom attributes."""
+  custom_attributesV2(filters: AttributeFilterInput): ProductCustomAttributes
 
   """
   Detailed information about the product. The value can include simple HTML tags.
