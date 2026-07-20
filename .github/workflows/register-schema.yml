@@ -18,6 +18,10 @@ on:
         description: 'Commit message / tag (defaults to magento_version; e.g. mage-os-3.2.0)'
         required: false
         default: ''
+      extra_require:
+        description: 'Additional composer requirements (space-separated pkg:constraint)'
+        required: false
+        default: ''
       php_version:
         description: 'PHP version'
         required: true
@@ -83,14 +87,20 @@ jobs:
         run: |
           echo ${{ secrets.AUTH_JSON }} >> auth.json
           composer init -n --name reach-digital/register-schema --require ${{ github.event.inputs.composer_package }}:${{ github.event.inputs.magento_version }}
-          composer config repositories.dist '{"type": "composer", "url": "${{ github.event.inputs.composer_repo }}"}'
-          # Throwaway CI install; Mage-OS ships the same plugins under renamed packages, so allow all
-          composer config --no-plugins allow-plugins true
+          composer config repositories.dist composer ${{ github.event.inputs.composer_repo }}
+          EXTRA="${{ github.event.inputs.extra_require }}"
+          if [ -n "$EXTRA" ]; then composer require --no-update $EXTRA; fi
           # Some Mage-OS releases require dev-stability packages (e.g. phpmd/phpmd 3.x-dev in 1.1.0)
           composer config minimum-stability dev
           composer config prefer-stable true
-          # Old Magento releases have known advisories; installing them in throwaway CI is the point of this repo
-          composer config policy.advisories.block false
+          if composer --version | grep -q "Composer version 1."; then
+            echo "composer v1: skipping v2-only configuration"
+          else
+            # Throwaway CI install; Mage-OS ships the same plugins under renamed packages, so allow all
+            composer config --no-plugins allow-plugins true
+            # Old Magento releases have known advisories; installing them in throwaway CI is the point of this repo
+            composer config policy.advisories.block false
+          fi
           sed -i '$ s/.$//' composer.json
           echo ',"autoload":{"files": ["app/etc/NonComposerComponentRegistration.php"],"psr-0": {"": ["app/code/","generated/code/"]},"psr-4":{"Magento\\":"app/code/Magento/","Magento\\Framework\\": "lib/internal/Magento/Framework/","Magento\\Setup\\": "setup/src/Magento/Setup/", "Zend\\Mvc\\Controller\\": "setup/src/Zend/Mvc/Controller/"},"psr-0": {"": ["app/code/"]}}}' >> composer.json
           composer install
@@ -102,6 +112,9 @@ jobs:
         run: |
           if [ "${{ github.event.inputs.search_engine }}" = "opensearch" ]; then
             SEARCH_ARGS="--search-engine=opensearch --opensearch-host=localhost --opensearch-port=9200"
+          elif [ "${{ github.event.inputs.search_engine }}" = "none" ]; then
+            # Magento 2.3.x installs without a search engine (MySQL catalog search)
+            SEARCH_ARGS=""
           else
             SEARCH_ARGS="--search-engine=${{ github.event.inputs.search_engine }} --elasticsearch-host=localhost --elasticsearch-port=9200"
           fi
