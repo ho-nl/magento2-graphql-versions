@@ -4,8 +4,9 @@
 // Magento < 2.4.6 those interfaces don't exist and class loading fatals during
 // setup:install. Polyfill them with the upstream definitions when missing.
 
-$polyfills = [
-    'vendor/magento/framework/ObjectManager/ResetAfterRequestInterface.php' => <<<'PHP'
+// Plain heredoc closers ("PHP;") only: the closing-marker-with-comma form used in
+// arrays is PHP 7.3+ syntax and this script must run on PHP 7.2 for Magento 2.3.x.
+$resetAfterRequestInterface = <<<'PHP'
 <?php
 /**
  * Copyright © Magento, Inc. All rights reserved.
@@ -29,8 +30,9 @@ interface ResetAfterRequestInterface
      */
     public function _resetState(): void;
 }
-PHP,
-    'vendor/magento/framework/View/Element/ButtonLockInterface.php' => <<<'PHP'
+PHP;
+
+$buttonLockInterface = <<<'PHP'
 <?php
 /**
  * Copyright © Magento, Inc. All rights reserved.
@@ -59,7 +61,11 @@ interface ButtonLockInterface
      */
     public function isDisabled(): bool;
 }
-PHP,
+PHP;
+
+$polyfills = [
+    'vendor/magento/framework/ObjectManager/ResetAfterRequestInterface.php' => $resetAfterRequestInterface,
+    'vendor/magento/framework/View/Element/ButtonLockInterface.php' => $buttonLockInterface,
 ];
 
 if (!is_dir('vendor/magento/framework')) {
