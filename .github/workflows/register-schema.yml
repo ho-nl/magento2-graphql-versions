@@ -18,6 +18,14 @@ on:
         description: 'Mysql version'
         required: true
         default: '8.0'
+      search_engine:
+        description: 'Search engine (elasticsearch7 or opensearch; Magento 2.4.8+ requires opensearch)'
+        required: true
+        default: 'elasticsearch7'
+      search_image:
+        description: 'Search engine Docker image'
+        required: true
+        default: 'docker.io/wardenenv/elasticsearch:7.6'
 
 jobs:
   register-schema:
@@ -32,13 +40,16 @@ jobs:
         ports:
           - 3306:3306
         options: --tmpfs /tmp:rw --tmpfs /var/lib/mysql:rw --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
-      elasticsearch:
-        image: docker.io/wardenenv/elasticsearch:7.6
+      search:
+        image: ${{ github.event.inputs.search_image }}
         ports:
           - 9200:9200
           - 9300:9300
         env:
           "discovery.type": single-node
+          # Only used by OpenSearch images; harmless for Elasticsearch
+          DISABLE_SECURITY_PLUGIN: "true"
+          DISABLE_INSTALL_DEMO_CONFIG: "true"
         options: --health-cmd="curl localhost:9200/_cluster/health?wait_for_status=yellow&timeout=60s" --health-interval=10s --health-timeout=5s --health-retries=3
       rabbitmq:
         image: rabbitmq:3.8
@@ -68,7 +79,12 @@ jobs:
           composer install
       - name: Install Magento
         run: |
-          php bin/magento setup:install --cleanup-database --backend-frontname=admin --amqp-host=localhost --amqp-port=5672 --amqp-user=guest --amqp-password=guest  --db-host=127.0.0.1 --db-name=magento --db-user=root --db-password=123123q --session-save=files --admin-user=admin --admin-password=Welkom1234 --admin-email=admin@test.com --admin-firstname=Admin --admin-lastname=Admin --search-engine=elasticsearch7 --elasticsearch-host=localhost --elasticsearch-port=9200 --magento-init-params="MAGE_MODE=developer"
+          if [ "${{ github.event.inputs.search_engine }}" = "opensearch" ]; then
+            SEARCH_ARGS="--search-engine=opensearch --opensearch-host=localhost --opensearch-port=9200"
+          else
+            SEARCH_ARGS="--search-engine=${{ github.event.inputs.search_engine }} --elasticsearch-host=localhost --elasticsearch-port=9200"
+          fi
+          php bin/magento setup:install --cleanup-database --backend-frontname=admin --amqp-host=localhost --amqp-port=5672 --amqp-user=guest --amqp-password=guest  --db-host=127.0.0.1 --db-name=magento --db-user=root --db-password=123123q --session-save=files --admin-user=admin --admin-password=Welkom1234 --admin-email=admin@test.com --admin-firstname=Admin --admin-lastname=Admin $SEARCH_ARGS --magento-init-params="MAGE_MODE=developer"
           php bin/magento reach-digital:get-graphql-schema
           ls .
           cat schema.graphql
