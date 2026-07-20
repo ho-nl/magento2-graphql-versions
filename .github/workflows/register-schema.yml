@@ -86,6 +86,9 @@ jobs:
           composer config repositories.dist '{"type": "composer", "url": "${{ github.event.inputs.composer_repo }}"}'
           # Throwaway CI install; Mage-OS ships the same plugins under renamed packages, so allow all
           composer config --no-plugins allow-plugins true
+          # Some Mage-OS releases require dev-stability packages (e.g. phpmd/phpmd 3.x-dev in 1.1.0)
+          composer config minimum-stability dev
+          composer config prefer-stable true
           # Old Magento releases have known advisories; installing them in throwaway CI is the point of this repo
           composer config policy.advisories.block false
           sed -i '$ s/.$//' composer.json
