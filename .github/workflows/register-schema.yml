@@ -116,13 +116,13 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add schema.graphql
-          if git diff --cached --quiet; then
-            echo "Schema identical to previous version, nothing to commit"
-            exit 0
-          fi
           LABEL="${{ github.event.inputs.label }}"
           [ -z "$LABEL" ] && LABEL="${{ github.event.inputs.magento_version }}"
-          git commit -m "$LABEL"
-          git push origin HEAD:${{ github.ref_name }}
+          if git diff --cached --quiet; then
+            echo "Schema identical to previous version, tagging without a commit"
+          else
+            git commit -m "$LABEL"
+            git push origin HEAD:${{ github.ref_name }}
+          fi
           git tag -f "$LABEL"
           git push -f origin "refs/tags/$LABEL"
