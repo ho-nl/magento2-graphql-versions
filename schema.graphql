@@ -28,6 +28,7 @@ type AddConfigurableProductsToCartOutput {
   cart: Cart!
 }
 
+""""""
 input AddDownloadableProductsToCartInput {
   """The ID of the cart."""
   cart_id: String!
@@ -272,6 +273,9 @@ type AvailablePaymentMethod {
   """The payment method code."""
   code: String!
 
+  """If the payment method is an online integration"""
+  is_deferred: Boolean!
+
   """The payment method title."""
   title: String!
 }
@@ -313,9 +317,15 @@ type AvailableShippingMethod {
   price_incl_tax: Money!
 }
 
+""""""
 enum BatchMutationStatus {
+  """"""
   FAILURE @deprecated
+
+  """"""
   MIXED_RESULTS @deprecated
+
+  """"""
   SUCCESS @deprecated
 }
 
@@ -369,13 +379,24 @@ type BillingCartAddress implements CartAddressInterface {
 
   """The telephone number for the billing or shipping address."""
   telephone: String
+
+  """The unique id of the customer address."""
+  uid: String!
+
+  """The VAT company number for billing or shipping address."""
+  vat_id: String
 }
 
+""""""
 input BraintreeCcVaultInput {
+  """"""
   device_data: String
+
+  """"""
   public_hash: String!
 }
 
+""""""
 input BraintreeInput {
   """
   Contains a fingerprint provided by Braintree JS SDK and should be sent with sale transaction details to the Braintree payment gateway.
@@ -383,7 +404,7 @@ input BraintreeInput {
   device_data: String
 
   """
-  States whether an entered by a customer credit/debit card should be tokenized for later usage. Required only if Vault is enabled for Braintree payment
+  States whether an entered by a customer credit/debit card should be tokenized for later usage. Required only if Vault is enabled for Braintree payment integration.
   """
   is_active_payment_token_enabler: Boolean!
 
@@ -606,6 +627,9 @@ type BundleOrderItem implements OrderItemInterface {
 
   """The entered option for the base product, such as a logo or image."""
   entered_options: [OrderItemOption]
+
+  """The selected gift message for the order item"""
+  gift_message: GiftMessage
 
   """The unique ID for an `OrderItemInterface` object."""
   id: ID!
@@ -1021,8 +1045,12 @@ input CartAddressInput {
 
   """The telephone number for the billing or shipping address."""
   telephone: String
+
+  """The VAT company number for billing or shipping address."""
+  vat_id: String
 }
 
+""""""
 interface CartAddressInterface {
   """The city specified for the billing or shipping address."""
   city: String!
@@ -1050,6 +1078,12 @@ interface CartAddressInterface {
 
   """The telephone number for the billing or shipping address."""
   telephone: String
+
+  """The unique id of the customer address."""
+  uid: String!
+
+  """The VAT company number for billing or shipping address."""
+  vat_id: String
 }
 
 """Contains details about the region in a billing or shipping address."""
@@ -1073,6 +1107,7 @@ type CartDiscount {
   label: [String]!
 }
 
+""""""
 type CartItemError {
   """An error code that describes the error encountered"""
   code: CartItemErrorType!
@@ -1081,9 +1116,15 @@ type CartItemError {
   message: String!
 }
 
+""""""
 enum CartItemErrorType {
+  """"""
   ITEM_INCREMENTS @deprecated
+
+  """"""
   ITEM_QTY @deprecated
+
+  """"""
   UNDEFINED @deprecated
 }
 
@@ -1208,7 +1249,9 @@ type CartPrices {
   applied_taxes: [CartTaxItem]
   discount: CartDiscount @deprecated(reason: "Use discounts instead.")
 
-  """An array containing all discounts applied to the cart."""
+  """
+  An array containing cart rule discounts, store credit and gift cards applied to the cart.
+  """
   discounts: [Discount]
 
   """The total, including discounts, taxes, shipping, and other fees."""
@@ -1242,10 +1285,18 @@ type CartUserInputError {
   message: String!
 }
 
+""""""
 enum CartUserInputErrorType {
+  """"""
   INSUFFICIENT_STOCK @deprecated
+
+  """"""
   NOT_SALABLE @deprecated
+
+  """"""
   PRODUCT_NOT_FOUND @deprecated
+
+  """"""
   UNDEFINED @deprecated
 }
 
@@ -1339,7 +1390,7 @@ interface CategoryInterface {
   position: Int
 
   """
-  The number of products in the category that are marked as visible. By default, in complex products, parent products are visible, but their child products are
+  The number of products in the category that are marked as visible. By default, in complex products, parent products are visible, but their child products are not.
   """
   product_count: Int
 
@@ -1384,7 +1435,7 @@ type CategoryProducts {
   page_info: SearchResultPageInfo
 
   """
-  The number of products in the category that are marked as visible. By default, in complex products, parent products are visible, but their child products are
+  The number of products in the category that are marked as visible. By default, in complex products, parent products are visible, but their child products are not.
   """
   total_count: Int
 }
@@ -1464,7 +1515,7 @@ type CategoryTree implements CategoryInterface & RoutableInterface {
   position: Int
 
   """
-  The number of products in the category that are marked as visible. By default, in complex products, parent products are visible, but their child products are
+  The number of products in the category that are marked as visible. By default, in complex products, parent products are visible, but their child products are not.
   """
   product_count: Int
 
@@ -1562,11 +1613,21 @@ type CheckoutUserInputError {
   path: [String]!
 }
 
+""""""
 enum CheckoutUserInputErrorCodes {
+  """"""
   INSUFFICIENT_STOCK @deprecated
+
+  """"""
   NOT_SALABLE @deprecated
+
+  """"""
   PRODUCT_NOT_FOUND @deprecated
+
+  """"""
   REORDER_NOT_AVAILABLE @deprecated
+
+  """"""
   UNDEFINED @deprecated
 }
 
@@ -1639,6 +1700,7 @@ type CmsPage implements RoutableInterface {
   url_key: String
 }
 
+""""""
 type ColorSwatchData implements SwatchDataInterface {
   """The value can be represented as color (HEX code), image link, or text."""
   value: String
@@ -1684,6 +1746,7 @@ type CompareList {
   uid: ID!
 }
 
+""""""
 type ComplexTextValue {
   """Text that can contain HTML tags."""
   html: String!
@@ -1954,6 +2017,7 @@ type ConfigurableProduct implements CustomizableProductInterface & PhysicalProdu
   weight: Float
 }
 
+""""""
 input ConfigurableProductCartItemInput {
   """The ID and value of the option."""
   customizable_options: [CustomizableOptionInput]
@@ -2055,7 +2119,7 @@ type ConfigurableProductOptionsSelection {
   options_available_for_selection: [ConfigurableOptionAvailableForSelection]
 
   """
-  A variant represented by the specified configurable options selection. The value is expected to be null until selections are made for each configurable
+  A variant represented by the specified configurable options selection. The value is expected to be null until selections are made for each configurable option.
   """
   variant: SimpleProduct
 }
@@ -2127,6 +2191,7 @@ type ConfigurableWishlistItem implements WishlistItemInterface {
   quantity: Float!
 }
 
+""""""
 type Country {
   """An array of regions within a particular country."""
   available_regions: [Region]
@@ -2974,6 +3039,7 @@ type CreditMemo {
   total: CreditMemoTotal
 }
 
+""""""
 type CreditMemoItem implements CreditMemoItemInterface {
   """
   Details about the final discount amount for the base product, including discounts on options.
@@ -3055,6 +3121,7 @@ type CreditMemoTotal {
   total_tax: Money!
 }
 
+""""""
 type Currency {
   """
   An array of three-letter currency codes accepted by the store, such as USD and EUR.
@@ -3081,175 +3148,514 @@ type Currency {
 
 """The list of available currency codes."""
 enum CurrencyEnum {
+  """"""
   AED @deprecated
+
+  """"""
   AFN @deprecated
+
+  """"""
   ALL @deprecated
+
+  """"""
   AMD @deprecated
+
+  """"""
   ANG @deprecated
+
+  """"""
   AOA @deprecated
+
+  """"""
   ARS @deprecated
+
+  """"""
   AUD @deprecated
+
+  """"""
   AWG @deprecated
+
+  """"""
   AZM @deprecated
+
+  """"""
   AZN @deprecated
+
+  """"""
   BAM @deprecated
+
+  """"""
   BBD @deprecated
+
+  """"""
   BDT @deprecated
+
+  """"""
   BGN @deprecated
+
+  """"""
   BHD @deprecated
+
+  """"""
   BIF @deprecated
+
+  """"""
   BMD @deprecated
+
+  """"""
   BND @deprecated
+
+  """"""
   BOB @deprecated
+
+  """"""
   BRL @deprecated
+
+  """"""
   BSD @deprecated
+
+  """"""
   BTN @deprecated
+
+  """"""
   BUK @deprecated
+
+  """"""
   BWP @deprecated
+
+  """"""
   BYN @deprecated
+
+  """"""
   BZD @deprecated
+
+  """"""
   CAD @deprecated
+
+  """"""
   CDF @deprecated
+
+  """"""
   CHE @deprecated
+
+  """"""
   CHF @deprecated
+
+  """"""
   CHW @deprecated
+
+  """"""
   CLP @deprecated
+
+  """"""
   CNY @deprecated
+
+  """"""
   COP @deprecated
+
+  """"""
   CRC @deprecated
+
+  """"""
   CUP @deprecated
+
+  """"""
   CVE @deprecated
+
+  """"""
   CZK @deprecated
+
+  """"""
   DJF @deprecated
+
+  """"""
   DKK @deprecated
+
+  """"""
   DOP @deprecated
+
+  """"""
   DZD @deprecated
+
+  """"""
   EEK @deprecated
+
+  """"""
   EGP @deprecated
+
+  """"""
   ERN @deprecated
+
+  """"""
   ETB @deprecated
+
+  """"""
   EUR @deprecated
+
+  """"""
   FJD @deprecated
+
+  """"""
   FKP @deprecated
+
+  """"""
   GBP @deprecated
+
+  """"""
   GEK @deprecated
+
+  """"""
   GEL @deprecated
+
+  """"""
   GHS @deprecated
+
+  """"""
   GIP @deprecated
+
+  """"""
   GMD @deprecated
+
+  """"""
   GNF @deprecated
+
+  """"""
   GQE @deprecated
+
+  """"""
   GTQ @deprecated
+
+  """"""
   GYD @deprecated
+
+  """"""
   HKD @deprecated
+
+  """"""
   HNL @deprecated
+
+  """"""
   HRK @deprecated
+
+  """"""
   HTG @deprecated
+
+  """"""
   HUF @deprecated
+
+  """"""
   IDR @deprecated
+
+  """"""
   ILS @deprecated
+
+  """"""
   INR @deprecated
+
+  """"""
   IQD @deprecated
+
+  """"""
   IRR @deprecated
+
+  """"""
   ISK @deprecated
+
+  """"""
   JMD @deprecated
+
+  """"""
   JOD @deprecated
+
+  """"""
   JPY @deprecated
+
+  """"""
   KES @deprecated
+
+  """"""
   KGS @deprecated
+
+  """"""
   KHR @deprecated
+
+  """"""
   KMF @deprecated
+
+  """"""
   KPW @deprecated
+
+  """"""
   KRW @deprecated
+
+  """"""
   KWD @deprecated
+
+  """"""
   KYD @deprecated
+
+  """"""
   KZT @deprecated
+
+  """"""
   LAK @deprecated
+
+  """"""
   LBP @deprecated
+
+  """"""
   LKR @deprecated
+
+  """"""
   LRD @deprecated
+
+  """"""
   LSL @deprecated
+
+  """"""
   LSM @deprecated
+
+  """"""
   LTL @deprecated
+
+  """"""
   LVL @deprecated
+
+  """"""
   LYD @deprecated
+
+  """"""
   MAD @deprecated
+
+  """"""
   MDL @deprecated
+
+  """"""
   MGA @deprecated
+
+  """"""
   MKD @deprecated
+
+  """"""
   MMK @deprecated
+
+  """"""
   MNT @deprecated
+
+  """"""
   MOP @deprecated
+
+  """"""
   MRO @deprecated
+
+  """"""
   MUR @deprecated
+
+  """"""
   MVR @deprecated
+
+  """"""
   MWK @deprecated
+
+  """"""
   MXN @deprecated
+
+  """"""
   MYR @deprecated
+
+  """"""
   MZN @deprecated
+
+  """"""
   NAD @deprecated
+
+  """"""
   NGN @deprecated
+
+  """"""
   NIC @deprecated
+
+  """"""
   NOK @deprecated
+
+  """"""
   NPR @deprecated
+
+  """"""
   NZD @deprecated
+
+  """"""
   OMR @deprecated
+
+  """"""
   PAB @deprecated
+
+  """"""
   PEN @deprecated
+
+  """"""
   PGK @deprecated
+
+  """"""
   PHP @deprecated
+
+  """"""
   PKR @deprecated
+
+  """"""
   PLN @deprecated
+
+  """"""
   PYG @deprecated
+
+  """"""
   QAR @deprecated
+
+  """"""
   RHD @deprecated
+
+  """"""
   ROL @deprecated
+
+  """"""
   RON @deprecated
+
+  """"""
   RSD @deprecated
+
+  """"""
   RUB @deprecated
+
+  """"""
   RWF @deprecated
+
+  """"""
   SAR @deprecated
+
+  """"""
   SBD @deprecated
+
+  """"""
   SCR @deprecated
+
+  """"""
   SDG @deprecated
+
+  """"""
   SEK @deprecated
+
+  """"""
   SGD @deprecated
+
+  """"""
   SHP @deprecated
+
+  """"""
   SKK @deprecated
+
+  """"""
   SLL @deprecated
+
+  """"""
   SOS @deprecated
+
+  """"""
   SRD @deprecated
+
+  """"""
   STD @deprecated
+
+  """"""
   SVC @deprecated
+
+  """"""
   SYP @deprecated
+
+  """"""
   SZL @deprecated
+
+  """"""
   THB @deprecated
+
+  """"""
   TJS @deprecated
+
+  """"""
   TMM @deprecated
+
+  """"""
   TND @deprecated
+
+  """"""
   TOP @deprecated
+
+  """"""
   TRL @deprecated
+
+  """"""
   TRY @deprecated
+
+  """"""
   TTD @deprecated
+
+  """"""
   TWD @deprecated
+
+  """"""
   TZS @deprecated
+
+  """"""
   UAH @deprecated
+
+  """"""
   UGX @deprecated
+
+  """"""
   USD @deprecated
+
+  """"""
   UYU @deprecated
+
+  """"""
   UZS @deprecated
+
+  """"""
   VEB @deprecated
+
+  """"""
   VEF @deprecated
+
+  """"""
   VND @deprecated
+
+  """"""
   VUV @deprecated
+
+  """"""
   WST @deprecated
+
+  """"""
   XCD @deprecated
+
+  """"""
   XOF @deprecated
+
+  """"""
   XPF @deprecated
+
+  """"""
   YER @deprecated
+
+  """"""
   YTL @deprecated
+
+  """"""
   ZAR @deprecated
+
+  """"""
   ZMK @deprecated
+
+  """"""
   ZWD @deprecated
 }
 
@@ -3319,6 +3725,16 @@ type Customer {
     Specifies the maximum number of results to return at once. The default value is 20.
     """
     pageSize: Int = 20
+
+    """
+    Specifies the scope to search for customer orders. The Store request header identifies the customer's store view code. The default value of STORE limits the search to the value specified in the header. Specify WEBSITE to expand the search to include all customer orders assigned to the website that is defined in the header, or specify GLOBAL to include all customer orders across all websites and stores.
+    """
+    scope: ScopeTypeEnum
+
+    """
+    Specifies which field to sort on, and whether to return the results in ascending or descending order.
+    """
+    sort: CustomerOrderSortInput
   ): CustomerOrders
 
   """An honorific, such as Dr., Mr., or Mrs."""
@@ -3716,6 +4132,28 @@ type CustomerOrder {
 }
 
 """
+CustomerOrderSortInput specifies the field to use for sorting search results and indicates whether the results are sorted in ascending or descending order.
+"""
+input CustomerOrderSortInput {
+  """
+  This enumeration indicates whether to return results in ascending or descending order
+  """
+  sort_direction: SortEnum!
+
+  """Specifies the field to use for sorting"""
+  sort_field: CustomerOrderSortableField!
+}
+
+"""Specifies the field to use for sorting"""
+enum CustomerOrderSortableField {
+  """Sorts customer orders by created_at field"""
+  CREATED_AT @deprecated
+
+  """Sorts customer orders by number"""
+  NUMBER @deprecated
+}
+
+"""
 The collection of orders that match the conditions defined in the filter.
 """
 type CustomerOrders {
@@ -3916,8 +4354,13 @@ type CustomizableDateOption implements CustomizableOptionInterface {
 
 """Defines the customizable date type."""
 enum CustomizableDateTypeEnum {
+  """"""
   DATE @deprecated
+
+  """"""
   DATE_TIME @deprecated
+
+  """"""
   TIME @deprecated
 }
 
@@ -4316,8 +4759,12 @@ type DownloadableCreditMemoItem implements CreditMemoItemInterface {
   quantity_refunded: Float
 }
 
+""""""
 enum DownloadableFileTypeEnum {
+  """"""
   FILE @deprecated(reason: "`sample_url` serves to get the downloadable sample")
+
+  """"""
   URL @deprecated(reason: "`sample_url` serves to get the downloadable sample")
 }
 
@@ -4376,6 +4823,9 @@ type DownloadableOrderItem implements OrderItemInterface {
 
   """The entered option for the base product, such as a logo or image."""
   entered_options: [OrderItemOption]
+
+  """The selected gift message for the order item"""
+  gift_message: GiftMessage
 
   """The unique ID for an `OrderItemInterface` object."""
   id: ID!
@@ -4755,6 +5205,7 @@ type EntityUrl {
   type: UrlRewriteEntityTypeEnum
 }
 
+""""""
 interface ErrorInterface {
   """The returned error message."""
   message: String!
@@ -4821,6 +5272,8 @@ input FilterStringTypeInput {
 input FilterTypeInput {
   """Equals."""
   eq: String
+
+  """"""
   finset: [String]
 
   """From. Must be used with the `to` field."""
@@ -5169,7 +5622,7 @@ type GroupedProductWishlistItem implements WishlistItemInterface {
 }
 
 """
-Contains a set of relative URLs that PayPal uses in response to various actions during the authorization process. Magento prepends the base URL to this value to create a full URL. For example, if the full URL is https://www.example.com/path/to/page.html, the relative URL is path/to/page.html. Use this input for Payments Pro Hosted Solution payment
+Contains a set of relative URLs that PayPal uses in response to various actions during the authorization process. Magento prepends the base URL to this value to create a full URL. For example, if the full URL is https://www.example.com/path/to/page.html, the relative URL is path/to/page.html. Use this input for Payments Pro Hosted Solution payment method.
 """
 input HostedProInput {
   """
@@ -5208,6 +5661,7 @@ type HttpQueryParameter {
   value: String
 }
 
+""""""
 type ImageSwatchData implements SwatchDataInterface {
   """The URL assigned to the thumbnail of the swatch image."""
   thumbnail: String
@@ -5240,6 +5694,7 @@ type Invoice {
   total: InvoiceTotal
 }
 
+""""""
 type InvoiceItem implements InvoiceItemInterface {
   """
   Information about the final discount amount for the base product, including discounts on options.
@@ -5386,6 +5841,7 @@ type LayerFilter {
   request_var: String @deprecated(reason: "Use `Aggregation.attribute_code` instead.")
 }
 
+""""""
 type LayerFilterItem implements LayerFilterItemInterface {
   """The count of items per filter."""
   items_count: Int @deprecated(reason: "Use `AggregationOption.count` instead.")
@@ -5397,6 +5853,7 @@ type LayerFilterItem implements LayerFilterItemInterface {
   value_string: String @deprecated(reason: "Use `AggregationOption.value` instead.")
 }
 
+""""""
 interface LayerFilterItemInterface {
   """The count of items per filter."""
   items_count: Int @deprecated(reason: "Use `AggregationOption.count` instead.")
@@ -5473,6 +5930,7 @@ type Money {
   value: Float
 }
 
+""""""
 type Mutation {
   """
   Add one or more bundle products to the specified cart. We recommend using `addProductsToCart` instead.
@@ -5645,6 +6103,9 @@ type Mutation {
     """The unique ID of the compare list to be deleted."""
     uid: ID!
   ): DeleteCompareListOutput
+
+  """Delete customer account"""
+  deleteCustomer: Boolean
 
   """Delete the billing or shipping address of a customer."""
   deleteCustomerAddress(
@@ -5937,12 +6398,16 @@ type OrderAddress {
   vat_id: String
 }
 
+""""""
 type OrderItem implements OrderItemInterface {
   """The final discount information for the product."""
   discounts: [Discount]
 
   """The entered option for the base product, such as a logo or image."""
   entered_options: [OrderItemOption]
+
+  """The selected gift message for the order item"""
+  gift_message: GiftMessage
 
   """The unique ID for an `OrderItemInterface` object."""
   id: ID!
@@ -5994,6 +6459,9 @@ interface OrderItemInterface {
 
   """The entered option for the base product, such as a logo or image."""
   entered_options: [OrderItemOption]
+
+  """The selected gift message for the order item"""
+  gift_message: GiftMessage
 
   """The unique ID for an `OrderItemInterface` object."""
   id: ID!
@@ -6116,7 +6584,7 @@ input PayflowExpressInput {
 }
 
 """
-A set of relative URLs that PayPal uses in response to various actions during the authorization process. Adobe Commerce prepends the base URL to this value to create a full URL. For example, if the full URL is https://www.example.com/path/to/page.html, the relative URL is path/to/page.html. Use this input for Payflow Link and Payments Advanced payment
+A set of relative URLs that PayPal uses in response to various actions during the authorization process. Adobe Commerce prepends the base URL to this value to create a full URL. For example, if the full URL is https://www.example.com/path/to/page.html, the relative URL is path/to/page.html. Use this input for Payflow Link and Payments Advanced payment methods.
 """
 input PayflowLinkInput {
   """
@@ -6139,7 +6607,10 @@ input PayflowLinkInput {
 Indicates the mode for payment. Applies to the Payflow Link and Payments Advanced payment methods.
 """
 enum PayflowLinkMode {
+  """"""
   LIVE @deprecated
+
+  """"""
   TEST @deprecated
 }
 
@@ -6190,6 +6661,7 @@ input PayflowProResponseInput {
   paypal_payload: String!
 }
 
+""""""
 type PayflowProResponseOutput {
   """The cart with the updated selected payment method."""
   cart: Cart!
@@ -6231,7 +6703,7 @@ input PayflowProTokenInput {
 }
 
 """
-Contains a set of relative URLs that PayPal uses in response to various actions during the authorization process. Magento prepends the base URL to this value to create a full URL. For example, if the full URL is https://www.example.com/path/to/page.html, the relative URL is path/to/page.html. Use this input for the Payflow Pro and Payment Pro payment
+Contains a set of relative URLs that PayPal uses in response to various actions during the authorization process. Magento prepends the base URL to this value to create a full URL. For example, if the full URL is https://www.example.com/path/to/page.html, the relative URL is path/to/page.html. Use this input for the Payflow Pro and Payment Pro payment methods.
 """
 input PayflowProUrlInput {
   """
@@ -6252,7 +6724,10 @@ input PayflowProUrlInput {
 
 """Defines the payment method."""
 input PaymentMethodInput {
+  """"""
   braintree: BraintreeInput
+
+  """"""
   braintree_cc_vault: BraintreeCcVaultInput
 
   """The internal name for the payment method."""
@@ -6472,7 +6947,7 @@ input PickupLocationSortInput {
   description: SortEnum
 
   """
-  Distance to the address, requested by distance filter. Applicable only with distance filter. If distance sort order is present, all other sort orders will
+  Distance to the address, requested by distance filter. Applicable only with distance filter. If distance sort order is present, all other sort orders will be ignored.
   """
   distance: SortEnum
 
@@ -6569,8 +7044,13 @@ type PriceAdjustment {
 
 """`PriceAdjustment.code` is deprecated."""
 enum PriceAdjustmentCodesEnum {
+  """"""
   TAX @deprecated(reason: "`PriceAdjustmentCodesEnum` is deprecated. Tax is included or excluded in the price. Tax is not shown separately in Catalog.")
+
+  """"""
   WEEE @deprecated(reason: "WEEE code is deprecated. Use `fixed_product_taxes.label` instead.")
+
+  """"""
   WEEE_TAX @deprecated(reason: "Use `fixed_product_taxes` instead. Tax is included or excluded in price. The tax is not shown separtely in Catalog.")
 }
 
@@ -6578,7 +7058,10 @@ enum PriceAdjustmentCodesEnum {
 `PriceAdjustmentDescriptionEnum` is deprecated. States whether a price adjustment is included or excluded.
 """
 enum PriceAdjustmentDescriptionEnum {
+  """"""
   EXCLUDED @deprecated
+
+  """"""
   INCLUDED @deprecated
 }
 
@@ -6595,8 +7078,13 @@ type PriceRange {
 
 """Defines the price type."""
 enum PriceTypeEnum {
+  """"""
   DYNAMIC @deprecated
+
+  """"""
   FIXED @deprecated
+
+  """"""
   PERCENT @deprecated
 }
 
@@ -6604,7 +7092,10 @@ enum PriceTypeEnum {
 Defines whether a bundle product's price is displayed as the lowest possible value or as a range.
 """
 enum PriceViewEnum {
+  """"""
   AS_LOW_AS @deprecated
+
+  """"""
   PRICE_RANGE @deprecated
 }
 
@@ -6784,6 +7275,8 @@ input ProductFilterInput {
 
   """The part of the URL that identifies the product"""
   url_key: FilterTypeInput
+
+  """"""
   url_path: FilterTypeInput
 
   """The weight of the item, in units defined by the store."""
@@ -7082,11 +7575,11 @@ type ProductPrice {
 }
 
 """
-Deprecated. Use `PriceRange` instead. Contains the regular price of an item, as well as its minimum and maximum prices. Only composite products, which include bundle, configurable, and grouped products, can contain a minimum and maximum
+Deprecated. Use `PriceRange` instead. Contains the regular price of an item, as well as its minimum and maximum prices. Only composite products, which include bundle, configurable, and grouped products, can contain a minimum and maximum price.
 """
 type ProductPrices {
   """
-  The highest possible final price for all the options defined within a composite product. If you are specifying a price range, this would be the `to`
+  The highest possible final price for all the options defined within a composite product. If you are specifying a price range, this would be the `to` value.
   """
   maximalPrice: Price @deprecated(reason: "Use `PriceRange.maximum_price` instead.")
 
@@ -7302,6 +7795,8 @@ input ProductSortInput {
 
   """The part of the URL that identifies the product"""
   url_key: SortEnum
+
+  """"""
   url_path: SortEnum
 
   """The weight of the item, in units defined by the store."""
@@ -7312,7 +7807,10 @@ input ProductSortInput {
 This enumeration states whether a product stock status is in stock or out of stock
 """
 enum ProductStockStatus {
+  """"""
   IN_STOCK @deprecated
+
+  """"""
   OUT_OF_STOCK @deprecated
 }
 
@@ -7390,6 +7888,7 @@ type Products {
   total_count: Int
 }
 
+""""""
 type Query {
   """Get a list of available store views and their config information."""
   availableStores(
@@ -7423,13 +7922,21 @@ type Query {
   category(
     """The category ID to use as the root of the search."""
     id: Int
-  ): CategoryTree @deprecated(reason: "Use `categoryList` instead.")
+  ): CategoryTree @deprecated(reason: "Use `categories` instead.")
 
   """Return an array of categories based on the specified filters."""
   categoryList(
+    """Specifies which page of results to return. The default value is 1."""
+    currentPage: Int = 1
+
     """Identifies which Category filter inputs to search for and return."""
     filters: CategoryFilterInput
-  ): [CategoryTree]
+
+    """
+    Specifies the maximum number of results to return at once. The default value is 20.
+    """
+    pageSize: Int = 20
+  ): [CategoryTree] @deprecated(reason: "Use `categories` instead.")
 
   """Return Terms and Conditions configuration information."""
   checkoutAgreements: [CheckoutAgreement]
@@ -7588,6 +8095,7 @@ type Query {
   wishlist: WishlistOutput @deprecated(reason: "Moved under `Customer.wishlist`.")
 }
 
+""""""
 type Region {
   """The two-letter code for the region, such as TX for Texas."""
   code: String
@@ -7689,9 +8197,22 @@ type SalesCommentItem {
   timestamp: String!
 }
 
+""""""
 type SalesItemInterface {
   """The entered gift message for the order item"""
   gift_message: GiftMessage
+}
+
+"""This enumeration defines the scope type for customer orders."""
+enum ScopeTypeEnum {
+  """"""
+  GLOBAL @deprecated
+
+  """"""
+  STORE @deprecated
+
+  """"""
+  WEBSITE @deprecated
 }
 
 """Provides navigation for the query response."""
@@ -7837,6 +8358,12 @@ type SelectedShippingMethod {
 
   """The label for the method code."""
   method_title: String!
+
+  """The cost of shipping using this shipping method, excluding tax."""
+  price_excl_tax: Money!
+
+  """The cost of shipping using this shipping method, including tax."""
+  price_incl_tax: Money!
 }
 
 """Defines the referenced product and the email sender and recipients."""
@@ -7999,10 +8526,14 @@ type SetShippingMethodsOnCartOutput {
 
 """Defines whether bundle items must be shipped together."""
 enum ShipBundleItemsEnum {
+  """"""
   SEPARATELY @deprecated
+
+  """"""
   TOGETHER @deprecated
 }
 
+""""""
 type ShipmentItem implements ShipmentItemInterface {
   """The unique ID for a `ShipmentItemInterface` object."""
   id: ID!
@@ -8118,6 +8649,12 @@ type ShippingCartAddress implements CartAddressInterface {
 
   """The telephone number for the billing or shipping address."""
   telephone: String
+
+  """The unique id of the customer address."""
+  uid: String!
+
+  """The VAT company number for billing or shipping address."""
+  vat_id: String
 }
 
 """
@@ -8415,7 +8952,10 @@ type SimpleWishlistItem implements WishlistItemInterface {
 
 """Indicates whether to return results in ascending or descending order."""
 enum SortEnum {
+  """"""
   ASC @deprecated
+
+  """"""
   DESC @deprecated
 }
 
@@ -8782,7 +9322,7 @@ type StoreConfig {
   zero_subtotal_new_order_status: String
 
   """
-  When the new order status is 'Processing', this can be set to `authorize_capture` to automatically invoice all items that have a zero
+  When the new order status is 'Processing', this can be set to `authorize_capture` to automatically invoice all items that have a zero balance.
   """
   zero_subtotal_payment_action: String
 
@@ -8834,9 +9374,16 @@ type SubscribeEmailToNewsletterOutput {
 
 """Indicates the status of the request."""
 enum SubscriptionStatusesEnum {
+  """"""
   NOT_ACTIVE @deprecated
+
+  """"""
   SUBSCRIBED @deprecated
+
+  """"""
   UNCONFIRMED @deprecated
+
+  """"""
   UNSUBSCRIBED @deprecated
 }
 
@@ -8849,11 +9396,13 @@ type SwatchData {
   value: String
 }
 
+""""""
 interface SwatchDataInterface {
   """The value can be represented as color (HEX code), image link, or text."""
   value: String
 }
 
+""""""
 type SwatchLayerFilterItem implements LayerFilterItemInterface & SwatchLayerFilterItemInterface {
   """The count of items per filter."""
   items_count: Int @deprecated(reason: "Use `AggregationOption.count` instead.")
@@ -8868,6 +9417,7 @@ type SwatchLayerFilterItem implements LayerFilterItemInterface & SwatchLayerFilt
   value_string: String @deprecated(reason: "Use `AggregationOption.value` instead.")
 }
 
+""""""
 interface SwatchLayerFilterItemInterface {
   """Data required to render a swatch filter item."""
   swatch_data: SwatchData
@@ -8885,6 +9435,7 @@ type TaxItem {
   title: String!
 }
 
+""""""
 type TextSwatchData implements SwatchDataInterface {
   """The value can be represented as color (HEX code), image link, or text."""
   value: String
@@ -8939,15 +9490,25 @@ type UrlRewrite {
 
 """This enumeration defines the entity type."""
 enum UrlRewriteEntityTypeEnum {
+  """"""
   CATEGORY @deprecated
+
+  """"""
   CMS_PAGE @deprecated
+
+  """"""
   PRODUCT @deprecated
 }
 
 """Defines whether the attribute is filterable in layered navigation."""
 enum UseInLayeredNavigationOptions {
+  """"""
   FILTERABLE_NO_RESULT @deprecated
+
+  """"""
   FILTERABLE_WITH_RESULTS @deprecated
+
+  """"""
   NO @deprecated
 }
 
@@ -9239,7 +9800,10 @@ type WishListUserInputError {
 
 """A list of possible error types."""
 enum WishListUserInputErrorType {
+  """"""
   PRODUCT_NOT_FOUND @deprecated
+
+  """"""
   UNDEFINED @deprecated
 }
 
@@ -9281,9 +9845,16 @@ type WishlistCartUserInputError {
 
 """A list of possible error types."""
 enum WishlistCartUserInputErrorType {
+  """"""
   INSUFFICIENT_STOCK @deprecated
+
+  """"""
   NOT_SALABLE @deprecated
+
+  """"""
   PRODUCT_NOT_FOUND @deprecated
+
+  """"""
   UNDEFINED @deprecated
 }
 
