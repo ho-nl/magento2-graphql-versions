@@ -13,6 +13,10 @@ on:
         description: 'GitHub environment providing the Hive secrets for the destination target'
         required: true
         default: 'magento2-second'
+      target:
+        description: 'Hive target ref (org/project/target); overrides the HAVE_PROJECT_ID secret'
+        required: false
+        default: ''
 
 jobs:
   fetch:
@@ -66,13 +70,24 @@ jobs:
           path: schemas
       - name: Install Hive CLI
         run: npm i -g @graphql-hive/cli
+      - name: Token diagnostics
+        env:
+          HIVE_TARGET: ${{ secrets.HAVE_PROJECT_ID }}
+        run: |
+          TARGET="${{ github.event.inputs.target }}"
+          [ -z "$TARGET" ] && TARGET="$HIVE_TARGET"
+          hive whoami --registry.accessToken ${{ secrets.HIVE_ACCESS_TOKEN }} --target "$TARGET" \
+            || hive whoami --registry.accessToken ${{ secrets.HIVE_ACCESS_TOKEN }} \
+            || true
       - name: Publish sequentially in ascending version order
         env:
           HIVE_TARGET: ${{ secrets.HAVE_PROJECT_ID }}
         run: |
           set -e
+          TARGET="${{ github.event.inputs.target }}"
+          [ -z "$TARGET" ] && TARGET="$HIVE_TARGET"
           TARGET_ARG=""
-          if [ -n "$HIVE_TARGET" ]; then TARGET_ARG="--target=$HIVE_TARGET"; fi
+          if [ -n "$TARGET" ]; then TARGET_ARG="--target=$TARGET"; fi
           for v in ${{ needs.fetch.outputs.versions }}; do
             echo "=== Publishing $v ==="
             hive schema:publish --commit="$v" --author "Reach Digital" --registry.accessToken ${{ secrets.HIVE_ACCESS_TOKEN }} $TARGET_ARG "schemas/$v.graphql"
