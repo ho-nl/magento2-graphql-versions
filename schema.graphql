@@ -1,3 +1,43 @@
+input AddConfigurableProductsToCartInput {
+  cart_id: String!
+  cart_items: [ConfigurableProductCartItemInput]!
+}
+
+type AddConfigurableProductsToCartOutput {
+  cart: Cart!
+}
+
+input AddSimpleProductsToCartInput {
+  cart_id: String!
+  cart_items: [SimpleProductCartItemInput]!
+}
+
+type AddSimpleProductsToCartOutput {
+  cart: Cart!
+}
+
+input AddVirtualProductsToCartInput {
+  cart_id: String!
+  cart_items: [VirtualProductCartItemInput]!
+}
+
+type AddVirtualProductsToCartOutput {
+  cart: Cart!
+}
+
+type AppliedCoupon {
+  code: String!
+}
+
+input ApplyCouponToCartInput {
+  cart_id: String!
+  coupon_code: String!
+}
+
+type ApplyCouponToCartOutput {
+  cart: Cart!
+}
+
 """
 Attribute contains the attribute_type of the specified attribute_code and entity_type
 """
@@ -35,6 +75,52 @@ type AttributeOption {
 
   """Attribute option value."""
   value: String
+}
+
+type AvailablePaymentMethod {
+  """The payment method code"""
+  code: String!
+
+  """The payment method title."""
+  title: String!
+}
+
+type AvailableShippingMethod {
+  amount: Money!
+  available: Boolean!
+
+  """Could be null if method is not available"""
+  base_amount: Money
+  carrier_code: String!
+  carrier_title: String!
+  error_message: String
+
+  """Could be null if method is not available"""
+  method_code: String
+
+  """Could be null if method is not available"""
+  method_title: String
+  price_excl_tax: Money!
+  price_incl_tax: Money!
+}
+
+input BillingAddressInput {
+  address: CartAddressInput
+  customer_address_id: Int
+  use_for_shipping: Boolean
+}
+
+type BillingCartAddress implements CartAddressInterface {
+  city: String
+  company: String
+  country: CartAddressCountry
+  customer_notes: String
+  firstname: String
+  lastname: String
+  postcode: String
+  region: CartAddressRegion
+  street: [String]
+  telephone: String
 }
 
 """Breadcrumb item"""
@@ -275,6 +361,95 @@ type BundleProduct implements CustomizableProductInterface & PhysicalProductInte
   weight: Float
 }
 
+type Cart {
+  applied_coupon: AppliedCoupon
+
+  """Available payment methods"""
+  available_payment_methods: [AvailablePaymentMethod]
+  billing_address: BillingCartAddress!
+  email: String
+  items: [CartItemInterface]
+  prices: CartPrices
+  selected_payment_method: SelectedPaymentMethod
+  shipping_addresses: [ShippingCartAddress]!
+}
+
+type CartAddressCountry {
+  code: String
+  label: String
+}
+
+input CartAddressInput {
+  city: String!
+  company: String
+  country_code: String!
+  firstname: String!
+  lastname: String!
+  postcode: String
+  region: String
+  save_in_address_book: Boolean!
+  street: [String]!
+  telephone: String!
+}
+
+interface CartAddressInterface {
+  city: String
+  company: String
+  country: CartAddressCountry
+  customer_notes: String
+  firstname: String
+  lastname: String
+  postcode: String
+  region: CartAddressRegion
+  street: [String]
+  telephone: String
+}
+
+type CartAddressRegion {
+  code: String
+  label: String
+}
+
+input CartItemInput {
+  quantity: Float!
+  sku: String!
+}
+
+interface CartItemInterface {
+  id: String!
+  product: ProductInterface!
+  quantity: Float!
+}
+
+type CartItemQuantity {
+  cart_item_id: Int!
+  quantity: Float!
+}
+
+type CartItemSelectedOptionValuePrice {
+  type: PriceTypeEnum!
+  units: String!
+  value: Float!
+}
+
+input CartItemUpdateInput {
+  cart_item_id: Int!
+  quantity: Float!
+}
+
+type CartPrices {
+  applied_taxes: [CartTaxItem]
+  grand_total: Money
+  subtotal_excluding_tax: Money
+  subtotal_including_tax: Money
+  subtotal_with_discount_excluding_tax: Money
+}
+
+type CartTaxItem {
+  amount: Money!
+  label: String!
+}
+
 """
 CategoryInterface contains the full set of attributes that can be returned in a category search
 """
@@ -508,6 +683,14 @@ type ConfigurableAttributeOption {
   value_index: Int
 }
 
+type ConfigurableCartItem implements CartItemInterface {
+  configurable_options: [SelectedConfigurableOption]!
+  customizable_options: [SelectedCustomizableOption]!
+  id: String!
+  product: ProductInterface!
+  quantity: Float!
+}
+
 """
 ConfigurableProduct defines basic features of a configurable product and its simple product variants
 """
@@ -653,6 +836,12 @@ type ConfigurableProduct implements CustomizableProductInterface & PhysicalProdu
 
   """The weight of the item, in units defined by the store"""
   weight: Float
+}
+
+input ConfigurableProductCartItemInput {
+  customizable_options: [CustomizableOptionInput]
+  data: CartItemInput!
+  variant_sku: String!
 }
 
 """
@@ -1469,6 +1658,8 @@ type Currency {
   base_currency_symbol: String
   default_display_currecy_code: String
   default_display_currecy_symbol: String
+  default_display_currency_code: String
+  default_display_currency_symbol: String
   exchange_rates: [ExchangeRate]
 }
 
@@ -1676,6 +1867,9 @@ type Customer {
 
   """The customer's first name"""
   firstname: String
+
+  """The customer's gender(Male - 1, Female - 2)"""
+  gender: Int
 
   """
   The group assigned to the user. Default values are 0 (Not logged in), 1 (General), 2 (Wholesale), and 3 (Retailer)
@@ -1947,6 +2141,11 @@ type CustomerOutput {
   customer: Customer!
 }
 
+type CustomerPaymentTokens {
+  """An array of payment tokens"""
+  items: [PaymentToken]!
+}
+
 type CustomerToken {
   """The customer token"""
   token: String
@@ -1992,6 +2191,49 @@ type CustomizableAreaValue {
 
   """The Stock Keeping Unit for this option"""
   sku: String
+}
+
+"""
+CustomizableCheckbbixOption contains information about a set of checkbox values that are defined as part of a customizable option
+"""
+type CustomizableCheckboxOption implements CustomizableOptionInterface {
+  """Option ID"""
+  option_id: Int
+
+  """Indicates whether the option is required"""
+  required: Boolean
+
+  """The order in which the option is displayed"""
+  sort_order: Int
+
+  """The display name for this option"""
+  title: String
+
+  """An array that defines a set of checkbox values"""
+  value: [CustomizableCheckboxValue]
+}
+
+"""
+CustomizableCheckboxValue defines the price and sku of a product whose page contains a customized set of checkbox values
+"""
+type CustomizableCheckboxValue {
+  """The ID assigned to the value"""
+  option_type_id: Int
+
+  """The price assigned to this option"""
+  price: Float
+
+  """FIXED, PERCENT, or DYNAMIC"""
+  price_type: PriceTypeEnum
+
+  """The Stock Keeping Unit for this option"""
+  sku: String
+
+  """The order in which the checkbox value is displayed"""
+  sort_order: Int
+
+  """The display name for this option"""
+  title: String
 }
 
 """
@@ -2163,6 +2405,54 @@ type CustomizableFileValue {
 }
 
 """
+CustomizableMultipleOption contains information about a multiselect that is defined as part of a customizable option
+"""
+type CustomizableMultipleOption implements CustomizableOptionInterface {
+  """Option ID"""
+  option_id: Int
+
+  """Indicates whether the option is required"""
+  required: Boolean
+
+  """The order in which the option is displayed"""
+  sort_order: Int
+
+  """The display name for this option"""
+  title: String
+
+  """An array that defines the set of options for a multiselect"""
+  value: [CustomizableMultipleValue]
+}
+
+"""
+CustomizableMultipleValue defines the price and sku of a product whose page contains a customized multiselect
+"""
+type CustomizableMultipleValue {
+  """The ID assigned to the value"""
+  option_type_id: Int
+
+  """The price assigned to this option"""
+  price: Float
+
+  """FIXED, PERCENT, or DYNAMIC"""
+  price_type: PriceTypeEnum
+
+  """The Stock Keeping Unit for this option"""
+  sku: String
+
+  """The order in which the option is displayed"""
+  sort_order: Int
+
+  """The display name for this option"""
+  title: String
+}
+
+input CustomizableOptionInput {
+  id: Int!
+  value_string: String!
+}
+
+"""
 The CustomizableOptionInterface contains basic information about a customizable option. It can be implemented by several types of configurable options.
 """
 interface CustomizableOptionInterface {
@@ -2228,6 +2518,11 @@ type CustomizableRadioValue {
 
   """The display name for this option"""
   title: String
+}
+
+type DeletePaymentTokenOutput {
+  customerPaymentTokens: CustomerPaymentTokens
+  result: Boolean!
 }
 
 """This enumeration specifies whether a link or sample is a file or URL"""
@@ -2451,18 +2746,20 @@ type DownloadableProductSamples {
 }
 
 """
-EntityUrl is an output object containing the `id`, `canonical_url`, and `type` attributes
+EntityUrl is an output object containing the `id`, `relative_url`, and `type` attributes
 """
 type EntityUrl {
-  """
-  The internal relative URL. If the specified url is a redirect, the query returns the redirected URL, not the original.
-  """
   canonical_url: String
 
   """
   The ID assigned to the object associated with the specified url. This could be a product ID, category ID, or page ID.
   """
   id: Int
+
+  """
+  The internal relative URL. If the specified url is a redirect, the query returns the redirected URL, not the original.
+  """
+  relative_url: String
 
   """One of PRODUCT, CATEGORY, or CMS_PAGE."""
   type: UrlRewriteEntityTypeEnum
@@ -2687,6 +2984,11 @@ type HttpQueryParameter {
   value: String
 }
 
+type IsEmailAvailableOutput {
+  """Is email availabel value"""
+  is_email_available: Boolean
+}
+
 type LayerFilter {
   """Array of filter items"""
   filter_items: [LayerFilterItemInterface]
@@ -2769,6 +3071,11 @@ type Money {
 }
 
 type Mutation {
+  addConfigurableProductsToCart(input: AddConfigurableProductsToCartInput): AddConfigurableProductsToCartOutput
+  addSimpleProductsToCart(input: AddSimpleProductsToCartInput): AddSimpleProductsToCartOutput
+  addVirtualProductsToCart(input: AddVirtualProductsToCartInput): AddVirtualProductsToCartOutput
+  applyCouponToCart(input: ApplyCouponToCartInput): ApplyCouponToCartOutput
+
   """Changes the password for the logged-in customer"""
   changeCustomerPassword(currentPassword: String!, newPassword: String!): Customer
 
@@ -2778,20 +3085,32 @@ type Mutation {
   """Create customer address"""
   createCustomerAddress(input: CustomerAddressInput!): CustomerAddress
 
-  """Creates empty shopping cart for guest or logged in user"""
-  createEmptyCart: String
+  """Creates an empty shopping cart for a guest or logged in user"""
+  createEmptyCart(input: createEmptyCartInput): String
 
   """Delete customer address"""
   deleteCustomerAddress(id: Int!): Boolean
 
+  """Delete a customer payment token"""
+  deletePaymentToken(public_hash: String!): DeletePaymentTokenOutput
+
   """Retrieve the customer token"""
   generateCustomerToken(email: String!, password: String!): CustomerToken
+  placeOrder(input: PlaceOrderInput): PlaceOrderOutput
+  removeCouponFromCart(input: RemoveCouponFromCartInput): RemoveCouponFromCartOutput
+  removeItemFromCart(input: RemoveItemFromCartInput): RemoveItemFromCartOutput
 
   """Revoke the customer token"""
   revokeCustomerToken: RevokeCustomerTokenOutput
 
   """Recommends Product by Sending Single/Multiple Email"""
   sendEmailToFriend(input: SendEmailToFriendInput): SendEmailToFriendOutput
+  setBillingAddressOnCart(input: SetBillingAddressOnCartInput): SetBillingAddressOnCartOutput
+  setGuestEmailOnCart(input: SetGuestEmailOnCartInput): SetGuestEmailOnCartOutput
+  setPaymentMethodOnCart(input: SetPaymentMethodOnCartInput): SetPaymentMethodOnCartOutput
+  setShippingAddressesOnCart(input: SetShippingAddressesOnCartInput): SetShippingAddressesOnCartOutput
+  setShippingMethodsOnCart(input: SetShippingMethodsOnCartInput): SetShippingMethodsOnCartOutput
+  updateCartItems(input: UpdateCartItemsInput): UpdateCartItemsOutput
 
   """Update the customer's personal information"""
   updateCustomer(input: CustomerInput!): CustomerOutput
@@ -2800,12 +3119,51 @@ type Mutation {
   updateCustomerAddress(id: Int!, input: CustomerAddressInput): CustomerAddress
 }
 
+type Order {
+  order_id: String
+}
+
+input PaymentMethodInput {
+  """Payment method code"""
+  code: String!
+
+  """Purchase order number"""
+  purchase_order_number: String
+}
+
+"""The stored payment method available to the customer"""
+type PaymentToken {
+  """Stored account details"""
+  details: String
+
+  """The payment method code associated with the token"""
+  payment_method_code: String!
+
+  """The public hash of the token"""
+  public_hash: String!
+  type: PaymentTokenTypeEnum!
+}
+
+"""The list of available payment token types"""
+enum PaymentTokenTypeEnum {
+  account
+  card
+}
+
 """
 PhysicalProductInterface contains attributes specific to tangible products
 """
 interface PhysicalProductInterface {
   """The weight of the item, in units defined by the store"""
   weight: Float
+}
+
+input PlaceOrderInput {
+  cart_id: String!
+}
+
+type PlaceOrderOutput {
+  order: Order!
 }
 
 """
@@ -2977,9 +3335,7 @@ input ProductFilterInput {
   """The beginning date that a product has a special price"""
   special_from_date: FilterTypeInput
 
-  """
-  The numeric special price of the product. Do not include the currency code.
-  """
+  """The discounted price of the product. Do not include the currency code."""
   special_price: FilterTypeInput
 
   """The end date that a product has a special price"""
@@ -3428,6 +3784,12 @@ type Products {
 }
 
 type Query {
+  """Returns information about shopping cart"""
+  cart(cart_id: String!): Cart
+
+  """
+  The category query searches for categories that match the criteria specified in the search and filter attributes
+  """
   category(
     """Id of the category"""
     id: Int
@@ -3467,6 +3829,13 @@ type Query {
 
   """List of customer orders"""
   customerOrders: CustomerOrders
+
+  """Return a list of customer payment tokens"""
+  customerPaymentTokens: CustomerPaymentTokens
+  isEmailAvailable(
+    """The new customer email"""
+    email: String!
+  ): IsEmailAvailableOutput
 
   """
   The products query searches for products that match the criteria specified in the search and filter attributes
@@ -3510,6 +3879,23 @@ type Region {
   name: String
 }
 
+input RemoveCouponFromCartInput {
+  cart_id: String!
+}
+
+type RemoveCouponFromCartOutput {
+  cart: Cart
+}
+
+input RemoveItemFromCartInput {
+  cart_id: String!
+  cart_item_id: Int!
+}
+
+type RemoveItemFromCartOutput {
+  cart: Cart!
+}
+
 type RevokeCustomerTokenOutput {
   result: Boolean!
 }
@@ -3524,6 +3910,48 @@ type SearchResultPageInfo {
 
   """Total pages"""
   total_pages: Int
+}
+
+type SelectedConfigurableOption {
+  id: Int!
+  option_label: String!
+  value_id: Int!
+  value_label: String!
+}
+
+type SelectedCustomizableOption {
+  id: Int!
+  is_required: Boolean!
+  label: String!
+  sort_order: Int!
+  values: [SelectedCustomizableOptionValue]!
+}
+
+type SelectedCustomizableOptionValue {
+  id: Int!
+  label: String!
+  price: CartItemSelectedOptionValuePrice!
+  value: String
+}
+
+type SelectedPaymentMethod {
+  """The payment method code"""
+  code: String!
+
+  """The purchase order number."""
+  purchase_order_number: String
+
+  """The payment method title."""
+  title: String!
+}
+
+type SelectedShippingMethod {
+  amount: Money
+  base_amount: Money
+  carrier_code: String
+  carrier_title: String
+  method_code: String
+  method_title: String
 }
 
 input SendEmailToFriendInput {
@@ -3559,12 +3987,92 @@ input SendEmailToFriendSenderInput {
   name: String!
 }
 
+input SetBillingAddressOnCartInput {
+  billing_address: BillingAddressInput!
+  cart_id: String!
+}
+
+type SetBillingAddressOnCartOutput {
+  cart: Cart!
+}
+
+input SetGuestEmailOnCartInput {
+  cart_id: String!
+  email: String!
+}
+
+type SetGuestEmailOnCartOutput {
+  cart: Cart!
+}
+
+input SetPaymentMethodOnCartInput {
+  cart_id: String!
+  payment_method: PaymentMethodInput!
+}
+
+type SetPaymentMethodOnCartOutput {
+  cart: Cart!
+}
+
+input SetShippingAddressesOnCartInput {
+  cart_id: String!
+  shipping_addresses: [ShippingAddressInput]!
+}
+
+type SetShippingAddressesOnCartOutput {
+  cart: Cart!
+}
+
+input SetShippingMethodsOnCartInput {
+  cart_id: String!
+  shipping_methods: [ShippingMethodInput]!
+}
+
+type SetShippingMethodsOnCartOutput {
+  cart: Cart!
+}
+
 """
 This enumeration defines whether bundle items must be shipped together.
 """
 enum ShipBundleItemsEnum {
   SEPARATELY
   TOGETHER
+}
+
+input ShippingAddressInput {
+  address: CartAddressInput
+  customer_address_id: Int
+}
+
+type ShippingCartAddress implements CartAddressInterface {
+  available_shipping_methods: [AvailableShippingMethod]
+  cart_items: [CartItemQuantity]
+  city: String
+  company: String
+  country: CartAddressCountry
+  customer_notes: String
+  firstname: String
+  items_weight: Float
+  lastname: String
+  postcode: String
+  region: CartAddressRegion
+  selected_shipping_method: SelectedShippingMethod
+  street: [String]
+  telephone: String
+}
+
+input ShippingMethodInput {
+  carrier_code: String!
+  method_code: String!
+}
+
+"""Simple Cart Item"""
+type SimpleCartItem implements CartItemInterface {
+  customizable_options: [SelectedCustomizableOption]
+  id: String!
+  product: ProductInterface!
+  quantity: Float!
 }
 
 """
@@ -3706,6 +4214,11 @@ type SimpleProduct implements CustomizableProductInterface & PhysicalProductInte
 
   """The weight of the item, in units defined by the store"""
   weight: Float
+}
+
+input SimpleProductCartItemInput {
+  customizable_options: [CustomizableOptionInput]
+  data: CartItemInput!
 }
 
 """
@@ -3876,6 +4389,15 @@ interface SwatchLayerFilterItemInterface {
   swatch_data: SwatchData
 }
 
+input UpdateCartItemsInput {
+  cart_id: String!
+  cart_items: [CartItemUpdateInput]!
+}
+
+type UpdateCartItemsOutput {
+  cart: Cart!
+}
+
 """The object contains URL rewrite details"""
 type UrlRewrite {
   """Request parameters"""
@@ -3890,6 +4412,14 @@ enum UrlRewriteEntityTypeEnum {
   CATEGORY
   CMS_PAGE
   PRODUCT
+}
+
+"""Virtual Cart Item"""
+type VirtualCartItem implements CartItemInterface {
+  customizable_options: [SelectedCustomizableOption]
+  id: String!
+  product: ProductInterface!
+  quantity: Float!
 }
 
 """
@@ -4030,6 +4560,11 @@ type VirtualProduct implements CustomizableProductInterface & ProductInterface {
   websites: [Website]
 }
 
+input VirtualProductCartItemInput {
+  customizable_options: [CustomizableOptionInput]
+  data: CartItemInput!
+}
+
 """The type contains information about a website"""
 type Website {
   """A code assigned to the website to identify it"""
@@ -4083,4 +4618,8 @@ type WishlistOutput {
 
   """The time of the last modification to the wish list"""
   updated_at: String
+}
+
+input createEmptyCartInput {
+  cart_id: String
 }
