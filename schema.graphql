@@ -975,7 +975,8 @@ type Cart {
   is_virtual: Boolean!
 
   """An array of products that have been added to the cart."""
-  items: [CartItemInterface]
+  items: [CartItemInterface] @deprecated(reason: "Use `itemsV2` instead.")
+  itemsV2(currentPage: Int = 1, pageSize: Int = 20, sort: QuoteItemsSortInput): CartItems
 
   """Pricing details for the quote."""
   prices: CartPrices
@@ -1231,6 +1232,18 @@ input CartItemUpdateInput {
 
   """The new quantity of the item."""
   quantity: Float
+}
+
+""""""
+type CartItems {
+  """An array of products that have been added to the cart."""
+  items: [CartItemInterface]!
+
+  """Metadata for pagination rendering."""
+  page_info: SearchResultPageInfo
+
+  """The number of returned cart items."""
+  total_count: Int!
 }
 
 """
@@ -8105,6 +8118,15 @@ type Query {
   wishlist: WishlistOutput @deprecated(reason: "Moved under `Customer.wishlist`.")
 }
 
+"""Specifies the field to use for sorting quote items"""
+input QuoteItemsSortInput {
+  """Specifies the quote items field to sort by"""
+  field: SortQuoteItemsEnum!
+
+  """Specifies the order of quote items' sorting"""
+  order: SortEnum!
+}
+
 """"""
 type Region {
   """The two-letter code for the region, such as TX for Texas."""
@@ -8988,6 +9010,108 @@ type SortFields {
 
   """An array of possible sort fields."""
   options: [SortField]
+}
+
+"""Specifies the field to use for sorting quote items"""
+enum SortQuoteItemsEnum {
+  """"""
+  BASE_DISCOUNT_AMOUNT @deprecated
+
+  """"""
+  BASE_DISCOUNT_TAX_COMPENSATION_AMOUNT @deprecated
+
+  """"""
+  BASE_PRICE @deprecated
+
+  """"""
+  BASE_PRICE_INC_TAX @deprecated
+
+  """"""
+  BASE_ROW_TOTAL @deprecated
+
+  """"""
+  BASE_ROW_TOTAL_INC_TAX @deprecated
+
+  """"""
+  BASE_TAX_AMOUNT @deprecated
+
+  """"""
+  BASE_TAX_BEFORE_DISCOUNT @deprecated
+
+  """"""
+  CREATED_AT @deprecated
+
+  """"""
+  CUSTOM_PRICE @deprecated
+
+  """"""
+  DESCRIPTION @deprecated
+
+  """"""
+  DISCOUNT_AMOUNT @deprecated
+
+  """"""
+  DISCOUNT_PERCENT @deprecated
+
+  """"""
+  DISCOUNT_TAX_COMPENSATION_AMOUNT @deprecated
+
+  """"""
+  FREE_SHIPPING @deprecated
+
+  """"""
+  ITEM_ID @deprecated
+
+  """"""
+  NAME @deprecated
+
+  """"""
+  ORIGINAL_CUSTOM_PRICE @deprecated
+
+  """"""
+  PRICE @deprecated
+
+  """"""
+  PRICE_INC_TAX @deprecated
+
+  """"""
+  PRODUCT_ID @deprecated
+
+  """"""
+  PRODUCT_TYPE @deprecated
+
+  """"""
+  QTY @deprecated
+
+  """"""
+  ROW_TOTAL @deprecated
+
+  """"""
+  ROW_TOTAL_INC_TAX @deprecated
+
+  """"""
+  ROW_TOTAL_WITH_DISCOUNT @deprecated
+
+  """"""
+  ROW_WEIGHT @deprecated
+
+  """"""
+  SKU @deprecated
+
+  """"""
+  TAX_AMOUNT @deprecated
+
+  """"""
+  TAX_BEFORE_DISCOUNT @deprecated
+
+  """"""
+  TAX_PERCENT @deprecated
+
+  """"""
+  UPDATED_AT @deprecated
+
+  """"""
+  WEIGHT @deprecated
 }
 
 """Contains information about a store's configuration."""
