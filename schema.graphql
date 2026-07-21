@@ -25,6 +25,23 @@ type AddDownloadableProductsToCartOutput {
   cart: Cart!
 }
 
+type AddProductsToCartOutput {
+  """The cart after products have been added"""
+  cart: Cart!
+
+  """An error encountered while adding an item to the cart."""
+  user_errors: [CartUserInputError]!
+}
+
+"""Contains the customer's wish list and any errors encountered"""
+type AddProductsToWishlistOutput {
+  """An array of errors encountered while adding products to a wish list"""
+  user_errors: [WishListUserInputError]!
+
+  """Contains the wish list with all items that were successfully added"""
+  wishlist: Wishlist!
+}
+
 input AddSimpleProductsToCartInput {
   cart_id: String!
   cart_items: [SimpleProductCartItemInput]!
@@ -220,10 +237,69 @@ type Breadcrumb {
 type BundleCartItem implements CartItemInterface {
   bundle_options: [SelectedBundleOption]!
   customizable_options: [SelectedCustomizableOption]!
+
+  """The entered gift message for the cart item"""
+  gift_message: GiftMessage
   id: String!
   prices: CartItemPrices
   product: ProductInterface!
   quantity: Float!
+}
+
+type BundleCreditMemoItem implements CreditMemoItemInterface {
+  """A list of bundle options that are assigned to the bundle product"""
+  bundle_options: [ItemSelectedBundleOption]
+
+  """
+  Contains information about the final discount amount for the base product, including discounts on options
+  """
+  discounts: [Discount]
+
+  """The unique ID of the credit memo item, used for API purposes"""
+  id: ID!
+
+  """The order item the credit memo is applied to"""
+  order_item: OrderItemInterface
+
+  """The name of the base product"""
+  product_name: String
+
+  """The sale price for the base product, including selected options"""
+  product_sale_price: Money!
+
+  """SKU of the base product"""
+  product_sku: String!
+
+  """The number of refunded items"""
+  quantity_refunded: Float
+}
+
+type BundleInvoiceItem implements InvoiceItemInterface {
+  """A list of bundle options that are assigned to the bundle product"""
+  bundle_options: [ItemSelectedBundleOption]
+
+  """
+  Contains information about the final discount amount for the base product, including discounts on options
+  """
+  discounts: [Discount]
+
+  """The unique ID of the invoice item"""
+  id: ID!
+
+  """Contains details about an individual order item"""
+  order_item: OrderItemInterface
+
+  """The name of the base product"""
+  product_name: String
+
+  """The sale price for the base product including selected options"""
+  product_sale_price: Money!
+
+  """The SKU of the base product"""
+  product_sku: String!
+
+  """The number of invoiced items"""
+  quantity_invoiced: Float
 }
 
 """BundleItem defines an individual item in a bundle product."""
@@ -289,12 +365,68 @@ type BundleItemOption {
 
   """Indicates the quantity of this specific bundle item."""
   quantity: Float
+
+  """A string that encodes option details."""
+  uid: ID!
 }
 
 input BundleOptionInput {
   id: Int!
   quantity: Float!
   value: [String]!
+}
+
+type BundleOrderItem implements OrderItemInterface {
+  """A list of bundle options that are assigned to the bundle product"""
+  bundle_options: [ItemSelectedBundleOption]
+
+  """The final discount information for the product"""
+  discounts: [Discount]
+
+  """The entered option for the base product, such as a logo or image"""
+  entered_options: [OrderItemOption]
+
+  """The unique identifier of the order item"""
+  id: ID!
+
+  """The name of the base product"""
+  product_name: String
+
+  """The sale price of the base product, including selected options"""
+  product_sale_price: Money!
+
+  """The SKU of the base product"""
+  product_sku: String!
+
+  """The type of product, such as simple, configurable, etc."""
+  product_type: String
+
+  """URL key of the base product"""
+  product_url_key: String
+
+  """The number of canceled items"""
+  quantity_canceled: Float
+
+  """The number of invoiced items"""
+  quantity_invoiced: Float
+
+  """The number of units ordered for this item"""
+  quantity_ordered: Float
+
+  """The number of refunded items"""
+  quantity_refunded: Float
+
+  """The number of returned items"""
+  quantity_returned: Float
+
+  """The number of shipped items"""
+  quantity_shipped: Float
+
+  """The selected options for the base product, such as color or size"""
+  selected_options: [OrderItemOption]
+
+  """The status of the order item"""
+  status: String
 }
 
 """
@@ -411,8 +543,23 @@ type BundleProduct implements CustomizableProductInterface & PhysicalProductInte
   """An array of ProductLinks objects."""
   product_links: [ProductLinksInterface]
 
+  """The average of all the ratings given to the product."""
+  rating_summary: Float!
+
   """Related Products"""
   related_products: [ProductInterface]
+
+  """The total count of all the reviews given to the product."""
+  review_count: Int!
+
+  """The list of products reviews."""
+  reviews(
+    """Specifies which page of results to return."""
+    currentPage: Int = 1
+
+    """Specifies the maximum number of results to return at once."""
+    pageSize: Int = 20
+  ): ProductReviews!
 
   """Indicates whether to ship bundle items together or individually."""
   ship_bundle_items: ShipBundleItemsEnum
@@ -488,6 +635,29 @@ input BundleProductCartItemInput {
   data: CartItemInput!
 }
 
+type BundleShipmentItem implements ShipmentItemInterface {
+  """A list of bundle options that are assigned to the bundle product"""
+  bundle_options: [ItemSelectedBundleOption]
+
+  """Shipment item unique identifier"""
+  id: ID!
+
+  """Associated order item"""
+  order_item: OrderItemInterface
+
+  """Name of the base product"""
+  product_name: String
+
+  """Sale price for the base product"""
+  product_sale_price: Money!
+
+  """SKU of the base product"""
+  product_sku: String!
+
+  """Number of shipped items"""
+  quantity_shipped: Float!
+}
+
 type Cart {
   """An array of coupons that have been applied to the cart"""
   applied_coupon: AppliedCoupon @deprecated(reason: "Use applied_coupons instead ")
@@ -501,6 +671,9 @@ type Cart {
   available_payment_methods: [AvailablePaymentMethod]
   billing_address: BillingCartAddress
   email: String
+
+  """The entered gift message for the cart"""
+  gift_message: GiftMessage
 
   """The ID of the cart."""
   id: ID!
@@ -559,7 +732,17 @@ type CartDiscount {
 }
 
 input CartItemInput {
+  """
+  An array of entered options for the base product, such as personalization text
+  """
+  entered_options: [EnteredOptionInput]
+
+  """For child products, the SKU of its parent product"""
+  parent_sku: String
   quantity: Float!
+
+  """The selected options for the base product, such as color or size"""
+  selected_options: [ID]
   sku: String!
 }
 
@@ -598,6 +781,9 @@ type CartItemSelectedOptionValuePrice {
 input CartItemUpdateInput {
   cart_item_id: Int!
   customizable_options: [CustomizableOptionInput]
+
+  """Gift message details for the cart item"""
+  gift_message: GiftMessageInput
   quantity: Float
 }
 
@@ -616,6 +802,22 @@ type CartPrices {
 type CartTaxItem {
   amount: Money!
   label: String!
+}
+
+"""An error encountered while adding an item to the the cart."""
+type CartUserInputError {
+  """Cart-specific error code"""
+  code: CartUserInputErrorType!
+
+  """A localized error message"""
+  message: String!
+}
+
+enum CartUserInputErrorType {
+  INSUFFICIENT_STOCK
+  NOT_SALABLE
+  PRODUCT_NOT_FOUND
+  UNDEFINED
 }
 
 """
@@ -974,13 +1176,19 @@ type ConfigurableAttributeOption {
   """A string that describes the configurable attribute option"""
   label: String
 
+  """A string that encodes option details."""
+  uid: ID!
+
   """A unique index number assigned to the configurable product option"""
   value_index: Int
 }
 
 type ConfigurableCartItem implements CartItemInterface {
   configurable_options: [SelectedConfigurableOption]!
-  customizable_options: [SelectedCustomizableOption]!
+  customizable_options: [SelectedCustomizableOption]
+
+  """The entered gift message for the cart item"""
+  gift_message: GiftMessage
   id: String!
   prices: CartItemPrices
   product: ProductInterface!
@@ -1087,8 +1295,23 @@ type ConfigurableProduct implements CustomizableProductInterface & PhysicalProdu
   """An array of ProductLinks objects."""
   product_links: [ProductLinksInterface]
 
+  """The average of all the ratings given to the product."""
+  rating_summary: Float!
+
   """Related Products"""
   related_products: [ProductInterface]
+
+  """The total count of all the reviews given to the product."""
+  review_count: Int!
+
+  """The list of products reviews."""
+  reviews(
+    """Specifies which page of results to return."""
+    currentPage: Int = 1
+
+    """Specifies the maximum number of results to return at once."""
+    pageSize: Int = 20
+  ): ProductReviews!
 
   """A short description of the product. Its use depends on the theme."""
   short_description: ComplexTextValue
@@ -1992,6 +2215,28 @@ type CreatePayflowProTokenOutput {
   secure_token_id: String!
 }
 
+input CreateProductReviewInput {
+  """The customer's nickname. Defaults to the customer name, if logged in"""
+  nickname: String!
+
+  """Ratings details by category. e.g price: 5, quality: 4 etc"""
+  ratings: [ProductReviewRatingInput]!
+
+  """The SKU of the reviewed product"""
+  sku: String!
+
+  """The summary (title) of the review"""
+  summary: String!
+
+  """The review text."""
+  text: String!
+}
+
+type CreateProductReviewOutput {
+  """Contains the completed product review"""
+  review: ProductReview!
+}
+
 """Required fields for Payflow Pro and Payments Pro credit card payments"""
 input CreditCardDetailsInput {
   """Credit card expiration month"""
@@ -2005,6 +2250,107 @@ input CreditCardDetailsInput {
 
   """Credit card type"""
   cc_type: String!
+}
+
+"""Credit memo details"""
+type CreditMemo {
+  """Comments on the credit memo"""
+  comments: [SalesCommentItem]
+
+  """The unique ID of the credit memo, used for API purposes"""
+  id: ID!
+
+  """An array containing details about refunded items"""
+  items: [CreditMemoItemInterface]
+
+  """The sequential credit memo number"""
+  number: String!
+
+  """Contains details about the total refunded amount"""
+  total: CreditMemoTotal
+}
+
+type CreditMemoItem implements CreditMemoItemInterface {
+  """
+  Contains information about the final discount amount for the base product, including discounts on options
+  """
+  discounts: [Discount]
+
+  """The unique ID of the credit memo item, used for API purposes"""
+  id: ID!
+
+  """The order item the credit memo is applied to"""
+  order_item: OrderItemInterface
+
+  """The name of the base product"""
+  product_name: String
+
+  """The sale price for the base product, including selected options"""
+  product_sale_price: Money!
+
+  """SKU of the base product"""
+  product_sku: String!
+
+  """The number of refunded items"""
+  quantity_refunded: Float
+}
+
+"""Credit memo item details"""
+interface CreditMemoItemInterface {
+  """
+  Contains information about the final discount amount for the base product, including discounts on options
+  """
+  discounts: [Discount]
+
+  """The unique ID of the credit memo item, used for API purposes"""
+  id: ID!
+
+  """The order item the credit memo is applied to"""
+  order_item: OrderItemInterface
+
+  """The name of the base product"""
+  product_name: String
+
+  """The sale price for the base product, including selected options"""
+  product_sale_price: Money!
+
+  """SKU of the base product"""
+  product_sku: String!
+
+  """The number of refunded items"""
+  quantity_refunded: Float
+}
+
+"""Credit memo price details"""
+type CreditMemoTotal {
+  """An adjustment manually applied to the order"""
+  adjustment: Money!
+
+  """The final base grand total amount in the base currency"""
+  base_grand_total: Money!
+
+  """The applied discounts to the credit memo"""
+  discounts: [Discount]
+
+  """The final total amount, including shipping, discounts, and taxes"""
+  grand_total: Money!
+
+  """
+  Contains details about the shipping and handling costs for the credit memo
+  """
+  shipping_handling: ShippingHandling
+
+  """The subtotal of the invoice, excluding shipping, discounts, and taxes"""
+  subtotal: Money!
+
+  """The credit memo tax details"""
+  taxes: [TaxItem]
+
+  """The shipping amount for the credit memo"""
+  total_shipping: Money!
+
+  """The amount of tax applied to the credit memo"""
+  total_tax: Money!
 }
 
 type Currency {
@@ -2243,9 +2589,30 @@ type Customer {
 
   """The customer's middle name"""
   middlename: String
+  orders(
+    """Specifies which page of results to return. The default value is 1"""
+    currentPage: Int = 1
+
+    """Defines the filter to use for searching customer orders"""
+    filter: CustomerOrdersFilterInput
+
+    """
+    Specifies the maximum number of results to return at once. The default value is 20
+    """
+    pageSize: Int = 20
+  ): CustomerOrders
 
   """An honorific, such as Dr., Mr., or Mrs."""
   prefix: String
+
+  """Contains the customer's product reviews"""
+  reviews(
+    """Specifies which page of results to return."""
+    currentPage: Int = 1
+
+    """Specifies the maximum number of results to return at once."""
+    pageSize: Int = 20
+  ): ProductReviews!
 
   """A value such as Sr., Jr., or III"""
   suffix: String
@@ -2253,7 +2620,7 @@ type Customer {
   """The customer's Value-added tax (VAT) number (for corporate customers)"""
   taxvat: String
 
-  """The wishlist query returns the contents of a customer's wish lists"""
+  """Contains the contents of a customer's wish lists"""
   wishlist: Wishlist!
 }
 
@@ -2434,6 +2801,46 @@ input CustomerAddressRegionInput {
   region_id: Int
 }
 
+input CustomerCreateInput {
+  """The customer's date of birth"""
+  date_of_birth: String
+
+  """Deprecated: Use `date_of_birth` instead"""
+  dob: String
+
+  """The customer's email address. Required for customer creation"""
+  email: String!
+
+  """The customer's first name"""
+  firstname: String!
+
+  """The customer's gender (Male - 1, Female - 2)"""
+  gender: Int
+
+  """
+  Indicates whether the customer is subscribed to the company's newsletter
+  """
+  is_subscribed: Boolean
+
+  """The customer's family name"""
+  lastname: String!
+
+  """The customer's middle name"""
+  middlename: String
+
+  """The customer's password"""
+  password: String
+
+  """An honorific, such as Dr., Mr., or Mrs."""
+  prefix: String
+
+  """A value such as Sr., Jr., or III"""
+  suffix: String
+
+  """The customer's Tax/VAT number (for corporate customers)"""
+  taxvat: String
+}
+
 type CustomerDownloadableProduct {
   date: String
   download_url: String
@@ -2487,21 +2894,81 @@ input CustomerInput {
   taxvat: String
 }
 
-"""Order mapping fields"""
+"""Contains details about each of the customer's orders"""
 type CustomerOrder {
-  created_at: String
-  grand_total: Float
-  id: Int
-  increment_id: String @deprecated(reason: "Use the order_number instead.")
+  """The billing address for the order"""
+  billing_address: OrderAddress
+
+  """The shipping carrier for the order delivery"""
+  carrier: String
+
+  """Comments about the order"""
+  comments: [SalesCommentItem]
+  created_at: String @deprecated(reason: "Use the order_date attribute instead")
+
+  """A list of credit memos"""
+  credit_memos: [CreditMemo]
+
+  """The entered gift message for the order"""
+  gift_message: GiftMessage
+  grand_total: Float @deprecated(reason: "Use the totals.grand_total attribute instead")
+
+  """Unique identifier for the order"""
+  id: ID!
+  increment_id: String @deprecated(reason: "Use the id attribute instead")
+
+  """A list of invoices for the order"""
+  invoices: [Invoice]!
+
+  """An array containing the items purchased in this order"""
+  items: [OrderItemInterface]
 
   """The order number"""
-  order_number: String!
-  status: String
+  number: String!
+
+  """The date the order was placed"""
+  order_date: String!
+  order_number: String! @deprecated(reason: "Use the number attribute instead")
+
+  """Payment details for the order"""
+  payment_methods: [OrderPaymentMethod]
+
+  """A list of shipments for the order"""
+  shipments: [OrderShipment]
+
+  """The shipping address for the order"""
+  shipping_address: OrderAddress
+
+  """The delivery method for the order"""
+  shipping_method: String
+
+  """The current status of the order"""
+  status: String!
+
+  """Contains details about the calculated totals for this order"""
+  total: OrderTotal
 }
 
+"""
+The collection of orders that match the conditions defined in the filter
+"""
 type CustomerOrders {
-  """Array of orders"""
-  items: [CustomerOrder]
+  """An array of customer orders"""
+  items: [CustomerOrder]!
+
+  """
+  An object that includes the current_page, page_info, and page_size values specified in the query
+  """
+  page_info: SearchResultPageInfo
+
+  """The total count of customer orders"""
+  total_count: Int
+}
+
+"""Identifies the filter to use for filtering orders."""
+input CustomerOrdersFilterInput {
+  """Filters by order number."""
+  number: FilterStringTypeInput
 }
 
 type CustomerOutput {
@@ -2516,6 +2983,40 @@ type CustomerPaymentTokens {
 type CustomerToken {
   """The customer token"""
   token: String
+}
+
+input CustomerUpdateInput {
+  """The customer's date of birth"""
+  date_of_birth: String
+
+  """Deprecated: Use `date_of_birth` instead"""
+  dob: String
+
+  """The customer's first name"""
+  firstname: String
+
+  """The customer's gender (Male - 1, Female - 2)"""
+  gender: Int
+
+  """
+  Indicates whether the customer is subscribed to the company's newsletter
+  """
+  is_subscribed: Boolean
+
+  """The customer's family name"""
+  lastname: String
+
+  """The customer's middle name"""
+  middlename: String
+
+  """An honorific, such as Dr., Mr., or Mrs."""
+  prefix: String
+
+  """A value such as Sr., Jr., or III"""
+  suffix: String
+
+  """The customer's Tax/VAT number (for corporate customers)"""
+  taxvat: String
 }
 
 """
@@ -2558,6 +3059,9 @@ type CustomizableAreaValue {
 
   """The Stock Keeping Unit for this option."""
   sku: String
+
+  """A string that encodes option details."""
+  uid: ID!
 }
 
 """
@@ -2602,6 +3106,9 @@ type CustomizableCheckboxValue {
 
   """The display name for this option."""
   title: String
+
+  """A string that encodes option details."""
+  uid: ID!
 }
 
 """
@@ -2639,6 +3146,9 @@ type CustomizableDateValue {
 
   """The Stock Keeping Unit for this option."""
   sku: String
+
+  """A string that encodes option details."""
+  uid: ID!
 }
 
 """
@@ -2682,6 +3192,9 @@ type CustomizableDropDownValue {
 
   """The display name for this option."""
   title: String
+
+  """A string that encodes option details."""
+  uid: ID!
 }
 
 """
@@ -2724,6 +3237,9 @@ type CustomizableFieldValue {
 
   """The Stock Keeping Unit for this option."""
   sku: String
+
+  """A string that encodes option details."""
+  uid: ID!
 }
 
 """
@@ -2770,6 +3286,9 @@ type CustomizableFileValue {
 
   """The Stock Keeping Unit for this option."""
   sku: String
+
+  """A string that encodes option details."""
+  uid: ID!
 }
 
 """
@@ -2813,6 +3332,9 @@ type CustomizableMultipleValue {
 
   """The display name for this option."""
   title: String
+
+  """A string that encodes option details."""
+  uid: ID!
 }
 
 input CustomizableOptionInput {
@@ -2887,6 +3409,9 @@ type CustomizableRadioValue {
 
   """The display name for this option."""
   title: String
+
+  """A string that encodes option details."""
+  uid: ID!
 }
 
 type DeletePaymentTokenOutput {
@@ -2924,9 +3449,138 @@ type DownloadableCartItem implements CartItemInterface {
   samples: [DownloadableProductSamples]
 }
 
+type DownloadableCreditMemoItem implements CreditMemoItemInterface {
+  """
+  Contains information about the final discount amount for the base product, including discounts on options
+  """
+  discounts: [Discount]
+
+  """
+  A list of downloadable links that are refunded from the downloadable product
+  """
+  downloadable_links: [DownloadableItemsLinks]
+
+  """The unique ID of the credit memo item, used for API purposes"""
+  id: ID!
+
+  """The order item the credit memo is applied to"""
+  order_item: OrderItemInterface
+
+  """The name of the base product"""
+  product_name: String
+
+  """The sale price for the base product, including selected options"""
+  product_sale_price: Money!
+
+  """SKU of the base product"""
+  product_sku: String!
+
+  """The number of refunded items"""
+  quantity_refunded: Float
+}
+
 enum DownloadableFileTypeEnum {
   FILE @deprecated(reason: "`sample_url` serves to get the downloadable sample")
   URL @deprecated(reason: "`sample_url` serves to get the downloadable sample")
+}
+
+type DownloadableInvoiceItem implements InvoiceItemInterface {
+  """
+  Contains information about the final discount amount for the base product, including discounts on options
+  """
+  discounts: [Discount]
+
+  """
+  A list of downloadable links that are invoiced from the downloadable product
+  """
+  downloadable_links: [DownloadableItemsLinks]
+
+  """The unique ID of the invoice item"""
+  id: ID!
+
+  """Contains details about an individual order item"""
+  order_item: OrderItemInterface
+
+  """The name of the base product"""
+  product_name: String
+
+  """The sale price for the base product including selected options"""
+  product_sale_price: Money!
+
+  """The SKU of the base product"""
+  product_sku: String!
+
+  """The number of invoiced items"""
+  quantity_invoiced: Float
+}
+
+"""
+DownloadableProductLinks defines characteristics of a downloadable product
+"""
+type DownloadableItemsLinks {
+  """A number indicating the sort order"""
+  sort_order: Int
+
+  """The display name of the link"""
+  title: String
+
+  """A string that encodes option details."""
+  uid: ID!
+}
+
+type DownloadableOrderItem implements OrderItemInterface {
+  """The final discount information for the product"""
+  discounts: [Discount]
+
+  """
+  A list of downloadable links that are ordered from the downloadable product
+  """
+  downloadable_links: [DownloadableItemsLinks]
+
+  """The entered option for the base product, such as a logo or image"""
+  entered_options: [OrderItemOption]
+
+  """The unique identifier of the order item"""
+  id: ID!
+
+  """The name of the base product"""
+  product_name: String
+
+  """The sale price of the base product, including selected options"""
+  product_sale_price: Money!
+
+  """The SKU of the base product"""
+  product_sku: String!
+
+  """The type of product, such as simple, configurable, etc."""
+  product_type: String
+
+  """URL key of the base product"""
+  product_url_key: String
+
+  """The number of canceled items"""
+  quantity_canceled: Float
+
+  """The number of invoiced items"""
+  quantity_invoiced: Float
+
+  """The number of units ordered for this item"""
+  quantity_ordered: Float
+
+  """The number of refunded items"""
+  quantity_refunded: Float
+
+  """The number of returned items"""
+  quantity_returned: Float
+
+  """The number of shipped items"""
+  quantity_shipped: Float
+
+  """The selected options for the base product, such as color or size"""
+  selected_options: [OrderItemOption]
+
+  """The status of the order item"""
+  status: String
 }
 
 """DownloadableProduct defines a product that the customer downloads"""
@@ -3042,8 +3696,23 @@ type DownloadableProduct implements CustomizableProductInterface & ProductInterf
   """An array of ProductLinks objects."""
   product_links: [ProductLinksInterface]
 
+  """The average of all the ratings given to the product."""
+  rating_summary: Float!
+
   """Related Products"""
   related_products: [ProductInterface]
+
+  """The total count of all the reviews given to the product."""
+  review_count: Int!
+
+  """The list of products reviews."""
+  reviews(
+    """Specifies which page of results to return."""
+    currentPage: Int = 1
+
+    """Specifies the maximum number of results to return at once."""
+    pageSize: Int = 20
+  ): ProductReviews!
 
   """A short description of the product. Its use depends on the theme."""
   short_description: ComplexTextValue
@@ -3135,6 +3804,9 @@ type DownloadableProductLinks {
 
   """The display name of the link"""
   title: String
+
+  """A string that encodes option details."""
+  uid: ID!
 }
 
 input DownloadableProductLinksInput {
@@ -3157,6 +3829,15 @@ type DownloadableProductSamples {
 
   """The display name of the sample"""
   title: String
+}
+
+"""Defines a customer-entered option"""
+input EnteredOptionInput {
+  """An encoded ID"""
+  uid: ID!
+
+  """Text the customer entered"""
+  value: String!
 }
 
 """
@@ -3213,6 +3894,22 @@ input FilterRangeTypeInput {
 
   """The end of the range"""
   to: String
+}
+
+"""Defines a filter for an input string."""
+input FilterStringTypeInput {
+  """Filters items that are exactly the same as the specified string."""
+  eq: String
+
+  """
+  Filters items that are exactly the same as entries specified in an array of strings.
+  """
+  in: [String]
+
+  """
+  Defines a filter that performs a fuzzy search using the specified string.
+  """
+  match: String
 }
 
 """FilterTypeInput specifies which action will be performed in a query """
@@ -3306,6 +4003,30 @@ enum FixedProductTaxDisplaySettings {
   'Including FPT and FPT description'
   """
   INCLUDE_FPT_WITH_DETAILS
+}
+
+"""Contains the text of a gift message, its sender, and recipient"""
+type GiftMessage {
+  """Sender name"""
+  from: String!
+
+  """Gift message text"""
+  message: String!
+
+  """Recipient name"""
+  to: String!
+}
+
+"""Contains the text of a gift message, its sender, and recipient"""
+input GiftMessageInput {
+  """Sender name"""
+  from: String!
+
+  """Gift message text"""
+  message: String!
+
+  """Recipient name"""
+  to: String!
 }
 
 """GroupedProduct defines a grouped product"""
@@ -3403,8 +4124,23 @@ type GroupedProduct implements PhysicalProductInterface & ProductInterface {
   """An array of ProductLinks objects."""
   product_links: [ProductLinksInterface]
 
+  """The average of all the ratings given to the product."""
+  rating_summary: Float!
+
   """Related Products"""
   related_products: [ProductInterface]
+
+  """The total count of all the reviews given to the product."""
+  review_count: Int!
+
+  """The list of products reviews."""
+  reviews(
+    """Specifies which page of results to return."""
+    currentPage: Int = 1
+
+    """Specifies the maximum number of results to return at once."""
+    pageSize: Int = 20
+  ): ProductReviews!
 
   """A short description of the product. Its use depends on the theme."""
   short_description: ComplexTextValue
@@ -3512,6 +4248,9 @@ input HostedProInput {
   return_url: String!
 }
 
+"""
+Contains secure URL used for Payments Pro Hosted Solution payment method.
+"""
 type HostedProUrl {
   """Secure Url generated by PayPal"""
   secure_form_url: String
@@ -3542,9 +4281,144 @@ type ImageSwatchData implements SwatchDataInterface {
   value: String
 }
 
+"""Invoice details"""
+type Invoice {
+  """Comments on the invoice"""
+  comments: [SalesCommentItem]
+
+  """The ID of the invoice, used for API purposes"""
+  id: ID!
+
+  """Invoiced product details"""
+  items: [InvoiceItemInterface]
+
+  """Sequential invoice number"""
+  number: String!
+
+  """Invoice total amount details"""
+  total: InvoiceTotal
+}
+
+type InvoiceItem implements InvoiceItemInterface {
+  """
+  Contains information about the final discount amount for the base product, including discounts on options
+  """
+  discounts: [Discount]
+
+  """The unique ID of the invoice item"""
+  id: ID!
+
+  """Contains details about an individual order item"""
+  order_item: OrderItemInterface
+
+  """The name of the base product"""
+  product_name: String
+
+  """The sale price for the base product including selected options"""
+  product_sale_price: Money!
+
+  """The SKU of the base product"""
+  product_sku: String!
+
+  """The number of invoiced items"""
+  quantity_invoiced: Float
+}
+
+"""Invoice item details"""
+interface InvoiceItemInterface {
+  """
+  Contains information about the final discount amount for the base product, including discounts on options
+  """
+  discounts: [Discount]
+
+  """The unique ID of the invoice item"""
+  id: ID!
+
+  """Contains details about an individual order item"""
+  order_item: OrderItemInterface
+
+  """The name of the base product"""
+  product_name: String
+
+  """The sale price for the base product including selected options"""
+  product_sale_price: Money!
+
+  """The SKU of the base product"""
+  product_sku: String!
+
+  """The number of invoiced items"""
+  quantity_invoiced: Float
+}
+
+"""Contains price details from an invoice"""
+type InvoiceTotal {
+  """The final base grand total amount in the base currency"""
+  base_grand_total: Money!
+
+  """The applied discounts to the invoice"""
+  discounts: [Discount]
+
+  """The final total amount, including shipping, discounts, and taxes"""
+  grand_total: Money!
+
+  """Contains details about the shipping and handling costs for the invoice"""
+  shipping_handling: ShippingHandling
+
+  """The subtotal of the invoice, excluding shipping, discounts, and taxes"""
+  subtotal: Money!
+
+  """The invoice tax details"""
+  taxes: [TaxItem]
+
+  """The shipping amount for the invoice"""
+  total_shipping: Money!
+
+  """The amount of tax applied to the invoice"""
+  total_tax: Money!
+}
+
 type IsEmailAvailableOutput {
   """Is email availabel value"""
   is_email_available: Boolean
+}
+
+"""A list of options of the selected bundle product"""
+type ItemSelectedBundleOption {
+  """The unique identifier of the option"""
+  id: ID!
+
+  """The label of the option"""
+  label: String!
+
+  """A list of products that represent the values of the parent option"""
+  values: [ItemSelectedBundleOptionValue]
+}
+
+"""A list of values for the selected bundle product"""
+type ItemSelectedBundleOptionValue {
+  """The unique identifier of the value"""
+  id: ID!
+
+  """The price of the child bundle product"""
+  price: Money!
+
+  """The name of the child bundle product"""
+  product_name: String!
+
+  """The SKU of the child bundle product"""
+  product_sku: String!
+
+  """Indicates how many of this bundle product were ordered"""
+  quantity: Float!
+}
+
+"""The key-value type"""
+type KeyValue {
+  """The name part of the name/value pair"""
+  name: String
+
+  """The value part of the name/value pair"""
+  value: String
 }
 
 type LayerFilter {
@@ -3647,6 +4521,14 @@ type Mutation {
   addBundleProductsToCart(input: AddBundleProductsToCartInput): AddBundleProductsToCartOutput
   addConfigurableProductsToCart(input: AddConfigurableProductsToCartInput): AddConfigurableProductsToCartOutput
   addDownloadableProductsToCart(input: AddDownloadableProductsToCartInput): AddDownloadableProductsToCartOutput
+
+  """Add any type of product to the cart"""
+  addProductsToCart(cartId: String!, cartItems: [CartItemInput!]!): AddProductsToCartOutput
+
+  """
+  Adds one or more products to the specified wish list. This mutation supports all product types
+  """
+  addProductsToWishlist(wishlistId: ID!, wishlistItems: [WishlistItemInput!]!): AddProductsToWishlistOutput
   addSimpleProductsToCart(input: AddSimpleProductsToCartInput): AddSimpleProductsToCartOutput
   addVirtualProductsToCart(input: AddVirtualProductsToCartInput): AddVirtualProductsToCartOutput
   applyCouponToCart(input: ApplyCouponToCartInput): ApplyCouponToCartOutput
@@ -3659,6 +4541,9 @@ type Mutation {
 
   """Create customer address"""
   createCustomerAddress(input: CustomerAddressInput!): CustomerAddress
+
+  """Create customer account"""
+  createCustomerV2(input: CustomerCreateInput!): CustomerOutput
 
   """Creates an empty shopping cart for a guest or logged in user"""
   createEmptyCart(input: createEmptyCartInput): String
@@ -3673,6 +4558,9 @@ type Mutation {
   mutation for Express Checkout and Payments Standard payment methods.
   """
   createPaypalExpressToken(input: PaypalExpressTokenInput!): PaypalExpressTokenOutput
+
+  """Creates a product review for the specified SKU"""
+  createProductReview(input: CreateProductReviewInput!): CreateProductReviewOutput!
 
   """Delete customer address"""
   deleteCustomerAddress(id: Int!): Boolean
@@ -3693,6 +4581,9 @@ type Mutation {
   placeOrder(input: PlaceOrderInput): PlaceOrderOutput
   removeCouponFromCart(input: RemoveCouponFromCartInput): RemoveCouponFromCartOutput
   removeItemFromCart(input: RemoveItemFromCartInput): RemoveItemFromCartOutput
+
+  """Removes one or more products from the specified wish list"""
+  removeProductsFromWishlist(wishlistId: ID!, wishlistItemsIds: [ID!]!): RemoveProductsFromWishlistOutput
 
   """Adds all products from a customer's previous order to the cart."""
   reorderItems(orderNumber: String!): ReorderItemsOutput
@@ -3719,18 +4610,253 @@ type Mutation {
   setPaymentMethodOnCart(input: SetPaymentMethodOnCartInput): SetPaymentMethodOnCartOutput
   setShippingAddressesOnCart(input: SetShippingAddressesOnCartInput): SetShippingAddressesOnCartOutput
   setShippingMethodsOnCart(input: SetShippingMethodsOnCartInput): SetShippingMethodsOnCartOutput
+
+  """Subscribes the specified email to a newsletter"""
+  subscribeEmailToNewsletter(email: String!): SubscribeEmailToNewsletterOutput
   updateCartItems(input: UpdateCartItemsInput): UpdateCartItemsOutput
 
-  """Update the customer's personal information"""
+  """Deprecated. Use UpdateCustomerV2 instead."""
   updateCustomer(input: CustomerInput!): CustomerOutput
 
   """Update customer address"""
   updateCustomerAddress(id: Int!, input: CustomerAddressInput): CustomerAddress
+  updateCustomerEmail(email: String!, password: String!): CustomerOutput
+
+  """Update the customer's personal information"""
+  updateCustomerV2(input: CustomerUpdateInput!): CustomerOutput
+
+  """Updates one or more products in the specified wish list"""
+  updateProductsInWishlist(wishlistId: ID!, wishlistItems: [WishlistItemUpdateInput!]!): UpdateProductsInWishlistOutput
 }
 
 type Order {
   order_id: String @deprecated(reason: "The order_id field is deprecated, use order_number instead.")
   order_number: String!
+}
+
+"""
+OrderAddress contains detailed information about an order's billing and shipping addresses
+"""
+type OrderAddress {
+  """The city or town"""
+  city: String!
+
+  """The customer's company"""
+  company: String
+
+  """The customer's country"""
+  country_code: CountryCodeEnum
+
+  """The fax number"""
+  fax: String
+
+  """
+  The first name of the person associated with the shipping/billing address
+  """
+  firstname: String!
+
+  """
+  The family name of the person associated with the shipping/billing address
+  """
+  lastname: String!
+
+  """
+  The middle name of the person associated with the shipping/billing address
+  """
+  middlename: String
+
+  """The customer's order ZIP or postal code"""
+  postcode: String
+
+  """An honorific, such as Dr., Mr., or Mrs."""
+  prefix: String
+
+  """The state or province name"""
+  region: String
+
+  """The unique ID for a pre-defined region"""
+  region_id: ID
+
+  """An array of strings that define the street number and name"""
+  street: [String]!
+
+  """A value such as Sr., Jr., or III"""
+  suffix: String
+
+  """The telephone number"""
+  telephone: String!
+
+  """The customer's Value-added tax (VAT) number (for corporate customers)"""
+  vat_id: String
+}
+
+type OrderItem implements OrderItemInterface {
+  """The final discount information for the product"""
+  discounts: [Discount]
+
+  """The entered option for the base product, such as a logo or image"""
+  entered_options: [OrderItemOption]
+
+  """The unique identifier of the order item"""
+  id: ID!
+
+  """The name of the base product"""
+  product_name: String
+
+  """The sale price of the base product, including selected options"""
+  product_sale_price: Money!
+
+  """The SKU of the base product"""
+  product_sku: String!
+
+  """The type of product, such as simple, configurable, etc."""
+  product_type: String
+
+  """URL key of the base product"""
+  product_url_key: String
+
+  """The number of canceled items"""
+  quantity_canceled: Float
+
+  """The number of invoiced items"""
+  quantity_invoiced: Float
+
+  """The number of units ordered for this item"""
+  quantity_ordered: Float
+
+  """The number of refunded items"""
+  quantity_refunded: Float
+
+  """The number of returned items"""
+  quantity_returned: Float
+
+  """The number of shipped items"""
+  quantity_shipped: Float
+
+  """The selected options for the base product, such as color or size"""
+  selected_options: [OrderItemOption]
+
+  """The status of the order item"""
+  status: String
+}
+
+"""Order item details"""
+interface OrderItemInterface {
+  """The final discount information for the product"""
+  discounts: [Discount]
+
+  """The entered option for the base product, such as a logo or image"""
+  entered_options: [OrderItemOption]
+
+  """The unique identifier of the order item"""
+  id: ID!
+
+  """The name of the base product"""
+  product_name: String
+
+  """The sale price of the base product, including selected options"""
+  product_sale_price: Money!
+
+  """The SKU of the base product"""
+  product_sku: String!
+
+  """The type of product, such as simple, configurable, etc."""
+  product_type: String
+
+  """URL key of the base product"""
+  product_url_key: String
+
+  """The number of canceled items"""
+  quantity_canceled: Float
+
+  """The number of invoiced items"""
+  quantity_invoiced: Float
+
+  """The number of units ordered for this item"""
+  quantity_ordered: Float
+
+  """The number of refunded items"""
+  quantity_refunded: Float
+
+  """The number of returned items"""
+  quantity_returned: Float
+
+  """The number of shipped items"""
+  quantity_shipped: Float
+
+  """The selected options for the base product, such as color or size"""
+  selected_options: [OrderItemOption]
+
+  """The status of the order item"""
+  status: String
+}
+
+"""Represents order item options like selected or entered"""
+type OrderItemOption {
+  """The name of the option"""
+  label: String!
+
+  """The value of the option"""
+  value: String!
+}
+
+"""Contains details about the payment method used to pay for the order"""
+type OrderPaymentMethod {
+  """Additional data per payment method type"""
+  additional_data: [KeyValue]
+
+  """The label that describes the payment method"""
+  name: String!
+
+  """The payment method code that indicates how the order was paid for"""
+  type: String!
+}
+
+"""Order shipment details"""
+type OrderShipment {
+  """Comments added to the shipment"""
+  comments: [SalesCommentItem]
+
+  """The unique ID of the shipment"""
+  id: ID!
+
+  """Contains items included in the shipment"""
+  items: [ShipmentItemInterface]
+
+  """The sequential credit shipment number"""
+  number: String!
+
+  """Contains shipment tracking details"""
+  tracking: [ShipmentTracking]
+}
+
+"""
+Contains details about the sales total amounts used to calculate the final price
+"""
+type OrderTotal {
+  """The final base grand total amount in the base currency"""
+  base_grand_total: Money!
+
+  """The applied discounts to the order"""
+  discounts: [Discount]
+
+  """The final total amount, including shipping, discounts, and taxes"""
+  grand_total: Money!
+
+  """Contains details about the shipping and handling costs for the order"""
+  shipping_handling: ShippingHandling
+
+  """The subtotal of the order, excluding shipping, discounts, and taxes"""
+  subtotal: Money!
+
+  """The order tax details"""
+  taxes: [TaxItem]
+
+  """The shipping amount for the order"""
+  total_shipping: Money!
+
+  """The amount of tax applied to the order"""
+  total_tax: Money!
 }
 
 """Required input for Payflow Express Checkout payments"""
@@ -3814,6 +4940,13 @@ input PayflowLinkTokenInput {
 input PayflowProInput {
   """Required input for credit card related information"""
   cc_details: CreditCardDetailsInput!
+
+  """
+  States whether details about the customer's credit/debit card should be
+  tokenized for later usage. Required only if Vault is enabled for PayPal
+  Payflow Pro payment integration.
+  """
+  is_active_payment_token_enabler: Boolean
 }
 
 """
@@ -3898,6 +5031,9 @@ input PaymentMethodInput {
 
   """Required input type for PayPal Payflow Pro and Payment Pro payments"""
   payflowpro: PayflowProInput
+
+  """Required input type for PayPal Payflow Pro vault payments"""
+  payflowpro_cc_vault: VaultTokenInput
 
   """Required input for Express Checkout and Payments Standard payments"""
   paypal_express: PaypalExpressInput
@@ -4543,8 +5679,23 @@ interface ProductInterface {
   """An array of ProductLinks objects."""
   product_links: [ProductLinksInterface]
 
+  """The average of all the ratings given to the product."""
+  rating_summary: Float!
+
   """Related Products"""
   related_products: [ProductInterface]
+
+  """The total count of all the reviews given to the product."""
+  review_count: Int!
+
+  """The list of products reviews."""
+  reviews(
+    """Specifies which page of results to return."""
+    currentPage: Int = 1
+
+    """Specifies the maximum number of results to return at once."""
+    pageSize: Int = 20
+  ): ProductReviews!
 
   """A short description of the product. Its use depends on the theme."""
   short_description: ComplexTextValue
@@ -4725,6 +5876,86 @@ type ProductPrices {
 
   """The base price of a product."""
   regularPrice: Price @deprecated(reason: "Use regular_price from PriceRange.minimum_price or PriceRange.maximum_price.")
+}
+
+"""Details of a product review"""
+type ProductReview {
+  """The average rating for product review."""
+  average_rating: Float!
+
+  """Date indicating when the review was created."""
+  created_at: String!
+
+  """The customer's nickname. Defaults to the customer name, if logged in"""
+  nickname: String!
+
+  """Contains details about the reviewed product"""
+  product: ProductInterface!
+
+  """
+  An array of ratings by rating category, such as quality, price, and value
+  """
+  ratings_breakdown: [ProductReviewRating]!
+
+  """The summary (title) of the review"""
+  summary: String!
+
+  """The review text."""
+  text: String!
+}
+
+type ProductReviewRating {
+  """
+  The label assigned to an aspect of a product that is being rated, such as quality or price
+  """
+  name: String!
+
+  """
+  The rating value given by customer. By default, possible values range from 1 to 5.
+  """
+  value: String!
+}
+
+input ProductReviewRatingInput {
+  """An encoded rating ID."""
+  id: String!
+
+  """An encoded rating value id."""
+  value_id: String!
+}
+
+type ProductReviewRatingMetadata {
+  """An encoded rating ID."""
+  id: String!
+
+  """
+  The label assigned to an aspect of a product that is being rated, such as quality or price
+  """
+  name: String!
+
+  """List of product review ratings sorted by position."""
+  values: [ProductReviewRatingValueMetadata]!
+}
+
+type ProductReviewRatingValueMetadata {
+  """A ratings scale, such as the number of stars awarded"""
+  value: String!
+
+  """An encoded rating value id."""
+  value_id: String!
+}
+
+type ProductReviewRatingsMetadata {
+  """List of product reviews sorted by position"""
+  items: [ProductReviewRatingMetadata]!
+}
+
+type ProductReviews {
+  """An array of product reviews."""
+  items: [ProductReview]!
+
+  """Metadata for pagination rendering."""
+  page_info: SearchResultPageInfo!
 }
 
 """
@@ -4933,6 +6164,9 @@ type Products {
 }
 
 type Query {
+  """Get a list of available store views and their config information."""
+  availableStores: [StoreConfig]
+
   """Returns information about shopping cart"""
   cart(cart_id: String!): Cart
   categories(
@@ -5002,9 +6236,7 @@ type Query {
 
   """The query returns the contents of a customer's downloadable products"""
   customerDownloadableProducts: CustomerDownloadableProducts
-
-  """List of customer orders"""
-  customerOrders: CustomerOrders
+  customerOrders: CustomerOrders @deprecated(reason: "Use orders from customer instead")
 
   """Return a list of customer payment tokens"""
   customerPaymentTokens: CustomerPaymentTokens
@@ -5046,6 +6278,9 @@ type Query {
     """
     sort: PickupLocationSortInput
   ): PickupLocations
+
+  """Retrieves metadata required by clients to render the Reviews section."""
+  productReviewRatingsMetadata: ProductReviewRatingsMetadata!
 
   """
   The products query searches for products that match the criteria specified in the search and filter attributes.
@@ -5107,6 +6342,17 @@ type RemoveItemFromCartOutput {
   cart: Cart!
 }
 
+"""Contains the customer's wish list and any errors encountered"""
+type RemoveProductsFromWishlistOutput {
+  """
+  An array of errors encountered while deleting products from a wish list
+  """
+  user_errors: [WishListUserInputError]!
+
+  """Contains the wish list with after items were successfully deleted"""
+  wishlist: Wishlist!
+}
+
 type ReorderItemsOutput {
   """Contains detailed information about the customer's cart."""
   cart: Cart!
@@ -5117,6 +6363,20 @@ type ReorderItemsOutput {
 
 type RevokeCustomerTokenOutput {
   result: Boolean!
+}
+
+"""Comment item details"""
+type SalesCommentItem {
+  """The text of the message"""
+  message: String!
+
+  """The timestamp of the comment"""
+  timestamp: String!
+}
+
+type SalesItemInterface {
+  """The entered gift message for the order item"""
+  gift_message: GiftMessage
 }
 
 """SearchResultPageInfo provides navigation for the query response"""
@@ -5286,6 +6546,59 @@ enum ShipBundleItemsEnum {
   TOGETHER
 }
 
+type ShipmentItem implements ShipmentItemInterface {
+  """Shipment item unique identifier"""
+  id: ID!
+
+  """Associated order item"""
+  order_item: OrderItemInterface
+
+  """Name of the base product"""
+  product_name: String
+
+  """Sale price for the base product"""
+  product_sale_price: Money!
+
+  """SKU of the base product"""
+  product_sku: String!
+
+  """Number of shipped items"""
+  quantity_shipped: Float!
+}
+
+"""Order shipment item details"""
+interface ShipmentItemInterface {
+  """Shipment item unique identifier"""
+  id: ID!
+
+  """Associated order item"""
+  order_item: OrderItemInterface
+
+  """Name of the base product"""
+  product_name: String
+
+  """Sale price for the base product"""
+  product_sale_price: Money!
+
+  """SKU of the base product"""
+  product_sku: String!
+
+  """Number of shipped items"""
+  quantity_shipped: Float!
+}
+
+"""Order shipment tracking details"""
+type ShipmentTracking {
+  """The shipping carrier for the order delivery"""
+  carrier: String!
+
+  """The tracking number of the order shipment"""
+  number: String
+
+  """The shipment tracking title"""
+  title: String!
+}
+
 input ShippingAddressInput {
   address: CartAddressInput
   customer_address_id: Int
@@ -5314,6 +6627,32 @@ type ShippingCartAddress implements CartAddressInterface {
   telephone: String!
 }
 
+"""
+Defines an individual shipping discount. This discount can be applied to shipping.
+"""
+type ShippingDiscount {
+  """The amount of the discount"""
+  amount: Money!
+}
+
+"""The Shipping handling details"""
+type ShippingHandling {
+  """The shipping amount, excluding tax"""
+  amount_excluding_tax: Money
+
+  """The shipping amount, including tax"""
+  amount_including_tax: Money
+
+  """The applied discounts to the shipping"""
+  discounts: [ShippingDiscount]
+
+  """Contains details about taxes applied for shipping"""
+  taxes: [TaxItem]
+
+  """The total amount for shipping"""
+  total_amount: Money!
+}
+
 input ShippingMethodInput {
   carrier_code: String!
   method_code: String!
@@ -5322,6 +6661,9 @@ input ShippingMethodInput {
 """Simple Cart Item"""
 type SimpleCartItem implements CartItemInterface {
   customizable_options: [SelectedCustomizableOption]
+
+  """The entered gift message for the cart item"""
+  gift_message: GiftMessage
   id: String!
   prices: CartItemPrices
   product: ProductInterface!
@@ -5425,8 +6767,23 @@ type SimpleProduct implements CustomizableProductInterface & PhysicalProductInte
   """An array of ProductLinks objects."""
   product_links: [ProductLinksInterface]
 
+  """The average of all the ratings given to the product."""
+  rating_summary: Float!
+
   """Related Products"""
   related_products: [ProductInterface]
+
+  """The total count of all the reviews given to the product."""
+  review_count: Int!
+
+  """The list of products reviews."""
+  reviews(
+    """Specifies which page of results to return."""
+    currentPage: Int = 1
+
+    """Specifies the maximum number of results to return at once."""
+    pageSize: Int = 20
+  ): ProductReviews!
 
   """A short description of the product. Its use depends on the theme."""
   short_description: ComplexTextValue
@@ -5530,6 +6887,17 @@ type StoreConfig {
   """Footer Miscellaneous HTML"""
   absolute_footer: String
 
+  """
+  Indicates whether guest users can write product reviews. Possible values: 1 (Yes) and 0 (No)
+  """
+  allow_guests_to_write_product_reviews: String
+
+  """The value of the Allow Gift Messages for Order Items option"""
+  allow_items: String
+
+  """The value of the Allow Gift Messages on Order Level option"""
+  allow_order: String
+
   """Enable autocomplete on login and forgot password forms"""
   autocomplete_on_storefront: Boolean
 
@@ -5632,17 +7000,28 @@ type StoreConfig {
   """Logo Attribute Width"""
   logo_width: Int
 
+  """Indicates whether wishlists are enabled (1) or disabled (0)"""
+  magento_wishlist_general_is_enabled: String
+
   """The minimum number of characters required for a valid password."""
   minimum_password_length: String
 
   """Default No-route URL"""
   no_route: String
 
+  """Payflow Pro vault status."""
+  payment_payflowpro_cc_vault_active: String
+
   """
   Corresponds to the 'Display Prices On Product View Page' field. It indicates
   how FPT information is displayed on product pages
   """
   product_fixed_product_tax_display_setting: FixedProductTaxDisplaySettings
+
+  """
+  Indicates whether product reviews are enabled. Possible values: 1 (Yes) and 0 (No)
+  """
+  product_reviews_enabled: String
 
   """Product URL Suffix."""
   product_url_suffix: String
@@ -5704,6 +7083,18 @@ type StoreConfig {
   welcome: String
 }
 
+type SubscribeEmailToNewsletterOutput {
+  """Returns the status of the subscription request"""
+  status: SubscriptionStatusesEnum
+}
+
+enum SubscriptionStatusesEnum {
+  NOT_ACTIVE
+  SUBSCRIBED
+  UNCONFIRMED
+  UNSUBSCRIBED
+}
+
 type SwatchData {
   """Type of swatch filter item: 1 - text, 2 - image"""
   type: String
@@ -5736,6 +7127,18 @@ interface SwatchLayerFilterItemInterface {
   swatch_data: SwatchData
 }
 
+"""The tax item details"""
+type TaxItem {
+  """The amount of tax applied to the item"""
+  amount: Money!
+
+  """The rate used to calculate the tax"""
+  rate: Float!
+
+  """A title that describes the tax"""
+  title: String!
+}
+
 type TextSwatchData implements SwatchDataInterface {
   """Value of swatch item (HEX color code, image link or textual value)"""
   value: String
@@ -5762,6 +7165,15 @@ type UpdateCartItemsOutput {
   cart: Cart!
 }
 
+"""Contains the customer's wish list and any errors encountered"""
+type UpdateProductsInWishlistOutput {
+  """An array of errors encountered while updating products in a wish list"""
+  user_errors: [WishListUserInputError]!
+
+  """Contains the wish list with all items that were successfully updated"""
+  wishlist: Wishlist!
+}
+
 """The object contains URL rewrite details"""
 type UrlRewrite {
   """Request parameters"""
@@ -5776,6 +7188,12 @@ enum UrlRewriteEntityTypeEnum {
   CATEGORY
   CMS_PAGE
   PRODUCT
+}
+
+"""Required input for payment methods with Vault support."""
+input VaultTokenInput {
+  """The public hash of the payment token"""
+  public_hash: String!
 }
 
 """Virtual Cart Item"""
@@ -5884,8 +7302,23 @@ type VirtualProduct implements CustomizableProductInterface & ProductInterface {
   """An array of ProductLinks objects."""
   product_links: [ProductLinksInterface]
 
+  """The average of all the ratings given to the product."""
+  rating_summary: Float!
+
   """Related Products"""
   related_products: [ProductInterface]
+
+  """The total count of all the reviews given to the product."""
+  review_count: Int!
+
+  """The list of products reviews."""
+  reviews(
+    """Specifies which page of results to return."""
+    currentPage: Int = 1
+
+    """Specifies the maximum number of results to return at once."""
+    pageSize: Int = 20
+  ): ProductReviews!
 
   """A short description of the product. Its use depends on the theme."""
   short_description: ComplexTextValue
@@ -5977,6 +7410,20 @@ type Website {
   sort_order: Int @deprecated(reason: "The field should not be used on the storefront.")
 }
 
+"""An error encountered while performing operations with WishList."""
+type WishListUserInputError {
+  """Wishlist-specific error code"""
+  code: WishListUserInputErrorType!
+
+  """A localized error message"""
+  message: String!
+}
+
+enum WishListUserInputErrorType {
+  PRODUCT_NOT_FOUND
+  UNDEFINED
+}
+
 type Wishlist {
   """Wishlist unique identifier"""
   id: ID
@@ -6007,6 +7454,44 @@ type WishlistItem {
 
   """The quantity of this wish list item"""
   qty: Float
+}
+
+"""Defines the items to add to a wish list"""
+input WishlistItemInput {
+  """An array of options that the customer entered"""
+  entered_options: [EnteredOptionInput]
+
+  """For complex product types, the SKU of the parent product"""
+  parent_sku: String
+
+  """The amount or number of items to add"""
+  quantity: Float!
+
+  """An array of strings corresponding to options the customer selected"""
+  selected_options: [ID]
+
+  """
+  The SKU of the product to add. For complex product types, specify the child product SKU
+  """
+  sku: String!
+}
+
+"""Defines updates to items in a wish list"""
+input WishlistItemUpdateInput {
+  """Customer-entered comments about the item"""
+  description: String
+
+  """An array of options that the customer entered"""
+  entered_options: [EnteredOptionInput]
+
+  """The new amount or number of this item"""
+  quantity: Float
+
+  """An array of strings corresponding to options the customer selected"""
+  selected_options: [ID]
+
+  """The ID of the wishlist item to update"""
+  wishlist_item_id: ID!
 }
 
 """Deprecated: `Wishlist` type should be used instead"""
