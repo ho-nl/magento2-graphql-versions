@@ -83,16 +83,26 @@ internally inconsistent schema (`CartItemInput` referenced but never defined) an
 
 ### Cross-distribution
 
-Cross-distribution diffs use two-dot compare (direct diff between the tags, not the merge base):
+Cross-distribution diffs use two-dot compare (direct diff between the tags, not the merge base).
+Mage-OS ships without the Adobe-bundled third-party extensions, so it is compared against the
+`core-*` tags — comparing it against plain Magento would drown the real differences in
+Braintree/bundled-extension noise. Each Mage-OS release is paired with the core build of its
+Magento base version (1.0.0 → 2.4.6, 1.1.0 → 2.4.8, 2.x → 2.4.8, 3.x → 2.4.9).
 
-| Left | Right | Schema diff |
+| Magento core | Mage-OS | Schema diff |
 |---------|---------|-------------|
-| 2.4.7 | mage-os-1.1.0 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/2.4.7..mage-os-1.1.0) |
-| 2.4.8 | mage-os-2.3.0 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/2.4.8..mage-os-2.3.0) |
-| 2.4.9 | mage-os-3.2.0 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/2.4.9..mage-os-3.2.0) |
-| 2.4.9 | core-2.4.9 | [what the bundled extensions add](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.9..2.4.9) |
-| 2.4.8 | core-2.4.8 | [what the bundled extensions add](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.8..2.4.8) |
-| 2.4.7 | core-2.4.7 | [what the bundled extensions add](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.7..2.4.7) |
+| core-2.4.6 | mage-os-1.0.0 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.6..mage-os-1.0.0) |
+| core-2.4.8 | mage-os-1.1.0 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.8..mage-os-1.1.0) |
+| core-2.4.8 | mage-os-2.3.0 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.8..mage-os-2.3.0) |
+| core-2.4.9 | mage-os-3.2.0 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.9..mage-os-3.2.0) |
+
+What the bundled extensions themselves add per Magento version:
+
+| Magento core | Magento | Schema diff |
+|---------|---------|-------------|
+| core-2.4.7 | 2.4.7 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.7..2.4.7) |
+| core-2.4.8 | 2.4.8 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.8..2.4.8) |
+| core-2.4.9 | 2.4.9 | [compare](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.9..2.4.9) |
 
 ## Adding a new version
 
