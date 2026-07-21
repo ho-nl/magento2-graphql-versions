@@ -602,6 +602,11 @@ input BillingAddressInput {
   customer_address_id: Int
 
   """
+  The unique ID from the customer's address book that uniquely identifies the address to be used for billing.
+  """
+  customer_address_uid: ID
+
+  """
   Indicates whether to set the billing address to be the same as the existing shipping address on the cart.
   """
   same_as_shipping: Boolean
@@ -622,6 +627,11 @@ type BillingCartAddress implements CartAddressInterface {
 
   """An object containing the country label and code."""
   country: CartAddressCountry!
+
+  """
+  The unique ID from the customer's address book that uniquely identifies the address.
+  """
+  customer_address_uid: ID
   customer_notes: String @deprecated(reason: "The field is used only in shipping address.")
 
   """The customer's fax number."""
@@ -631,7 +641,7 @@ type BillingCartAddress implements CartAddressInterface {
   firstname: String!
 
   """Id of the customer address."""
-  id: Int
+  id: Int @deprecated(reason: "Use `customer_address_uid` instead.")
 
   """The last name of the customer or guest."""
   lastname: String!
@@ -659,8 +669,8 @@ type BillingCartAddress implements CartAddressInterface {
   """The telephone number for the billing or shipping address."""
   telephone: String
 
-  """The unique id of the customer address."""
-  uid: String!
+  """The unique id of the customer cart address."""
+  uid: ID!
 
   """The VAT company number for billing or shipping address."""
   vat_id: String
@@ -1106,9 +1116,6 @@ type BundleProduct implements CustomizableProductInterface & PhysicalProductInte
     pageSize: Int = 20
   ): ProductReviews!
 
-  """Provides applied catalog rules in the current active cart"""
-  rules: [CatalogRule]
-
   """Indicates whether to ship bundle items together or individually."""
   ship_bundle_items: ShipBundleItemsEnum
 
@@ -1336,7 +1343,7 @@ type Cart {
   prices: CartPrices
 
   """Provides applied cart rules in the current active cart"""
-  rules: [CartRule]
+  rules: [CartRuleStorefront]
 
   """Indicates which payment method was applied to the cart."""
   selected_payment_method: SelectedPaymentMethod
@@ -1410,7 +1417,7 @@ input CartAddressInput {
   suffix: String
 
   """The telephone number for the billing or shipping address."""
-  telephone: String
+  telephone: String!
 
   """The VAT company number for billing or shipping address."""
   vat_id: String
@@ -1427,6 +1434,11 @@ interface CartAddressInterface {
   """An object containing the country label and code."""
   country: CartAddressCountry!
 
+  """
+  The unique ID from the customer's address book that uniquely identifies the address.
+  """
+  customer_address_uid: ID
+
   """The customer's fax number."""
   fax: String
 
@@ -1434,7 +1446,7 @@ interface CartAddressInterface {
   firstname: String!
 
   """Id of the customer address."""
-  id: Int
+  id: Int @deprecated(reason: "Use `customer_address_uid` instead.")
 
   """The last name of the customer or guest."""
   lastname: String!
@@ -1462,8 +1474,8 @@ interface CartAddressInterface {
   """The telephone number for the billing or shipping address."""
   telephone: String
 
-  """The unique id of the customer address."""
-  uid: String!
+  """The unique id of the customer cart address."""
+  uid: ID!
 
   """The VAT company number for billing or shipping address."""
   vat_id: String
@@ -1707,9 +1719,9 @@ type CartPrices {
 }
 
 """"""
-type CartRule {
-  """Name of the cart price rule"""
-  name: String!
+type CartRuleStorefront {
+  """The unique ID for a `CartRule` object."""
+  uid: ID!
 }
 
 """Contains tax information about an item in the cart."""
@@ -1865,12 +1877,6 @@ type CatalogAttributeMetadata implements CustomAttributeMetadataInterface {
   Whether a product or category attribute is used in product listing or not.
   """
   used_in_product_listing: Boolean
-}
-
-""""""
-type CatalogRule {
-  """Name of the catalog rule"""
-  name: String!
 }
 
 """
@@ -2202,6 +2208,45 @@ enum CheckoutUserInputErrorCodes {
 
   """"""
   UNDEFINED
+}
+
+"""Contains details about errors encountered when a customer clear cart."""
+type ClearCartError {
+  """A localized error message"""
+  message: String!
+
+  """A cart-specific error type."""
+  type: ClearCartErrorType!
+}
+
+""""""
+enum ClearCartErrorType {
+  """"""
+  INACTIVE
+
+  """"""
+  NOT_FOUND
+
+  """"""
+  UNAUTHORISED
+
+  """"""
+  UNDEFINED
+}
+
+"""Assigns a specific `cart_id` to the empty cart."""
+input ClearCartInput {
+  """The unique ID of a `Cart` object."""
+  uid: ID!
+}
+
+"""Output of the request to clear the customer cart."""
+type ClearCartOutput {
+  """The cart after clear cart items."""
+  cart: Cart
+
+  """An array of errors encountered while clearing the cart item"""
+  errors: [ClearCartError]
 }
 
 """Contains details about a specific CMS block."""
@@ -2605,9 +2650,6 @@ type ConfigurableProduct implements CustomizableProductInterface & PhysicalProdu
     """The maximum number of results to return at once. The default is 20."""
     pageSize: Int = 20
   ): ProductReviews!
-
-  """Provides applied catalog rules in the current active cart"""
-  rules: [CatalogRule]
 
   """A short description of the product. Its use depends on the theme."""
   short_description: ComplexTextValue
@@ -4487,12 +4529,12 @@ type Customer {
   """The customer's gender (Male - 1, Female - 2)."""
   gender: Int
 
-  """Name of the customer group assigned to the customer"""
-  group: CustomerGroup
+  """Customer group assigned to the customer"""
+  group: CustomerGroupStorefront
   group_id: Int @deprecated(reason: "Customer group should not be exposed in the storefront scenarios.")
 
-  """The ID assigned to the customer."""
-  id: Int @deprecated(reason: "`id` is not needed as part of `Customer`, because on the server side, it can be identified based on the customer token used for authentication. There is no need to know customer ID on the client side.")
+  """The unique ID assigned to the customer."""
+  id: ID!
 
   """
   Indicates whether the customer is subscribed to the company's newsletter.
@@ -4614,7 +4656,7 @@ type CustomerAddress {
   firstname: String
 
   """The ID of a `CustomerAddress` object."""
-  id: Int
+  id: Int @deprecated(reason: "Use `uid` instead.")
 
   """
   The family name of the person associated with the shipping/billing address.
@@ -4646,6 +4688,9 @@ type CustomerAddress {
 
   """The customer's telephone number."""
   telephone: String
+
+  """The unique ID for a `CustomerAddress` object."""
+  uid: ID
 
   """The customer's Value-added tax (VAT) number (for corporate customers)."""
   vat_id: String
@@ -4891,9 +4936,9 @@ type CustomerDownloadableProducts {
 }
 
 """Data of customer group."""
-type CustomerGroup {
-  """The name of customer group."""
-  name: String
+type CustomerGroupStorefront {
+  """The unique ID for a `CustomerGroup` object."""
+  uid: ID!
 }
 
 """An input object that assigns or updates customer attributes."""
@@ -5949,9 +5994,6 @@ type DownloadableProduct implements CustomizableProductInterface & ProductInterf
     pageSize: Int = 20
   ): ProductReviews!
 
-  """Provides applied catalog rules in the current active cart"""
-  rules: [CatalogRule]
-
   """A short description of the product. Its use depends on the theme."""
   short_description: ComplexTextValue
 
@@ -6525,9 +6567,6 @@ type GroupedProduct implements PhysicalProductInterface & ProductInterface & Rou
     pageSize: Int = 20
   ): ProductReviews!
 
-  """Provides applied catalog rules in the current active cart"""
-  rules: [CatalogRule]
-
   """A short description of the product. Its use depends on the theme."""
   short_description: ComplexTextValue
 
@@ -6639,6 +6678,18 @@ input GuestOrderCancelInput {
 
   """Order token."""
   token: String!
+}
+
+"""Input to retrieve an order based on details."""
+input GuestOrderInformationInput {
+  """Order billing address email."""
+  email: String!
+
+  """Order billing address lastname."""
+  lastname: String!
+
+  """Order number."""
+  number: String!
 }
 
 """
@@ -6967,6 +7018,11 @@ interface MediaGalleryInterface {
   """The media item's position after it has been sorted."""
   position: Int
 
+  """
+  Array of image types. It can have the following values: image, small_image, thumbnail.
+  """
+  types: [String]
+
   """The URL of the product image or video."""
   url: String
 }
@@ -7096,6 +7152,18 @@ type Mutation {
     newPassword: String!
   ): Customer
 
+  """Remove all items from the specified cart."""
+  clearCart(
+    """An input object that defines cart ID of the shopper."""
+    input: ClearCartInput!
+  ): ClearCartOutput!
+
+  """Remove all the products from the specified wish list."""
+  clearWishlist(
+    """The ID of a wish list."""
+    wishlistId: ID!
+  ): RemoveProductsFromWishlistOutput
+
   """Cancel the specified guest customer order."""
   confirmCancelOrder(input: ConfirmCancelOrderInput!): CancelOrderOutput
 
@@ -7179,6 +7247,12 @@ type Mutation {
   deleteCustomerAddress(
     """The ID of the customer address to be deleted."""
     id: Int!
+  ): Boolean @deprecated(reason: "Use `deleteCustomerAddressV2` instead.")
+
+  """Delete the billing or shipping address of a customer."""
+  deleteCustomerAddressV2(
+    """The unique ID of the customer address to be deleted."""
+    uid: ID!
   ): Boolean
 
   """Delete a customer's payment token."""
@@ -7387,6 +7461,15 @@ type Mutation {
 
     """An input object that contains changes to the customer address."""
     input: CustomerAddressInput
+  ): CustomerAddress @deprecated(reason: "Use `updateCustomerAddressV2` instead.")
+
+  """Update the billing or shipping address of a customer or guest."""
+  updateCustomerAddressV2(
+    """An input object that contains changes to the customer address."""
+    input: CustomerAddressInput
+
+    """The unique ID of the customer address."""
+    uid: ID!
   ): CustomerAddress
 
   """Change the email address for the logged-in customer."""
@@ -7524,6 +7607,9 @@ input OrderInformationInput {
 
   """Order number."""
   number: String!
+
+  """Order billing address postcode"""
+  postcode: String
 }
 
 """"""
@@ -7753,6 +7839,9 @@ type OrderTotal {
 
   """The final total amount, including shipping, discounts, and taxes."""
   grand_total: Money!
+
+  """The grand total of the order, excluding taxes."""
+  grand_total_excl_tax: Money!
 
   """Details about the shipping and handling costs for the order."""
   shipping_handling: ShippingHandling
@@ -8233,7 +8322,7 @@ input PlaceOrderInput {
 """Contains the results of the request to place an order."""
 type PlaceOrderOutput {
   """An array of place order errors."""
-  errors: [PlaceOrderError]!
+  errors: [PlaceOrderError]
 
   """The ID of the order."""
   order: Order @deprecated(reason: "Use `orderV2` instead.")
@@ -8570,6 +8659,11 @@ type ProductImage implements MediaGalleryInterface {
   """The media item's position after it has been sorted."""
   position: Int
 
+  """
+  Array of image types. It can have the following values: image, small_image, thumbnail.
+  """
+  types: [String]
+
   """The URL of the product image or video."""
   url: String
 }
@@ -8710,9 +8804,6 @@ interface ProductInterface {
     """The maximum number of results to return at once. The default is 20."""
     pageSize: Int = 20
   ): ProductReviews!
-
-  """Provides applied catalog rules in the current active cart"""
-  rules: [CatalogRule]
 
   """A short description of the product. Its use depends on the theme."""
   short_description: ComplexTextValue
@@ -9148,6 +9239,11 @@ type ProductVideo implements MediaGalleryInterface {
   """The media item's position after it has been sorted."""
   position: Int
 
+  """
+  Array of image types. It can have the following values: image, small_image, thumbnail.
+  """
+  types: [String]
+
   """The URL of the product image or video."""
   url: String
 
@@ -9191,15 +9287,6 @@ type Products {
 
 """"""
 type Query {
-  """Provides all active cart rules in the store."""
-  allCartRules: [CartRule]
-
-  """Provides all active catalog rules in the store."""
-  allCatalogRules: [CatalogRule]
-
-  """An array containing a list of all Customer Groups available."""
-  allCustomerGroups: [CustomerGroup]
-
   """
   Retrieve EAV attributes associated to a frontend form. Use countries query provided by DirectoryGraphQl module to retrieve region_id and country_id attribute options.
   """
@@ -9318,8 +9405,8 @@ type Query {
   """Return a list of downloadable products the customer has purchased."""
   customerDownloadableProducts: CustomerDownloadableProducts
 
-  """Provides name of the Customer Group assigned to the Customer or Guest."""
-  customerGroup: CustomerGroup!
+  """Provides Customer Group assigned to the Customer or Guest."""
+  customerGroup: CustomerGroupStorefront!
   customerOrders: CustomerOrders @deprecated(reason: "Use the `customer` query instead.")
 
   """Return a list of customer payment tokens stored in the vault."""
@@ -9346,7 +9433,7 @@ type Query {
   """
   Retrieve guest order details based on number, email and billing last name.
   """
-  guestOrder(input: OrderInformationInput!): CustomerOrder!
+  guestOrder(input: GuestOrderInformationInput!): CustomerOrder!
 
   """Retrieve guest order details based on token."""
   guestOrderByToken(input: OrderTokenInput!): CustomerOrder!
@@ -10100,6 +10187,11 @@ input ShippingAddressInput {
   """
   customer_address_id: Int
 
+  """
+  The unique ID from the customer's address book that uniquely identifies the address to be used for shipping.
+  """
+  customer_address_uid: ID
+
   """Text provided by the shopper."""
   customer_notes: String
 
@@ -10127,6 +10219,11 @@ type ShippingCartAddress implements CartAddressInterface {
   """An object containing the country label and code."""
   country: CartAddressCountry!
 
+  """
+  The unique ID from the customer's address book that uniquely identifies the address.
+  """
+  customer_address_uid: ID
+
   """Text provided by the shopper."""
   customer_notes: String
 
@@ -10137,7 +10234,7 @@ type ShippingCartAddress implements CartAddressInterface {
   firstname: String!
 
   """Id of the customer address."""
-  id: Int
+  id: Int @deprecated(reason: "Use `customer_address_uid` instead.")
   items_weight: Float @deprecated(reason: "This information should not be exposed on the frontend.")
 
   """The last name of the customer or guest."""
@@ -10173,8 +10270,8 @@ type ShippingCartAddress implements CartAddressInterface {
   """The telephone number for the billing or shipping address."""
   telephone: String
 
-  """The unique id of the customer address."""
-  uid: String!
+  """The unique id of the customer cart address."""
+  uid: ID!
 
   """The VAT company number for billing or shipping address."""
   vat_id: String
@@ -10392,9 +10489,6 @@ type SimpleProduct implements CustomizableProductInterface & PhysicalProductInte
     """The maximum number of results to return at once. The default is 20."""
     pageSize: Int = 20
   ): ProductReviews!
-
-  """Provides applied catalog rules in the current active cart"""
-  rules: [CatalogRule]
 
   """A short description of the product. Its use depends on the theme."""
   short_description: ComplexTextValue
@@ -10675,6 +10769,9 @@ type StoreConfig {
   """checkout/cart/delete_quote_after: quote lifetime in days."""
   cart_expires_in_days: Int
 
+  """Configuration data from checkout/cart/cart_merge_preference"""
+  cart_merge_preference: String!
+
   """
   checkout/cart_link/use_qty: what to show in the display cart summary, number of items or item quantities.
   """
@@ -10834,14 +10931,9 @@ type StoreConfig {
   front: String
 
   """
-  Configuration data from customer/account_information/graphql_share_all_customer_groups
-  """
-  graphql_share_all_customer_groups: Boolean!
-
-  """
   Configuration data from customer/account_information/graphql_share_customer_group
   """
-  graphql_share_customer_group: Boolean!
+  graphql_share_customer_group: Boolean
 
   """The default number of products per page in Grid View."""
   grid_per_page: Int
@@ -11023,17 +11115,8 @@ type StoreConfig {
   """Email to a Friend configuration."""
   send_friend: SendFriendConfiguration
 
-  """Configuration data from catalog/rule/share_all_catalog_rules"""
-  share_all_catalog_rules: Boolean!
-
-  """Configuration data from promo/graphql/share_all_sales_rule"""
-  share_all_sales_rule: Boolean!
-
-  """Configuration data from catalog/rule/share_applied_catalog_rules"""
-  share_applied_catalog_rules: Boolean!
-
-  """Configuration data from promo/graphql/share_applied_sales_rule"""
-  share_applied_sales_rule: Boolean!
+  """Configuration data from promo/graphql/share_applied_cart_rule"""
+  share_applied_cart_rule: Boolean
 
   """Extended Config Data - tax/cart_display/full_summary"""
   shopping_cart_display_full_summary: Boolean
@@ -11608,9 +11691,6 @@ type VirtualProduct implements CustomizableProductInterface & ProductInterface &
     pageSize: Int = 20
   ): ProductReviews!
 
-  """Provides applied catalog rules in the current active cart"""
-  rules: [CatalogRule]
-
   """A short description of the product. Its use depends on the theme."""
   short_description: ComplexTextValue
 
@@ -11798,6 +11878,9 @@ enum WishlistCartUserInputErrorType {
 
   """"""
   PRODUCT_NOT_FOUND
+
+  """"""
+  REQUIRED_PARAMETER_MISSING
 
   """"""
   UNDEFINED
