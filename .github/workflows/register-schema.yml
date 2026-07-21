@@ -3,9 +3,29 @@ on:
   workflow_dispatch:
     inputs:
       magento_version:
-        description: 'Magento version'
+        description: 'Package version to install'
         required: true
         default: '2.4.6'
+      composer_package:
+        description: 'Distribution metapackage'
+        required: true
+        default: 'magento/product-community-edition'
+      composer_repo:
+        description: 'Composer repository URL'
+        required: true
+        default: 'https://repo.magento.com/'
+      label:
+        description: 'Commit message / tag (defaults to magento_version; e.g. mage-os-3.2.0)'
+        required: false
+        default: ''
+      extra_require:
+        description: 'Additional composer requirements (space-separated pkg:constraint)'
+        required: false
+        default: ''
+      disable_modules:
+        description: 'Magento modules to disable before schema generation (space-separated)'
+        required: false
+        default: ''
       php_version:
         description: 'PHP version'
         required: true
@@ -70,29 +90,45 @@ jobs:
       - name: Create empty composer project
         run: |
           echo ${{ secrets.AUTH_JSON }} >> auth.json
-          composer init -n --name reach-digital/register-schema --require magento/product-community-edition:${{ github.event.inputs.magento_version }}
-          composer config repositories.magento '{"type": "composer", "url": "https://repo.magento.com/"}'
-          composer config --no-plugins allow-plugins.magento/composer-dependency-version-audit-plugin true
-          composer config --no-plugins allow-plugins.magento/inventory-composer-installer true
-          composer config --no-plugins allow-plugins.magento/magento-composer-installer true
-          composer config --no-plugins allow-plugins.laminas/laminas-dependency-plugin true
-          # Old Magento releases have known advisories; installing them in throwaway CI is the point of this repo
-          composer config policy.advisories.block false
+          composer init -n --name reach-digital/register-schema --require ${{ github.event.inputs.composer_package }}:${{ github.event.inputs.magento_version }}
+          composer config repositories.dist composer ${{ github.event.inputs.composer_repo }}
+          EXTRA="${{ github.event.inputs.extra_require }}"
+          if [ -n "$EXTRA" ]; then composer require --no-update $EXTRA; fi
+          # Some Mage-OS releases require dev-stability packages (e.g. phpmd/phpmd 3.x-dev in 1.1.0)
+          composer config minimum-stability dev
+          composer config prefer-stable true
+          if composer --version | grep -q "Composer version 1."; then
+            echo "composer v1: skipping v2-only configuration"
+          else
+            # Throwaway CI install; Mage-OS ships the same plugins under renamed packages, so allow all
+            composer config --no-plugins allow-plugins true
+            # Old Magento releases have known advisories; installing them in throwaway CI is the point of this repo
+            composer config policy.advisories.block false
+          fi
           sed -i '$ s/.$//' composer.json
-          echo ',"autoload":{"files": ["app/etc/NonComposerComponentRegistration.php"],"psr-0": {"": ["app/code/","generated/code/"]},"psr-4":{"Magento\\":"app/code/Magento/","Magento\\Framework\\": "lib/internal/Magento/Framework/","Magento\\Setup\\": "setup/src/Magento/Setup/", "Zend\\Mvc\\Controller\\": "setup/src/Zend/Mvc/Controller/"},"psr-0": {"": ["app/code/"]}}}' >> composer.json
-          composer install
+          echo ',"autoload":{"files": ["app/etc/NonComposerComponentRegistration.php"],"psr-0": {"": ["app/code/","generated/code/"]},"psr-4":{"Magento\\":"app/code/Magento/","Magento\\Framework\\": "lib/internal/Magento/Framework/","Magento\\Setup\\": "setup/src/Magento/Setup/", "MageOS\\Installer\\": "setup/src/MageOS/Installer/", "Zend\\Mvc\\Controller\\": "setup/src/Zend/Mvc/Controller/"},"psr-0": {"": ["app/code/"]}}}' >> composer.json
+          # composer-plugin-api is ignored because old releases pin plugins to plugin-api v1
+          # (laminas-dependency-plugin in 2.4.0/2.4.1, inventory-composer-installer in 2.3.x);
+          # those plugins are inert for a fresh metapackage install.
+          composer install --ignore-platform-req=composer-plugin-api
       - name: Patch legacy Magento for current dependencies
         run: |
           php .github/patches/acsd-59280-union-types.php
           php .github/patches/polyfill-framework-interfaces.php
+          php .github/patches/allow-is-synchronous.php
       - name: Install Magento
         run: |
           if [ "${{ github.event.inputs.search_engine }}" = "opensearch" ]; then
             SEARCH_ARGS="--search-engine=opensearch --opensearch-host=localhost --opensearch-port=9200"
+          elif [ "${{ github.event.inputs.search_engine }}" = "none" ]; then
+            # Magento 2.3.x installs without a search engine (MySQL catalog search)
+            SEARCH_ARGS=""
           else
             SEARCH_ARGS="--search-engine=${{ github.event.inputs.search_engine }} --elasticsearch-host=localhost --elasticsearch-port=9200"
           fi
           php bin/magento setup:install --cleanup-database --backend-frontname=admin --amqp-host=localhost --amqp-port=5672 --amqp-user=guest --amqp-password=guest  --db-host=127.0.0.1 --db-name=magento --db-user=root --db-password=123123q --session-save=files --admin-user=admin --admin-password=Welkom1234 --admin-email=admin@test.com --admin-firstname=Admin --admin-lastname=Admin $SEARCH_ARGS --magento-init-params="MAGE_MODE=developer"
+          DISABLE="${{ github.event.inputs.disable_modules }}"
+          if [ -n "$DISABLE" ]; then php bin/magento module:disable $DISABLE; fi
           php bin/magento reach-digital:get-graphql-schema
           ls .
           cat schema.graphql
@@ -103,11 +139,13 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add schema.graphql
+          LABEL="${{ github.event.inputs.label }}"
+          [ -z "$LABEL" ] && LABEL="${{ github.event.inputs.magento_version }}"
           if git diff --cached --quiet; then
-            echo "Schema identical to previous version, nothing to commit"
-            exit 0
+            echo "Schema identical to previous version, tagging without a commit"
+          else
+            git commit -m "$LABEL"
+            git push origin HEAD:${{ github.ref_name }}
           fi
-          git commit -m "${{ github.event.inputs.magento_version }}"
-          git push origin HEAD:${{ github.ref_name }}
-          git tag -f "${{ github.event.inputs.magento_version }}"
-          git push -f origin "refs/tags/${{ github.event.inputs.magento_version }}"
+          git tag -f "$LABEL"
+          git push -f origin "refs/tags/$LABEL"
