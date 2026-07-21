@@ -245,6 +245,122 @@ type Attribute {
 }
 
 """
+List of all entity types. Populated by the modules introducing EAV entities.
+"""
+enum AttributeEntityTypeEnum {
+  """"""
+  CATALOG_CATEGORY
+
+  """"""
+  CATALOG_PRODUCT
+
+  """"""
+  CUSTOMER
+
+  """"""
+  CUSTOMER_ADDRESS
+}
+
+"""An input object that specifies the filters used for attributes."""
+input AttributeFilterInput {
+  """
+  Whether a product or category attribute can be compared against another or not.
+  """
+  is_comparable: Boolean
+
+  """Whether a product or category attribute can be filtered or not."""
+  is_filterable: Boolean
+
+  """
+  Whether a product or category attribute can be filtered in search or not.
+  """
+  is_filterable_in_search: Boolean
+
+  """Whether a product or category attribute can use HTML on front or not."""
+  is_html_allowed_on_front: Boolean
+
+  """Whether a product or category attribute can be searched or not."""
+  is_searchable: Boolean
+
+  """
+  Whether a product or category attribute can be used for price rules or not.
+  """
+  is_used_for_price_rules: Boolean
+
+  """
+  Whether a product or category attribute is used for promo rules or not.
+  """
+  is_used_for_promo_rules: Boolean
+
+  """
+  Whether a product or category attribute is visible in advanced search or not.
+  """
+  is_visible_in_advanced_search: Boolean
+
+  """Whether a product or category attribute is visible on front or not."""
+  is_visible_on_front: Boolean
+
+  """Whether a product or category attribute has WYSIWYG enabled or not."""
+  is_wysiwyg_enabled: Boolean
+
+  """
+  Whether a product or category attribute is used in product listing or not.
+  """
+  used_in_product_listing: Boolean
+}
+
+"""EAV attribute frontend input types."""
+enum AttributeFrontendInputEnum {
+  """"""
+  BOOLEAN
+
+  """"""
+  DATE
+
+  """"""
+  DATETIME
+
+  """"""
+  FILE
+
+  """"""
+  GALLERY
+
+  """"""
+  HIDDEN
+
+  """"""
+  IMAGE
+
+  """"""
+  MEDIA_IMAGE
+
+  """"""
+  MULTILINE
+
+  """"""
+  MULTISELECT
+
+  """"""
+  PRICE
+
+  """"""
+  SELECT
+
+  """"""
+  TEXT
+
+  """"""
+  TEXTAREA
+
+  """"""
+  UNDEFINED
+
+  """"""
+  WEIGHT
+}
+
+"""
 Defines the attribute characteristics to search for the `attribute_code` and `entity_type` to search.
 """
 input AttributeInput {
@@ -257,6 +373,68 @@ input AttributeInput {
   entity_type: String
 }
 
+"""Specifies selected option for a select or multiselect attribute value."""
+input AttributeInputSelectedOption {
+  """The attribute option value."""
+  value: String!
+}
+
+"""Base EAV implementation of CustomAttributeMetadataInterface."""
+type AttributeMetadata implements CustomAttributeMetadataInterface {
+  """
+  The unique identifier for an attribute code. This value should be in lowercase letters without spaces.
+  """
+  code: ID!
+
+  """Default attribute value."""
+  default_value: String
+
+  """The type of entity that defines the attribute."""
+  entity_type: AttributeEntityTypeEnum!
+
+  """The frontend class of the attribute."""
+  frontend_class: String
+
+  """The frontend input type of the attribute."""
+  frontend_input: AttributeFrontendInputEnum
+
+  """Whether the attribute value is required."""
+  is_required: Boolean!
+
+  """Whether the attribute value must be unique."""
+  is_unique: Boolean!
+
+  """The label assigned to the attribute."""
+  label: String
+
+  """Attribute options."""
+  options: [CustomAttributeOptionInterface]!
+}
+
+"""Attribute metadata retrieval error."""
+type AttributeMetadataError {
+  """Attribute metadata retrieval error message."""
+  message: String!
+
+  """Attribute metadata retrieval error type."""
+  type: AttributeMetadataErrorType!
+}
+
+"""Attribute metadata retrieval error types."""
+enum AttributeMetadataErrorType {
+  """The requested attribute was not found."""
+  ATTRIBUTE_NOT_FOUND
+
+  """The requested entity was not found."""
+  ENTITY_NOT_FOUND
+
+  """The filter cannot be applied as it does not belong to the entity"""
+  FILTER_NOT_FOUND
+
+  """Not categorized error, see the error message."""
+  UNDEFINED
+}
+
 """Defines an attribute option."""
 type AttributeOption {
   """The label assigned to the attribute option."""
@@ -264,6 +442,90 @@ type AttributeOption {
 
   """The attribute option value."""
   value: String
+}
+
+"""Base EAV implementation of CustomAttributeOptionInterface."""
+type AttributeOptionMetadata implements CustomAttributeOptionInterface {
+  """Is the option value default."""
+  is_default: Boolean!
+
+  """The label assigned to the attribute option."""
+  label: String!
+
+  """The attribute option value."""
+  value: String!
+}
+
+""""""
+type AttributeSelectedOption implements AttributeSelectedOptionInterface {
+  """The attribute selected option label."""
+  label: String!
+
+  """The attribute selected option value."""
+  value: String!
+}
+
+""""""
+interface AttributeSelectedOptionInterface {
+  """The attribute selected option label."""
+  label: String!
+
+  """The attribute selected option value."""
+  value: String!
+}
+
+""""""
+type AttributeSelectedOptions implements AttributeValueInterface {
+  """The attribute code."""
+  code: ID!
+  selected_options: [AttributeSelectedOptionInterface]!
+}
+
+""""""
+type AttributeValue implements AttributeValueInterface {
+  """The attribute code."""
+  code: ID!
+
+  """The attribute value."""
+  value: String!
+}
+
+"""Specifies the value for attribute."""
+input AttributeValueInput {
+  """The code of the attribute."""
+  attribute_code: String!
+
+  """
+  An array containing selected options for a select or multiselect attribute.
+  """
+  selected_options: [AttributeInputSelectedOption]
+
+  """The value assigned to the attribute."""
+  value: String
+}
+
+""""""
+interface AttributeValueInterface {
+  """The attribute code."""
+  code: ID!
+}
+
+"""Metadata of EAV attributes associated to form"""
+type AttributesFormOutput {
+  """Errors of retrieving certain attributes metadata."""
+  errors: [AttributeMetadataError]!
+
+  """Requested attributes metadata."""
+  items: [CustomAttributeMetadataInterface]!
+}
+
+"""Metadata of EAV attributes."""
+type AttributesMetadataOutput {
+  """Errors of retrieving certain attributes metadata."""
+  errors: [AttributeMetadataError]!
+
+  """Requested attributes metadata."""
+  items: [CustomAttributeMetadataInterface]!
 }
 
 """
@@ -320,13 +582,13 @@ type AvailableShippingMethod {
 """"""
 enum BatchMutationStatus {
   """"""
-  FAILURE @deprecated
+  FAILURE
 
   """"""
-  MIXED_RESULTS @deprecated
+  MIXED_RESULTS
 
   """"""
-  SUCCESS @deprecated
+  SUCCESS
 }
 
 """Defines the billing address."""
@@ -362,20 +624,34 @@ type BillingCartAddress implements CartAddressInterface {
   country: CartAddressCountry!
   customer_notes: String @deprecated(reason: "The field is used only in shipping address.")
 
+  """The customer's fax number."""
+  fax: String
+
   """The first name of the customer or guest."""
   firstname: String!
 
   """The last name of the customer or guest."""
   lastname: String!
 
+  """
+  The middle name of the person associated with the billing/shipping address.
+  """
+  middlename: String
+
   """The ZIP or postal code of the billing or shipping address."""
   postcode: String
+
+  """An honorific, such as Dr., Mr., or Mrs."""
+  prefix: String
 
   """An object containing the region label and code."""
   region: CartAddressRegion
 
   """An array containing the street for the billing or shipping address."""
   street: [String]!
+
+  """A value such as Sr., Jr., or III."""
+  suffix: String
 
   """The telephone number for the billing or shipping address."""
   telephone: String
@@ -424,6 +700,11 @@ type BundleCartItem implements CartItemInterface {
   """The entered gift message for the cart item"""
   gift_message: GiftMessage
   id: String! @deprecated(reason: "Use `uid` instead.")
+
+  """
+  True if requested quantity is less than available stock, false otherwise.
+  """
+  is_available: Boolean!
 
   """
   Contains details about the price of the item, including taxes and discounts.
@@ -607,6 +888,11 @@ type BundleOrderItem implements OrderItemInterface {
   """The unique ID for an `OrderItemInterface` object."""
   id: ID!
 
+  """
+  The ProductInterface object, which contains details about the base product
+  """
+  product: ProductInterface
+
   """The name of the base product."""
   product_name: String
 
@@ -661,6 +947,7 @@ type BundleProduct implements CustomizableProductInterface & PhysicalProductInte
 
   """The categories assigned to a product."""
   categories: [CategoryInterface]
+  color: Int @deprecated(reason: "Use the `custom_attributes` field instead.")
 
   """The product's country of origin."""
   country_of_manufacture: String
@@ -670,6 +957,9 @@ type BundleProduct implements CustomizableProductInterface & PhysicalProductInte
 
   """Crosssell Products"""
   crosssell_products: [ProductInterface]
+
+  """Product custom attributes."""
+  custom_attributesV2(filters: AttributeFilterInput): ProductCustomAttributes
 
   """
   Detailed information about the product. The value can include simple HTML tags.
@@ -700,7 +990,7 @@ type BundleProduct implements CustomizableProductInterface & PhysicalProductInte
   items: [BundleItem]
 
   """A number representing the product's manufacturer."""
-  manufacturer: Int
+  manufacturer: Int @deprecated(reason: "Use the `custom_attributes` field instead.")
 
   """An array of media gallery objects."""
   media_gallery: [MediaGalleryInterface]
@@ -747,6 +1037,9 @@ type BundleProduct implements CustomizableProductInterface & PhysicalProductInte
 
   """Indicates the price of an item."""
   price: ProductPrices @deprecated(reason: "Use `price_range` for product price information.")
+
+  """The price details of the main product"""
+  price_details: PriceDetails
 
   """The range of prices for the product"""
   price_range: PriceRange!
@@ -924,6 +1217,29 @@ type BundleWishlistItem implements WishlistItemInterface {
   quantity: Float!
 }
 
+"""Defines the order to cancel."""
+input CancelOrderInput {
+  """Order ID."""
+  order_id: ID!
+
+  """Cancellation reason."""
+  reason: String!
+}
+
+"""Contains the updated customer order and error message if any."""
+type CancelOrderOutput {
+  """Error encountered while cancelling the order."""
+  error: String
+
+  """Updated customer order."""
+  order: CustomerOrder
+}
+
+""""""
+type CancellationReason {
+  description: String!
+}
+
 """
 Contains the contents and other details about a guest or customer cart.
 """
@@ -954,7 +1270,8 @@ type Cart {
   is_virtual: Boolean!
 
   """An array of products that have been added to the cart."""
-  items: [CartItemInterface]
+  items: [CartItemInterface] @deprecated(reason: "Use `itemsV2` instead.")
+  itemsV2(currentPage: Int = 1, pageSize: Int = 20, sort: QuoteItemsSortInput): CartItems
 
   """Pricing details for the quote."""
   prices: CartPrices
@@ -989,14 +1306,25 @@ input CartAddressInput {
   """The country code and label for the billing or shipping address."""
   country_code: String!
 
+  """The customer's fax number."""
+  fax: String
+
   """The first name of the customer or guest."""
   firstname: String!
 
   """The last name of the customer or guest."""
   lastname: String!
 
+  """
+  The middle name of the person associated with the billing/shipping address.
+  """
+  middlename: String
+
   """The ZIP or postal code of the billing or shipping address."""
   postcode: String
+
+  """An honorific, such as Dr., Mr., or Mrs."""
+  prefix: String
 
   """
   A string that defines the state or province of the billing or shipping address.
@@ -1016,6 +1344,9 @@ input CartAddressInput {
   """An array containing the street for the billing or shipping address."""
   street: [String]!
 
+  """A value such as Sr., Jr., or III."""
+  suffix: String
+
   """The telephone number for the billing or shipping address."""
   telephone: String
 
@@ -1034,20 +1365,34 @@ interface CartAddressInterface {
   """An object containing the country label and code."""
   country: CartAddressCountry!
 
+  """The customer's fax number."""
+  fax: String
+
   """The first name of the customer or guest."""
   firstname: String!
 
   """The last name of the customer or guest."""
   lastname: String!
 
+  """
+  The middle name of the person associated with the billing/shipping address.
+  """
+  middlename: String
+
   """The ZIP or postal code of the billing or shipping address."""
   postcode: String
+
+  """An honorific, such as Dr., Mr., or Mrs."""
+  prefix: String
 
   """An object containing the region label and code."""
   region: CartAddressRegion
 
   """An array containing the street for the billing or shipping address."""
   street: [String]!
+
+  """A value such as Sr., Jr., or III."""
+  suffix: String
 
   """The telephone number for the billing or shipping address."""
   telephone: String
@@ -1081,6 +1426,15 @@ type CartDiscount {
 }
 
 """"""
+enum CartDiscountType {
+  """"""
+  ITEM
+
+  """"""
+  SHIPPING
+}
+
+""""""
 type CartItemError {
   """An error code that describes the error encountered"""
   code: CartItemErrorType!
@@ -1092,13 +1446,13 @@ type CartItemError {
 """"""
 enum CartItemErrorType {
   """"""
-  ITEM_INCREMENTS @deprecated
+  ITEM_INCREMENTS
 
   """"""
-  ITEM_QTY @deprecated
+  ITEM_QTY
 
   """"""
-  UNDEFINED @deprecated
+  UNDEFINED
 }
 
 """Defines an item to be added to the cart."""
@@ -1128,6 +1482,11 @@ interface CartItemInterface {
   """An array of errors encountered while loading the cart item"""
   errors: [CartItemError]
   id: String! @deprecated(reason: "Use `uid` instead.")
+
+  """
+  True if requested quantity is less than available stock, false otherwise.
+  """
+  is_available: Boolean!
 
   """
   Contains details about the price of the item, including taxes and discounts.
@@ -1212,6 +1571,18 @@ input CartItemUpdateInput {
   quantity: Float
 }
 
+""""""
+type CartItems {
+  """An array of products that have been added to the cart."""
+  items: [CartItemInterface]!
+
+  """Metadata for pagination rendering."""
+  page_info: SearchResultPageInfo
+
+  """The number of returned cart items."""
+  total_count: Int!
+}
+
 """
 Contains details about the final price of items in the cart, including discount and tax information.
 """
@@ -1261,16 +1632,129 @@ type CartUserInputError {
 """"""
 enum CartUserInputErrorType {
   """"""
-  INSUFFICIENT_STOCK @deprecated
+  INSUFFICIENT_STOCK
 
   """"""
-  NOT_SALABLE @deprecated
+  NOT_SALABLE
 
   """"""
-  PRODUCT_NOT_FOUND @deprecated
+  PRODUCT_NOT_FOUND
 
   """"""
-  UNDEFINED @deprecated
+  UNDEFINED
+}
+
+""""""
+enum CatalogAttributeApplyToEnum {
+  """"""
+  BUNDLE
+
+  """"""
+  CATEGORY
+
+  """"""
+  CONFIGURABLE
+
+  """"""
+  DOWNLOADABLE
+
+  """"""
+  GROUPED
+
+  """"""
+  SIMPLE
+
+  """"""
+  VIRTUAL
+}
+
+"""Swatch attribute metadata."""
+type CatalogAttributeMetadata implements CustomAttributeMetadataInterface {
+  """To which catalog types an attribute can be applied."""
+  apply_to: [CatalogAttributeApplyToEnum]
+
+  """
+  The unique identifier for an attribute code. This value should be in lowercase letters without spaces.
+  """
+  code: ID!
+
+  """Default attribute value."""
+  default_value: String
+
+  """The type of entity that defines the attribute."""
+  entity_type: AttributeEntityTypeEnum!
+
+  """The frontend class of the attribute."""
+  frontend_class: String
+
+  """The frontend input type of the attribute."""
+  frontend_input: AttributeFrontendInputEnum
+
+  """
+  Whether a product or category attribute can be compared against another or not.
+  """
+  is_comparable: Boolean
+
+  """Whether a product or category attribute can be filtered or not."""
+  is_filterable: Boolean
+
+  """
+  Whether a product or category attribute can be filtered in search or not.
+  """
+  is_filterable_in_search: Boolean
+
+  """Whether a product or category attribute can use HTML on front or not."""
+  is_html_allowed_on_front: Boolean
+
+  """Whether the attribute value is required."""
+  is_required: Boolean!
+
+  """Whether a product or category attribute can be searched or not."""
+  is_searchable: Boolean
+
+  """Whether the attribute value must be unique."""
+  is_unique: Boolean!
+
+  """
+  Whether a product or category attribute can be used for price rules or not.
+  """
+  is_used_for_price_rules: Boolean
+
+  """
+  Whether a product or category attribute is used for promo rules or not.
+  """
+  is_used_for_promo_rules: Boolean
+
+  """
+  Whether a product or category attribute is visible in advanced search or not.
+  """
+  is_visible_in_advanced_search: Boolean
+
+  """Whether a product or category attribute is visible on front or not."""
+  is_visible_on_front: Boolean
+
+  """Whether a product or category attribute has WYSIWYG enabled or not."""
+  is_wysiwyg_enabled: Boolean
+
+  """The label assigned to the attribute."""
+  label: String
+
+  """Attribute options."""
+  options: [CustomAttributeOptionInterface]!
+
+  """Input type of the swatch attribute option."""
+  swatch_input_type: SwatchInputTypeEnum
+
+  """Whether update product preview image or not."""
+  update_product_preview_image: Boolean
+
+  """Whether use product image for swatch or not."""
+  use_product_image_for_swatch: Boolean
+
+  """
+  Whether a product or category attribute is used in product listing or not.
+  """
+  used_in_product_listing: Boolean
 }
 
 """
@@ -1566,10 +2050,10 @@ type CheckoutAgreement {
 """Indicates how agreements are accepted."""
 enum CheckoutAgreementMode {
   """Conditions are automatically accepted upon checkout."""
-  AUTO @deprecated
+  AUTO
 
   """Shoppers must manually accept the conditions to place an order."""
-  MANUAL @deprecated
+  MANUAL
 }
 
 """An error encountered while adding an item to the cart."""
@@ -1589,19 +2073,19 @@ type CheckoutUserInputError {
 """"""
 enum CheckoutUserInputErrorCodes {
   """"""
-  INSUFFICIENT_STOCK @deprecated
+  INSUFFICIENT_STOCK
 
   """"""
-  NOT_SALABLE @deprecated
+  NOT_SALABLE
 
   """"""
-  PRODUCT_NOT_FOUND @deprecated
+  PRODUCT_NOT_FOUND
 
   """"""
-  REORDER_NOT_AVAILABLE @deprecated
+  REORDER_NOT_AVAILABLE
 
   """"""
-  UNDEFINED @deprecated
+  UNDEFINED
 }
 
 """Contains details about a specific CMS block."""
@@ -1759,6 +2243,11 @@ type ConfigurableCartItem implements CartItemInterface {
   id: String! @deprecated(reason: "Use `uid` instead.")
 
   """
+  True if requested quantity is less than available stock, false otherwise.
+  """
+  is_available: Boolean!
+
+  """
   Contains details about the price of the item, including taxes and discounts.
   """
   prices: CartItemPrices
@@ -1798,6 +2287,7 @@ type ConfigurableProduct implements CustomizableProductInterface & PhysicalProdu
 
   """The categories assigned to a product."""
   categories: [CategoryInterface]
+  color: Int @deprecated(reason: "Use the `custom_attributes` field instead.")
 
   """An array of options for the configurable product."""
   configurable_options: [ConfigurableProductOptions]
@@ -1816,6 +2306,9 @@ type ConfigurableProduct implements CustomizableProductInterface & PhysicalProdu
   """Crosssell Products"""
   crosssell_products: [ProductInterface]
 
+  """Product custom attributes."""
+  custom_attributesV2(filters: AttributeFilterInput): ProductCustomAttributes
+
   """
   Detailed information about the product. The value can include simple HTML tags.
   """
@@ -1831,7 +2324,7 @@ type ConfigurableProduct implements CustomizableProductInterface & PhysicalProdu
   image: ProductImage
 
   """A number representing the product's manufacturer."""
-  manufacturer: Int
+  manufacturer: Int @deprecated(reason: "Use the `custom_attributes` field instead.")
 
   """An array of media gallery objects."""
   media_gallery: [MediaGalleryInterface]
@@ -2164,6 +2657,45 @@ type ConfigurableWishlistItem implements WishlistItemInterface {
   quantity: Float!
 }
 
+"""Contains details about a customer email address to confirm."""
+input ConfirmEmailInput {
+  """The key to confirm the email address."""
+  confirmation_key: String!
+
+  """The email address to be confirmed."""
+  email: String!
+}
+
+"""List of account confirmation statuses."""
+enum ConfirmationStatusEnum {
+  """Account confirmation not required"""
+  ACCOUNT_CONFIRMATION_NOT_REQUIRED
+
+  """Account confirmed"""
+  ACCOUNT_CONFIRMED
+}
+
+""""""
+input ContactUsInput {
+  """The shopper's comment to the merchant."""
+  comment: String!
+
+  """The email address of the shopper."""
+  email: String!
+
+  """The full name of the shopper."""
+  name: String!
+
+  """The shopper's telephone number."""
+  telephone: String
+}
+
+"""Contains the status of the request."""
+type ContactUsOutput {
+  """Indicates whether the request was successful."""
+  status: Boolean!
+}
+
 """"""
 type Country {
   """An array of regions within a particular country."""
@@ -2188,745 +2720,757 @@ type Country {
 """The list of country codes."""
 enum CountryCodeEnum {
   """Andorra"""
-  AD @deprecated
+  AD
 
   """United Arab Emirates"""
-  AE @deprecated
+  AE
 
   """Afghanistan"""
-  AF @deprecated
+  AF
 
   """Antigua & Barbuda"""
-  AG @deprecated
+  AG
 
   """Anguilla"""
-  AI @deprecated
+  AI
 
   """Albania"""
-  AL @deprecated
+  AL
 
   """Armenia"""
-  AM @deprecated
+  AM
 
   """Netherlands Antilles"""
-  AN @deprecated
+  AN
 
   """Angola"""
-  AO @deprecated
+  AO
 
   """Antarctica"""
-  AQ @deprecated
+  AQ
 
   """Argentina"""
-  AR @deprecated
+  AR
 
   """American Samoa"""
-  AS @deprecated
+  AS
 
   """Austria"""
-  AT @deprecated
+  AT
 
   """Australia"""
-  AU @deprecated
+  AU
 
   """Aruba"""
-  AW @deprecated
+  AW
 
   """Åland Islands"""
-  AX @deprecated
+  AX
 
   """Azerbaijan"""
-  AZ @deprecated
+  AZ
 
   """Bosnia & Herzegovina"""
-  BA @deprecated
+  BA
 
   """Barbados"""
-  BB @deprecated
+  BB
 
   """Bangladesh"""
-  BD @deprecated
+  BD
 
   """Belgium"""
-  BE @deprecated
+  BE
 
   """Burkina Faso"""
-  BF @deprecated
+  BF
 
   """Bulgaria"""
-  BG @deprecated
+  BG
 
   """Bahrain"""
-  BH @deprecated
+  BH
 
   """Burundi"""
-  BI @deprecated
+  BI
 
   """Benin"""
-  BJ @deprecated
+  BJ
 
   """St. Barthélemy"""
-  BL @deprecated
+  BL
 
   """Bermuda"""
-  BM @deprecated
+  BM
 
   """Brunei"""
-  BN @deprecated
+  BN
 
   """Bolivia"""
-  BO @deprecated
+  BO
 
   """Brazil"""
-  BR @deprecated
+  BR
 
   """Bahamas"""
-  BS @deprecated
+  BS
 
   """Bhutan"""
-  BT @deprecated
+  BT
 
   """Bouvet Island"""
-  BV @deprecated
+  BV
 
   """Botswana"""
-  BW @deprecated
+  BW
 
   """Belarus"""
-  BY @deprecated
+  BY
 
   """Belize"""
-  BZ @deprecated
+  BZ
 
   """Canada"""
-  CA @deprecated
+  CA
 
   """Cocos (Keeling) Islands"""
-  CC @deprecated
+  CC
 
   """Congo-Kinshasa"""
-  CD @deprecated
+  CD
 
   """Central African Republic"""
-  CF @deprecated
+  CF
 
   """Congo-Brazzaville"""
-  CG @deprecated
+  CG
 
   """Switzerland"""
-  CH @deprecated
+  CH
 
   """Côte d’Ivoire"""
-  CI @deprecated
+  CI
 
   """Cook Islands"""
-  CK @deprecated
+  CK
 
   """Chile"""
-  CL @deprecated
+  CL
 
   """Cameroon"""
-  CM @deprecated
+  CM
 
   """China"""
-  CN @deprecated
+  CN
 
   """Colombia"""
-  CO @deprecated
+  CO
 
   """Costa Rica"""
-  CR @deprecated
+  CR
 
   """Cuba"""
-  CU @deprecated
+  CU
 
   """Cape Verde"""
-  CV @deprecated
+  CV
 
   """Christmas Island"""
-  CX @deprecated
+  CX
 
   """Cyprus"""
-  CY @deprecated
+  CY
 
   """Czech Republic"""
-  CZ @deprecated
+  CZ
 
   """Germany"""
-  DE @deprecated
+  DE
 
   """Djibouti"""
-  DJ @deprecated
+  DJ
 
   """Denmark"""
-  DK @deprecated
+  DK
 
   """Dominica"""
-  DM @deprecated
+  DM
 
   """Dominican Republic"""
-  DO @deprecated
+  DO
 
   """Algeria"""
-  DZ @deprecated
+  DZ
 
   """Ecuador"""
-  EC @deprecated
+  EC
 
   """Estonia"""
-  EE @deprecated
+  EE
 
   """Egypt"""
-  EG @deprecated
+  EG
 
   """Western Sahara"""
-  EH @deprecated
+  EH
 
   """Eritrea"""
-  ER @deprecated
+  ER
 
   """Spain"""
-  ES @deprecated
+  ES
 
   """Ethiopia"""
-  ET @deprecated
+  ET
 
   """Finland"""
-  FI @deprecated
+  FI
 
   """Fiji"""
-  FJ @deprecated
+  FJ
 
   """Falkland Islands"""
-  FK @deprecated
+  FK
 
   """Micronesia"""
-  FM @deprecated
+  FM
 
   """Faroe Islands"""
-  FO @deprecated
+  FO
 
   """France"""
-  FR @deprecated
+  FR
 
   """Gabon"""
-  GA @deprecated
+  GA
 
   """United Kingdom"""
-  GB @deprecated
+  GB
 
   """Grenada"""
-  GD @deprecated
+  GD
 
   """Georgia"""
-  GE @deprecated
+  GE
 
   """French Guiana"""
-  GF @deprecated
+  GF
 
   """Guernsey"""
-  GG @deprecated
+  GG
 
   """Ghana"""
-  GH @deprecated
+  GH
 
   """Gibraltar"""
-  GI @deprecated
+  GI
 
   """Greenland"""
-  GL @deprecated
+  GL
 
   """Gambia"""
-  GM @deprecated
+  GM
 
   """Guinea"""
-  GN @deprecated
+  GN
 
   """Guadeloupe"""
-  GP @deprecated
+  GP
 
   """Equatorial Guinea"""
-  GQ @deprecated
+  GQ
 
   """Greece"""
-  GR @deprecated
+  GR
 
   """South Georgia & South Sandwich Islands"""
-  GS @deprecated
+  GS
 
   """Guatemala"""
-  GT @deprecated
+  GT
 
   """Guam"""
-  GU @deprecated
+  GU
 
   """Guinea-Bissau"""
-  GW @deprecated
+  GW
 
   """Guyana"""
-  GY @deprecated
+  GY
 
   """Hong Kong SAR China"""
-  HK @deprecated
+  HK
 
   """Heard &amp; McDonald Islands"""
-  HM @deprecated
+  HM
 
   """Honduras"""
-  HN @deprecated
+  HN
 
   """Croatia"""
-  HR @deprecated
+  HR
 
   """Haiti"""
-  HT @deprecated
+  HT
 
   """Hungary"""
-  HU @deprecated
+  HU
 
   """Indonesia"""
-  ID @deprecated
+  ID
 
   """Ireland"""
-  IE @deprecated
+  IE
 
   """Israel"""
-  IL @deprecated
+  IL
 
   """Isle of Man"""
-  IM @deprecated
+  IM
 
   """India"""
-  IN @deprecated
+  IN
 
   """British Indian Ocean Territory"""
-  IO @deprecated
+  IO
 
   """Iraq"""
-  IQ @deprecated
+  IQ
 
   """Iran"""
-  IR @deprecated
+  IR
 
   """Iceland"""
-  IS @deprecated
+  IS
 
   """Italy"""
-  IT @deprecated
+  IT
 
   """Jersey"""
-  JE @deprecated
+  JE
 
   """Jamaica"""
-  JM @deprecated
+  JM
 
   """Jordan"""
-  JO @deprecated
+  JO
 
   """Japan"""
-  JP @deprecated
+  JP
 
   """Kenya"""
-  KE @deprecated
+  KE
 
   """Kyrgyzstan"""
-  KG @deprecated
+  KG
 
   """Cambodia"""
-  KH @deprecated
+  KH
 
   """Kiribati"""
-  KI @deprecated
+  KI
 
   """Comoros"""
-  KM @deprecated
+  KM
 
   """St. Kitts & Nevis"""
-  KN @deprecated
+  KN
 
   """North Korea"""
-  KP @deprecated
+  KP
 
   """South Korea"""
-  KR @deprecated
+  KR
 
   """Kuwait"""
-  KW @deprecated
+  KW
 
   """Cayman Islands"""
-  KY @deprecated
+  KY
 
   """Kazakhstan"""
-  KZ @deprecated
+  KZ
 
   """Laos"""
-  LA @deprecated
+  LA
 
   """Lebanon"""
-  LB @deprecated
+  LB
 
   """St. Lucia"""
-  LC @deprecated
+  LC
 
   """Liechtenstein"""
-  LI @deprecated
+  LI
 
   """Sri Lanka"""
-  LK @deprecated
+  LK
 
   """Liberia"""
-  LR @deprecated
+  LR
 
   """Lesotho"""
-  LS @deprecated
+  LS
 
   """Lithuania"""
-  LT @deprecated
+  LT
 
   """Luxembourg"""
-  LU @deprecated
+  LU
 
   """Latvia"""
-  LV @deprecated
+  LV
 
   """Libya"""
-  LY @deprecated
+  LY
 
   """Morocco"""
-  MA @deprecated
+  MA
 
   """Monaco"""
-  MC @deprecated
+  MC
 
   """Moldova"""
-  MD @deprecated
+  MD
 
   """Montenegro"""
-  ME @deprecated
+  ME
 
   """St. Martin"""
-  MF @deprecated
+  MF
 
   """Madagascar"""
-  MG @deprecated
+  MG
 
   """Marshall Islands"""
-  MH @deprecated
+  MH
 
   """Macedonia"""
-  MK @deprecated
+  MK
 
   """Mali"""
-  ML @deprecated
+  ML
 
   """Myanmar (Burma)"""
-  MM @deprecated
+  MM
 
   """Mongolia"""
-  MN @deprecated
+  MN
 
   """Macau SAR China"""
-  MO @deprecated
+  MO
 
   """Northern Mariana Islands"""
-  MP @deprecated
+  MP
 
   """Martinique"""
-  MQ @deprecated
+  MQ
 
   """Mauritania"""
-  MR @deprecated
+  MR
 
   """Montserrat"""
-  MS @deprecated
+  MS
 
   """Malta"""
-  MT @deprecated
+  MT
 
   """Mauritius"""
-  MU @deprecated
+  MU
 
   """Maldives"""
-  MV @deprecated
+  MV
 
   """Malawi"""
-  MW @deprecated
+  MW
 
   """Mexico"""
-  MX @deprecated
+  MX
 
   """Malaysia"""
-  MY @deprecated
+  MY
 
   """Mozambique"""
-  MZ @deprecated
+  MZ
 
   """Namibia"""
-  NA @deprecated
+  NA
 
   """New Caledonia"""
-  NC @deprecated
+  NC
 
   """Niger"""
-  NE @deprecated
+  NE
 
   """Norfolk Island"""
-  NF @deprecated
+  NF
 
   """Nigeria"""
-  NG @deprecated
+  NG
 
   """Nicaragua"""
-  NI @deprecated
+  NI
 
   """Netherlands"""
-  NL @deprecated
+  NL
 
   """Norway"""
-  NO @deprecated
+  NO
 
   """Nepal"""
-  NP @deprecated
+  NP
 
   """Nauru"""
-  NR @deprecated
+  NR
 
   """Niue"""
-  NU @deprecated
+  NU
 
   """New Zealand"""
-  NZ @deprecated
+  NZ
 
   """Oman"""
-  OM @deprecated
+  OM
 
   """Panama"""
-  PA @deprecated
+  PA
 
   """Peru"""
-  PE @deprecated
+  PE
 
   """French Polynesia"""
-  PF @deprecated
+  PF
 
   """Papua New Guinea"""
-  PG @deprecated
+  PG
 
   """Philippines"""
-  PH @deprecated
+  PH
 
   """Pakistan"""
-  PK @deprecated
+  PK
 
   """Poland"""
-  PL @deprecated
+  PL
 
   """St. Pierre & Miquelon"""
-  PM @deprecated
+  PM
 
   """Pitcairn Islands"""
-  PN @deprecated
+  PN
 
   """Palestinian Territories"""
-  PS @deprecated
+  PS
 
   """Portugal"""
-  PT @deprecated
+  PT
 
   """Palau"""
-  PW @deprecated
+  PW
 
   """Paraguay"""
-  PY @deprecated
+  PY
 
   """Qatar"""
-  QA @deprecated
+  QA
 
   """Réunion"""
-  RE @deprecated
+  RE
 
   """Romania"""
-  RO @deprecated
+  RO
 
   """Serbia"""
-  RS @deprecated
+  RS
 
   """Russia"""
-  RU @deprecated
+  RU
 
   """Rwanda"""
-  RW @deprecated
+  RW
 
   """Saudi Arabia"""
-  SA @deprecated
+  SA
 
   """Solomon Islands"""
-  SB @deprecated
+  SB
 
   """Seychelles"""
-  SC @deprecated
+  SC
 
   """Sudan"""
-  SD @deprecated
+  SD
 
   """Sweden"""
-  SE @deprecated
+  SE
 
   """Singapore"""
-  SG @deprecated
+  SG
 
   """St. Helena"""
-  SH @deprecated
+  SH
 
   """Slovenia"""
-  SI @deprecated
+  SI
 
   """Svalbard & Jan Mayen"""
-  SJ @deprecated
+  SJ
 
   """Slovakia"""
-  SK @deprecated
+  SK
 
   """Sierra Leone"""
-  SL @deprecated
+  SL
 
   """San Marino"""
-  SM @deprecated
+  SM
 
   """Senegal"""
-  SN @deprecated
+  SN
 
   """Somalia"""
-  SO @deprecated
+  SO
 
   """Suriname"""
-  SR @deprecated
+  SR
 
   """São Tomé & Príncipe"""
-  ST @deprecated
+  ST
 
   """El Salvador"""
-  SV @deprecated
+  SV
 
   """Syria"""
-  SY @deprecated
+  SY
 
-  """Swaziland"""
-  SZ @deprecated
+  """Eswatini"""
+  SZ
 
   """Turks & Caicos Islands"""
-  TC @deprecated
+  TC
 
   """Chad"""
-  TD @deprecated
+  TD
 
   """French Southern Territories"""
-  TF @deprecated
+  TF
 
   """Togo"""
-  TG @deprecated
+  TG
 
   """Thailand"""
-  TH @deprecated
+  TH
 
   """Tajikistan"""
-  TJ @deprecated
+  TJ
 
   """Tokelau"""
-  TK @deprecated
+  TK
 
   """Timor-Leste"""
-  TL @deprecated
+  TL
 
   """Turkmenistan"""
-  TM @deprecated
+  TM
 
   """Tunisia"""
-  TN @deprecated
+  TN
 
   """Tonga"""
-  TO @deprecated
+  TO
 
   """Turkey"""
-  TR @deprecated
+  TR
 
   """Trinidad & Tobago"""
-  TT @deprecated
+  TT
 
   """Tuvalu"""
-  TV @deprecated
+  TV
 
   """Taiwan"""
-  TW @deprecated
+  TW
 
   """Tanzania"""
-  TZ @deprecated
+  TZ
 
   """Ukraine"""
-  UA @deprecated
+  UA
 
   """Uganda"""
-  UG @deprecated
+  UG
 
   """U.S. Outlying Islands"""
-  UM @deprecated
+  UM
 
   """United States"""
-  US @deprecated
+  US
 
   """Uruguay"""
-  UY @deprecated
+  UY
 
   """Uzbekistan"""
-  UZ @deprecated
+  UZ
 
   """Vatican City"""
-  VA @deprecated
+  VA
 
   """St. Vincent & Grenadines"""
-  VC @deprecated
+  VC
 
   """Venezuela"""
-  VE @deprecated
+  VE
 
   """British Virgin Islands"""
-  VG @deprecated
+  VG
 
   """U.S. Virgin Islands"""
-  VI @deprecated
+  VI
 
   """Vietnam"""
-  VN @deprecated
+  VN
 
   """Vanuatu"""
-  VU @deprecated
+  VU
 
   """Wallis & Futuna"""
-  WF @deprecated
+  WF
 
   """Samoa"""
-  WS @deprecated
+  WS
 
   """Yemen"""
-  YE @deprecated
+  YE
 
   """Mayotte"""
-  YT @deprecated
+  YT
 
   """South Africa"""
-  ZA @deprecated
+  ZA
 
   """Zambia"""
-  ZM @deprecated
+  ZM
 
   """Zimbabwe"""
-  ZW @deprecated
+  ZW
 }
 
 """Contains an array of product IDs to use for creating a compare list."""
 input CreateCompareListInput {
   """An array of product IDs to add to the compare list."""
   products: [ID]
+}
+
+""""""
+input CreateGuestCartInput {
+  """Optional client-generated ID"""
+  cart_uid: ID
+}
+
+""""""
+type CreateGuestCartOutput {
+  """The newly created cart."""
+  cart: Cart
 }
 
 """
@@ -3122,520 +3666,564 @@ type Currency {
 """The list of available currency codes."""
 enum CurrencyEnum {
   """"""
-  AED @deprecated
+  AED
 
   """"""
-  AFN @deprecated
+  AFN
 
   """"""
-  ALL @deprecated
+  ALL
 
   """"""
-  AMD @deprecated
+  AMD
 
   """"""
-  ANG @deprecated
+  ANG
 
   """"""
-  AOA @deprecated
+  AOA
 
   """"""
-  ARS @deprecated
+  ARS
 
   """"""
-  AUD @deprecated
+  AUD
 
   """"""
-  AWG @deprecated
+  AWG
 
   """"""
-  AZM @deprecated
+  AZM
 
   """"""
-  AZN @deprecated
+  AZN
 
   """"""
-  BAM @deprecated
+  BAM
 
   """"""
-  BBD @deprecated
+  BBD
 
   """"""
-  BDT @deprecated
+  BDT
 
   """"""
-  BGN @deprecated
+  BGN
 
   """"""
-  BHD @deprecated
+  BHD
 
   """"""
-  BIF @deprecated
+  BIF
 
   """"""
-  BMD @deprecated
+  BMD
 
   """"""
-  BND @deprecated
+  BND
 
   """"""
-  BOB @deprecated
+  BOB
 
   """"""
-  BRL @deprecated
+  BRL
 
   """"""
-  BSD @deprecated
+  BSD
 
   """"""
-  BTN @deprecated
+  BTN
 
   """"""
-  BUK @deprecated
+  BUK
 
   """"""
-  BWP @deprecated
+  BWP
 
   """"""
-  BYN @deprecated
+  BYN
 
   """"""
-  BZD @deprecated
+  BZD
 
   """"""
-  CAD @deprecated
+  CAD
 
   """"""
-  CDF @deprecated
+  CDF
 
   """"""
-  CHE @deprecated
+  CHE
 
   """"""
-  CHF @deprecated
+  CHF
 
   """"""
-  CHW @deprecated
+  CHW
 
   """"""
-  CLP @deprecated
+  CLP
 
   """"""
-  CNY @deprecated
+  CNY
 
   """"""
-  COP @deprecated
+  COP
 
   """"""
-  CRC @deprecated
+  CRC
 
   """"""
-  CUP @deprecated
+  CUP
 
   """"""
-  CVE @deprecated
+  CVE
 
   """"""
-  CZK @deprecated
+  CZK
 
   """"""
-  DJF @deprecated
+  DJF
 
   """"""
-  DKK @deprecated
+  DKK
 
   """"""
-  DOP @deprecated
+  DOP
 
   """"""
-  DZD @deprecated
+  DZD
 
   """"""
-  EEK @deprecated
+  EEK
 
   """"""
-  EGP @deprecated
+  EGP
 
   """"""
-  ERN @deprecated
+  ERN
 
   """"""
-  ETB @deprecated
+  ETB
 
   """"""
-  EUR @deprecated
+  EUR
 
   """"""
-  FJD @deprecated
+  FJD
 
   """"""
-  FKP @deprecated
+  FKP
 
   """"""
-  GBP @deprecated
+  GBP
 
   """"""
-  GEK @deprecated
+  GEK
 
   """"""
-  GEL @deprecated
+  GEL
 
   """"""
-  GHS @deprecated
+  GHS
 
   """"""
-  GIP @deprecated
+  GIP
 
   """"""
-  GMD @deprecated
+  GMD
 
   """"""
-  GNF @deprecated
+  GNF
 
   """"""
-  GQE @deprecated
+  GQE
 
   """"""
-  GTQ @deprecated
+  GTQ
 
   """"""
-  GYD @deprecated
+  GYD
 
   """"""
-  HKD @deprecated
+  HKD
 
   """"""
-  HNL @deprecated
+  HNL
 
   """"""
-  HRK @deprecated
+  HRK
 
   """"""
-  HTG @deprecated
+  HTG
 
   """"""
-  HUF @deprecated
+  HUF
 
   """"""
-  IDR @deprecated
+  IDR
 
   """"""
-  ILS @deprecated
+  ILS
 
   """"""
-  INR @deprecated
+  INR
 
   """"""
-  IQD @deprecated
+  IQD
 
   """"""
-  IRR @deprecated
+  IRR
 
   """"""
-  ISK @deprecated
+  ISK
 
   """"""
-  JMD @deprecated
+  JMD
 
   """"""
-  JOD @deprecated
+  JOD
 
   """"""
-  JPY @deprecated
+  JPY
 
   """"""
-  KES @deprecated
+  KES
 
   """"""
-  KGS @deprecated
+  KGS
 
   """"""
-  KHR @deprecated
+  KHR
 
   """"""
-  KMF @deprecated
+  KMF
 
   """"""
-  KPW @deprecated
+  KPW
 
   """"""
-  KRW @deprecated
+  KRW
 
   """"""
-  KWD @deprecated
+  KWD
 
   """"""
-  KYD @deprecated
+  KYD
 
   """"""
-  KZT @deprecated
+  KZT
 
   """"""
-  LAK @deprecated
+  LAK
 
   """"""
-  LBP @deprecated
+  LBP
 
   """"""
-  LKR @deprecated
+  LKR
 
   """"""
-  LRD @deprecated
+  LRD
 
   """"""
-  LSL @deprecated
+  LSL
 
   """"""
-  LSM @deprecated
+  LSM
 
   """"""
-  LTL @deprecated
+  LTL
 
   """"""
-  LVL @deprecated
+  LVL
 
   """"""
-  LYD @deprecated
+  LYD
 
   """"""
-  MAD @deprecated
+  MAD
 
   """"""
-  MDL @deprecated
+  MDL
 
   """"""
-  MGA @deprecated
+  MGA
 
   """"""
-  MKD @deprecated
+  MKD
 
   """"""
-  MMK @deprecated
+  MMK
 
   """"""
-  MNT @deprecated
+  MNT
 
   """"""
-  MOP @deprecated
+  MOP
 
   """"""
-  MRO @deprecated
+  MRO
 
   """"""
-  MUR @deprecated
+  MUR
 
   """"""
-  MVR @deprecated
+  MVR
 
   """"""
-  MWK @deprecated
+  MWK
 
   """"""
-  MXN @deprecated
+  MXN
 
   """"""
-  MYR @deprecated
+  MYR
 
   """"""
-  MZN @deprecated
+  MZN
 
   """"""
-  NAD @deprecated
+  NAD
 
   """"""
-  NGN @deprecated
+  NGN
 
   """"""
-  NIC @deprecated
+  NIC
 
   """"""
-  NOK @deprecated
+  NOK
 
   """"""
-  NPR @deprecated
+  NPR
 
   """"""
-  NZD @deprecated
+  NZD
 
   """"""
-  OMR @deprecated
+  OMR
 
   """"""
-  PAB @deprecated
+  PAB
 
   """"""
-  PEN @deprecated
+  PEN
 
   """"""
-  PGK @deprecated
+  PGK
 
   """"""
-  PHP @deprecated
+  PHP
 
   """"""
-  PKR @deprecated
+  PKR
 
   """"""
-  PLN @deprecated
+  PLN
 
   """"""
-  PYG @deprecated
+  PYG
 
   """"""
-  QAR @deprecated
+  QAR
 
   """"""
-  RHD @deprecated
+  RHD
 
   """"""
-  ROL @deprecated
+  ROL
 
   """"""
-  RON @deprecated
+  RON
 
   """"""
-  RSD @deprecated
+  RSD
 
   """"""
-  RUB @deprecated
+  RUB
 
   """"""
-  RWF @deprecated
+  RWF
 
   """"""
-  SAR @deprecated
+  SAR
 
   """"""
-  SBD @deprecated
+  SBD
 
   """"""
-  SCR @deprecated
+  SCR
 
   """"""
-  SDG @deprecated
+  SDG
 
   """"""
-  SEK @deprecated
+  SEK
 
   """"""
-  SGD @deprecated
+  SGD
 
   """"""
-  SHP @deprecated
+  SHP
 
   """"""
-  SKK @deprecated
+  SKK
 
   """"""
-  SLL @deprecated
+  SLL
 
   """"""
-  SOS @deprecated
+  SOS
 
   """"""
-  SRD @deprecated
+  SRD
 
   """"""
-  STD @deprecated
+  STD
 
   """"""
-  SVC @deprecated
+  SVC
 
   """"""
-  SYP @deprecated
+  SYP
 
   """"""
-  SZL @deprecated
+  SZL
 
   """"""
-  THB @deprecated
+  THB
 
   """"""
-  TJS @deprecated
+  TJS
 
   """"""
-  TMM @deprecated
+  TMM
 
   """"""
-  TND @deprecated
+  TND
 
   """"""
-  TOP @deprecated
+  TOP
 
   """"""
-  TRL @deprecated
+  TRL
 
   """"""
-  TRY @deprecated
+  TRY
 
   """"""
-  TTD @deprecated
+  TTD
 
   """"""
-  TWD @deprecated
+  TWD
 
   """"""
-  TZS @deprecated
+  TZS
 
   """"""
-  UAH @deprecated
+  UAH
 
   """"""
-  UGX @deprecated
+  UGX
 
   """"""
-  USD @deprecated
+  USD
 
   """"""
-  UYU @deprecated
+  UYU
 
   """"""
-  UZS @deprecated
+  UZS
 
   """"""
-  VEB @deprecated
+  VEB
 
   """"""
-  VEF @deprecated
+  VEF
 
   """"""
-  VND @deprecated
+  VND
 
   """"""
-  VUV @deprecated
+  VUV
 
   """"""
-  WST @deprecated
+  WST
 
   """"""
-  XCD @deprecated
+  XCD
 
   """"""
-  XOF @deprecated
+  XOF
 
   """"""
-  XPF @deprecated
+  XPF
 
   """"""
-  YER @deprecated
+  YER
 
   """"""
-  YTL @deprecated
+  YTL
 
   """"""
-  ZAR @deprecated
+  ZAR
 
   """"""
-  ZMK @deprecated
+  ZMK
 
   """"""
-  ZWD @deprecated
+  ZWD
 }
 
 """Defines an array of custom attributes."""
 type CustomAttributeMetadata {
   """An array of attributes."""
   items: [Attribute]
+}
+
+"""An interface containing fields that define the EAV attribute."""
+interface CustomAttributeMetadataInterface {
+  """
+  The unique identifier for an attribute code. This value should be in lowercase letters without spaces.
+  """
+  code: ID!
+
+  """Default attribute value."""
+  default_value: String
+
+  """The type of entity that defines the attribute."""
+  entity_type: AttributeEntityTypeEnum!
+
+  """The frontend class of the attribute."""
+  frontend_class: String
+
+  """The frontend input type of the attribute."""
+  frontend_input: AttributeFrontendInputEnum
+
+  """Whether the attribute value is required."""
+  is_required: Boolean!
+
+  """Whether the attribute value must be unique."""
+  is_unique: Boolean!
+
+  """The label assigned to the attribute."""
+  label: String
+
+  """Attribute options."""
+  options: [CustomAttributeOptionInterface]!
+}
+
+""""""
+interface CustomAttributeOptionInterface {
+  """Is the option value default."""
+  is_default: Boolean!
+
+  """The label assigned to the attribute option."""
+  label: String!
+
+  """The attribute option value."""
+  value: String!
 }
 
 """Defines the customer name, addresses, and other details."""
@@ -3649,8 +4237,14 @@ type Customer {
   """The contents of the customer's compare list."""
   compare_list: CompareList
 
+  """The customer's confirmation status."""
+  confirmation_status: ConfirmationStatusEnum!
+
   """Timestamp indicating when the account was created."""
   created_at: String
+
+  """Customer's custom attributes."""
+  custom_attributes(attributeCodes: [ID!]): [AttributeValueInterface]
 
   """The customer's date of birth."""
   date_of_birth: String
@@ -3767,7 +4361,10 @@ type CustomerAddress {
 
   """The customer's country."""
   country_id: String @deprecated(reason: "Use `country_code` instead.")
-  custom_attributes: [CustomerAddressAttribute] @deprecated(reason: "Custom attributes should not be put into a container.")
+  custom_attributes: [CustomerAddressAttribute] @deprecated(reason: "Use custom_attributesV2 instead.")
+
+  """Custom attributes assigned to the customer address."""
+  custom_attributesV2(attributeCodes: [ID!]): [AttributeValueInterface]!
 
   """The customer ID"""
   customer_id: Int @deprecated(reason: "`customer_id` is not needed as part of `CustomerAddress`. The `id` is a unique identifier for the addresses.")
@@ -3838,7 +4435,7 @@ type CustomerAddressAttribute {
   """The name assigned to the customer address attribute."""
   attribute_code: String
 
-  """The valuue assigned to the customer address attribute."""
+  """The value assigned to the customer address attribute."""
   value: String
 }
 
@@ -3865,8 +4462,11 @@ input CustomerAddressInput {
   """Deprecated: use `country_code` instead."""
   country_id: CountryCodeEnum
 
-  """Deprecated: Custom attributes should not be put into container."""
+  """Deprecated. Use custom_attributesV2 instead."""
   custom_attributes: [CustomerAddressAttributeInput]
+
+  """Custom attributes assigned to the customer address."""
+  custom_attributesV2: [AttributeValueInput]
 
   """Indicates whether the address is the default billing address."""
   default_billing: Boolean
@@ -3938,10 +4538,57 @@ input CustomerAddressRegionInput {
   region_id: Int
 }
 
+"""Customer attribute metadata."""
+type CustomerAttributeMetadata implements CustomAttributeMetadataInterface {
+  """
+  The unique identifier for an attribute code. This value should be in lowercase letters without spaces.
+  """
+  code: ID!
+
+  """Default attribute value."""
+  default_value: String
+
+  """The type of entity that defines the attribute."""
+  entity_type: AttributeEntityTypeEnum!
+
+  """The frontend class of the attribute."""
+  frontend_class: String
+
+  """The frontend input type of the attribute."""
+  frontend_input: AttributeFrontendInputEnum
+
+  """The template used for the input of the attribute (e.g., 'date')."""
+  input_filter: InputFilterEnum
+
+  """Whether the attribute value is required."""
+  is_required: Boolean!
+
+  """Whether the attribute value must be unique."""
+  is_unique: Boolean!
+
+  """The label assigned to the attribute."""
+  label: String
+
+  """The number of lines of the attribute value."""
+  multiline_count: Int
+
+  """Attribute options."""
+  options: [CustomAttributeOptionInterface]!
+
+  """The position of the attribute in the form."""
+  sort_order: Int
+
+  """The validation rules of the attribute value."""
+  validate_rules: [ValidationRule]
+}
+
 """An input object for creating a customer."""
 input CustomerCreateInput {
   """Indicates whether the customer has enabled remote shopping assistance."""
   allow_remote_shopping_assistance: Boolean
+
+  """The customer's custom attributes."""
+  custom_attributes: [AttributeValueInput]
 
   """The customer's date of birth."""
   date_of_birth: String
@@ -4051,6 +4698,9 @@ input CustomerInput {
 
 """Contains details about each of the customer's orders."""
 type CustomerOrder {
+  """Coupons applied to the order."""
+  applied_coupons: [AppliedCoupon]!
+
   """The billing address for the order."""
   billing_address: OrderAddress
 
@@ -4063,6 +4713,9 @@ type CustomerOrder {
 
   """A list of credit memos."""
   credit_memos: [CreditMemo]
+
+  """Order customer email."""
+  email: String
 
   """The entered gift message for the order"""
   gift_message: GiftMessage
@@ -4100,6 +4753,9 @@ type CustomerOrder {
   """The current status of the order."""
   status: String!
 
+  """The token that can be used to retrieve the order using order query."""
+  token: String!
+
   """Details about the calculated totals for this order."""
   total: OrderTotal
 }
@@ -4120,10 +4776,10 @@ input CustomerOrderSortInput {
 """Specifies the field to use for sorting"""
 enum CustomerOrderSortableField {
   """Sorts customer orders by created_at field"""
-  CREATED_AT @deprecated
+  CREATED_AT
 
   """Sorts customer orders by number"""
-  NUMBER @deprecated
+  NUMBER
 }
 
 """
@@ -4168,6 +4824,9 @@ type CustomerToken {
 input CustomerUpdateInput {
   """Indicates whether the customer has enabled remote shopping assistance."""
   allow_remote_shopping_assistance: Boolean
+
+  """The customer's custom attributes."""
+  custom_attributes: [AttributeValueInput]
 
   """The customer's date of birth."""
   date_of_birth: String
@@ -4328,13 +4987,13 @@ type CustomizableDateOption implements CustomizableOptionInterface {
 """Defines the customizable date type."""
 enum CustomizableDateTypeEnum {
   """"""
-  DATE @deprecated
+  DATE
 
   """"""
-  DATE_TIME @deprecated
+  DATE_TIME
 
   """"""
-  TIME @deprecated
+  TIME
 }
 
 """
@@ -4560,6 +5219,9 @@ input CustomizableOptionInput {
   """The customizable option ID of the product."""
   id: Int
 
+  """The unique ID for a `CartItemInterface` object."""
+  uid: ID
+
   """The string value of the option."""
   value_string: String!
 }
@@ -4657,11 +5319,17 @@ type DeletePaymentTokenOutput {
 }
 
 """
-Defines an individual discount. A discount can be applied to the cart as a whole or to an item.
+Defines an individual discount. A discount can be applied to the cart as a whole or to an item, shipping.
 """
 type Discount {
   """The amount of the discount."""
   amount: Money!
+
+  """The type of the entity the discount is applied to."""
+  applied_to: CartDiscountType!
+
+  """The coupon related to the discount."""
+  coupon: AppliedCoupon
 
   """A description of the discount."""
   label: String!
@@ -4675,6 +5343,11 @@ type DownloadableCartItem implements CartItemInterface {
   """An array of errors encountered while loading the cart item"""
   errors: [CartItemError]
   id: String! @deprecated(reason: "Use `uid` instead.")
+
+  """
+  True if requested quantity is less than available stock, false otherwise.
+  """
+  is_available: Boolean!
 
   """
   An array containing information about the links for the downloadable product added to the cart.
@@ -4803,6 +5476,11 @@ type DownloadableOrderItem implements OrderItemInterface {
   """The unique ID for an `OrderItemInterface` object."""
   id: ID!
 
+  """
+  The ProductInterface object, which contains details about the base product
+  """
+  product: ProductInterface
+
   """The name of the base product."""
   product_name: String
 
@@ -4855,6 +5533,7 @@ type DownloadableProduct implements CustomizableProductInterface & ProductInterf
 
   """The categories assigned to a product."""
   categories: [CategoryInterface]
+  color: Int @deprecated(reason: "Use the `custom_attributes` field instead.")
 
   """The product's country of origin."""
   country_of_manufacture: String
@@ -4864,6 +5543,9 @@ type DownloadableProduct implements CustomizableProductInterface & ProductInterf
 
   """Crosssell Products"""
   crosssell_products: [ProductInterface]
+
+  """Product custom attributes."""
+  custom_attributesV2(filters: AttributeFilterInput): ProductCustomAttributes
 
   """
   Detailed information about the product. The value can include simple HTML tags.
@@ -4898,7 +5580,7 @@ type DownloadableProduct implements CustomizableProductInterface & ProductInterf
   links_title: String
 
   """A number representing the product's manufacturer."""
-  manufacturer: Int
+  manufacturer: Int @deprecated(reason: "Use the `custom_attributes` field instead.")
 
   """An array of media gallery objects."""
   media_gallery: [MediaGalleryInterface]
@@ -5184,6 +5866,36 @@ interface ErrorInterface {
   message: String!
 }
 
+"""Contains details about an address."""
+input EstimateAddressInput {
+  """The two-letter code representing the customer's country."""
+  country_code: CountryCodeEnum!
+
+  """The customer's ZIP or postal code."""
+  postcode: String
+
+  """An object containing the region name, region code, and region ID."""
+  region: CustomerAddressRegionInput
+}
+
+""""""
+input EstimateTotalsInput {
+  """Customer's address to estimate totals."""
+  address: EstimateAddressInput!
+
+  """The unique ID of the cart to query."""
+  cart_id: String!
+
+  """Selected shipping method to estimate totals."""
+  shipping_method: ShippingMethodInput
+}
+
+"""Estimate totals output."""
+type EstimateTotalsOutput {
+  """Cart after totals estimation"""
+  cart: Cart
+}
+
 """Lists the exchange rate."""
 type ExchangeRate {
   """Specifies the store’s default currency to exchange to."""
@@ -5206,12 +5918,26 @@ input FilterEqualTypeInput {
   in: [String]
 }
 
+""""""
+enum FilterMatchTypeEnum {
+  """"""
+  FULL
+
+  """"""
+  PARTIAL
+}
+
 """Defines a filter that performs a fuzzy search."""
 input FilterMatchTypeInput {
   """
-  Use this attribute to exactly match the specified string. For example, to filter on a specific SKU, specify a value such as `24-MB01`.
+  Use this attribute to fuzzy match the specified string. For example, to filter on a specific SKU, specify a value such as `24-MB01`.
   """
   match: String
+
+  """
+  Filter match type for fine-tuned results. Possible values FULL or PARTIAL. If match_type is not provided, returned results will default to FULL match.
+  """
+  match_type: FilterMatchTypeEnum
 }
 
 """
@@ -5305,27 +6031,27 @@ enum FixedProductTaxDisplaySettings {
   """
   The displayed price does not include the FPT amount. The values of `ProductPrice.fixed_product_taxes` and the price including the FPT are displayed separately. This value corresponds to 'Excluding FPT, Including FPT description and final price.'
   """
-  EXCLUDE_FPT_AND_INCLUDE_WITH_DETAILS @deprecated
+  EXCLUDE_FPT_AND_INCLUDE_WITH_DETAILS
 
   """
   The displayed price does not include the FPT amount. The values from `ProductPrice.fixed_product_taxes` are not displayed. This value corresponds to 'Excluding FPT'.
   """
-  EXCLUDE_FPT_WITHOUT_DETAILS @deprecated
+  EXCLUDE_FPT_WITHOUT_DETAILS
 
   """
   The FPT feature is not enabled. You can omit `ProductPrice.fixed_product_taxes` from your query.
   """
-  FPT_DISABLED @deprecated
+  FPT_DISABLED
 
   """
   The displayed price includes the FPT amount without displaying the `ProductPrice.fixed_product_taxes` values. This value corresponds to 'Including FPT only'.
   """
-  INCLUDE_FPT_WITHOUT_DETAILS @deprecated
+  INCLUDE_FPT_WITHOUT_DETAILS
 
   """
   The displayed price includes the FPT amount while displaying the values of `ProductPrice.fixed_product_taxes` separately. This value corresponds to 'Including FPT and FPT description'.
   """
-  INCLUDE_FPT_WITH_DETAILS @deprecated
+  INCLUDE_FPT_WITH_DETAILS
 }
 
 """Identifies which customer requires remote shopping assistance."""
@@ -5380,6 +6106,7 @@ type GroupedProduct implements PhysicalProductInterface & ProductInterface & Rou
 
   """The categories assigned to a product."""
   categories: [CategoryInterface]
+  color: Int @deprecated(reason: "Use the `custom_attributes` field instead.")
 
   """The product's country of origin."""
   country_of_manufacture: String
@@ -5389,6 +6116,9 @@ type GroupedProduct implements PhysicalProductInterface & ProductInterface & Rou
 
   """Crosssell Products"""
   crosssell_products: [ProductInterface]
+
+  """Product custom attributes."""
+  custom_attributesV2(filters: AttributeFilterInput): ProductCustomAttributes
 
   """
   Detailed information about the product. The value can include simple HTML tags.
@@ -5408,7 +6138,7 @@ type GroupedProduct implements PhysicalProductInterface & ProductInterface & Rou
   items: [GroupedProductItem]
 
   """A number representing the product's manufacturer."""
-  manufacturer: Int
+  manufacturer: Int @deprecated(reason: "Use the `custom_attributes` field instead.")
 
   """An array of media gallery objects."""
   media_gallery: [MediaGalleryInterface]
@@ -5641,6 +6371,26 @@ type ImageSwatchData implements SwatchDataInterface {
 
   """The value can be represented as color (HEX code), image link, or text."""
   value: String
+}
+
+"""List of templates/filters applied to customer attribute input."""
+enum InputFilterEnum {
+  """Forces attribute input to follow the date format."""
+  DATE
+
+  """Escape HTML Entities."""
+  ESCAPEHTML
+
+  """There are no templates or filters to be applied."""
+  NONE
+
+  """Strip HTML Tags."""
+  STRIPTAGS
+
+  """
+  Strip whitespace (or other characters) from the beginning and end of the input.
+  """
+  TRIM
 }
 
 """Contains an error message when an internal error occurred."""
@@ -6005,6 +6755,9 @@ type Mutation {
   """Assign a logged-in customer to the specified guest shopping cart."""
   assignCustomerToGuestCart(cart_id: String!): Cart!
 
+  """Cancel the specified customer order."""
+  cancelOrder(input: CancelOrderInput!): CancelOrderOutput
+
   """Change the password for the logged-in customer."""
   changeCustomerPassword(
     """The customer's original password."""
@@ -6013,6 +6766,18 @@ type Mutation {
     """The customer's updated password."""
     newPassword: String!
   ): Customer
+
+  """Confirms the email address for a customer."""
+  confirmEmail(
+    """An input object to identify the customer to confirm the email."""
+    input: ConfirmEmailInput!
+  ): CustomerOutput
+
+  """Send a 'Contact Us' email to the merchant."""
+  contactUs(
+    """An input object that defines shopper information."""
+    input: ContactUsInput!
+  ): ContactUsOutput
 
   """
   Create a new compare list. The compare list is saved for logged in customers.
@@ -6038,7 +6803,10 @@ type Mutation {
   createEmptyCart(
     """An optional input object that assigns the specified ID to the cart."""
     input: createEmptyCartInput
-  ): String
+  ): String @deprecated(reason: "Use `Mutation.createGuestCart` or `Query.customerCart` for logged in customer")
+
+  """Create a new shopping cart"""
+  createGuestCart(input: CreateGuestCartInput): CreateGuestCartOutput
 
   """
   Initiate a transaction and receive a token. Use this mutation for Payflow Pro and Payments Pro payment methods
@@ -6088,6 +6856,20 @@ type Mutation {
     """The reusable payment token securely stored in the vault."""
     public_hash: String!
   ): DeletePaymentTokenOutput
+
+  """Estimate shipping method(s) for cart based on address"""
+  estimateShippingMethods(
+    """
+    An input object that specifies details for estimation of available shipping methods
+    """
+    input: EstimateTotalsInput!
+  ): [AvailableShippingMethod]
+
+  """Estimate totals for cart based on the address"""
+  estimateTotals(
+    """An input object that specifies details for cart totals estimation"""
+    input: EstimateTotalsInput!
+  ): EstimateTotalsOutput!
 
   """Generate a token for specified customer."""
   generateCustomerToken(
@@ -6368,6 +7150,18 @@ type OrderAddress {
   vat_id: String
 }
 
+"""Input to retrieve an order based on details."""
+input OrderInformationInput {
+  """Order billing address email."""
+  email: String!
+
+  """Order number."""
+  number: String!
+
+  """Order billing address postcode."""
+  postcode: String!
+}
+
 """"""
 type OrderItem implements OrderItemInterface {
   """The final discount information for the product."""
@@ -6381,6 +7175,11 @@ type OrderItem implements OrderItemInterface {
 
   """The unique ID for an `OrderItemInterface` object."""
   id: ID!
+
+  """
+  The ProductInterface object, which contains details about the base product
+  """
+  product: ProductInterface
 
   """The name of the base product."""
   product_name: String
@@ -6435,6 +7234,11 @@ interface OrderItemInterface {
 
   """The unique ID for an `OrderItemInterface` object."""
   id: ID!
+
+  """
+  The ProductInterface object, which contains details about the base product
+  """
+  product: ProductInterface
 
   """The name of the base product."""
   product_name: String
@@ -6515,6 +7319,12 @@ type OrderShipment {
   tracking: [ShipmentTracking]
 }
 
+"""Input to retrieve an order based on token."""
+input OrderTokenInput {
+  """Order token."""
+  token: String!
+}
+
 """
 Contains details about the sales total amounts used to calculate the final price.
 """
@@ -6578,10 +7388,10 @@ Indicates the mode for payment. Applies to the Payflow Link and Payments Advance
 """
 enum PayflowLinkMode {
   """"""
-  LIVE @deprecated
+  LIVE
 
   """"""
-  TEST @deprecated
+  TEST
 }
 
 """
@@ -6737,10 +7547,10 @@ type PaymentToken {
 """The list of available payment token types."""
 enum PaymentTokenTypeEnum {
   """phpcs:ignore Magento2.GraphQL.ValidArgumentName"""
-  account @deprecated
+  account
 
   """phpcs:ignore Magento2.GraphQL.ValidArgumentName"""
-  card @deprecated
+  card
 }
 
 """
@@ -6965,6 +7775,33 @@ type PickupLocations {
   total_count: Int
 }
 
+"""An error encountered while placing an order."""
+type PlaceOrderError {
+  """An error code that is specific to place order."""
+  code: PlaceOrderErrorCodes!
+
+  """A localized error message."""
+  message: String!
+}
+
+""""""
+enum PlaceOrderErrorCodes {
+  """"""
+  CART_NOT_ACTIVE
+
+  """"""
+  CART_NOT_FOUND
+
+  """"""
+  GUEST_EMAIL_MISSING
+
+  """"""
+  UNABLE_TO_PLACE_ORDER
+
+  """"""
+  UNDEFINED
+}
+
 """Specifies the quote to be converted to an order."""
 input PlaceOrderInput {
   """The unique ID of a `Cart` object."""
@@ -6973,8 +7810,14 @@ input PlaceOrderInput {
 
 """Contains the results of the request to place an order."""
 type PlaceOrderOutput {
+  """An array of place order errors."""
+  errors: [PlaceOrderError]!
+
   """The ID of the order."""
-  order: Order!
+  order: Order @deprecated(reason: "Use `orderV2` instead.")
+
+  """Full order information."""
+  orderV2: CustomerOrder
 }
 
 """
@@ -7023,10 +7866,24 @@ enum PriceAdjustmentCodesEnum {
 """
 enum PriceAdjustmentDescriptionEnum {
   """"""
-  EXCLUDED @deprecated
+  EXCLUDED
 
   """"""
-  INCLUDED @deprecated
+  INCLUDED
+}
+
+"""
+Can be used to retrieve the main price details in case of bundle product
+"""
+type PriceDetails {
+  """The percentage of discount applied to the main product price"""
+  discount_percentage: Float
+
+  """The final price after applying the discount to the main product"""
+  main_final_price: Float
+
+  """The regular price of the main product"""
+  main_price: Float
 }
 
 """
@@ -7043,13 +7900,13 @@ type PriceRange {
 """Defines the price type."""
 enum PriceTypeEnum {
   """"""
-  DYNAMIC @deprecated
+  DYNAMIC
 
   """"""
-  FIXED @deprecated
+  FIXED
 
   """"""
-  PERCENT @deprecated
+  PERCENT
 }
 
 """
@@ -7057,10 +7914,10 @@ Defines whether a bundle product's price is displayed as the lowest possible val
 """
 enum PriceViewEnum {
   """"""
-  AS_LOW_AS @deprecated
+  AS_LOW_AS
 
   """"""
-  PRICE_RANGE @deprecated
+  PRICE_RANGE
 }
 
 """Contains a product attribute code and value."""
@@ -7082,6 +7939,24 @@ input ProductAttributeFilterInput {
   """Filter product by the unique ID for a `CategoryInterface` object."""
   category_uid: FilterEqualTypeInput
 
+  """Filter product by category URL path."""
+  category_url_path: FilterEqualTypeInput
+
+  """Attribute label: Description"""
+  description: FilterMatchTypeInput
+
+  """Attribute label: Product Name"""
+  name: FilterMatchTypeInput
+
+  """Attribute label: Price"""
+  price: FilterRangeTypeInput
+
+  """Attribute label: Short Description"""
+  short_description: FilterMatchTypeInput
+
+  """Attribute label: SKU"""
+  sku: FilterEqualTypeInput
+
   """The part of the URL that identifies the product"""
   url_key: FilterEqualTypeInput
 }
@@ -7090,11 +7965,26 @@ input ProductAttributeFilterInput {
 Specifies the attribute to use for sorting search results and indicates whether the results are sorted in ascending or descending order. It's possible to sort products using searchable attributes with enabled 'Use in Filter Options' option
 """
 input ProductAttributeSortInput {
+  """Attribute label: Product Name"""
+  name: SortEnum
+
   """Sort by the position assigned to each product."""
   position: SortEnum
 
+  """Attribute label: Price"""
+  price: SortEnum
+
   """Sort by the search relevance score (default)."""
   relevance: SortEnum
+}
+
+"""Product custom attributes"""
+type ProductCustomAttributes {
+  """Errors when retrieving custom attributes metadata."""
+  errors: [AttributeMetadataError]!
+
+  """Requested custom attributes"""
+  items: [AttributeValueInterface]!
 }
 
 """Contains the discount applied to a product price."""
@@ -7280,6 +8170,7 @@ interface ProductInterface {
 
   """The categories assigned to a product."""
   categories: [CategoryInterface]
+  color: Int @deprecated(reason: "Use the `custom_attributes` field instead.")
 
   """The product's country of origin."""
   country_of_manufacture: String
@@ -7289,6 +8180,9 @@ interface ProductInterface {
 
   """Crosssell Products"""
   crosssell_products: [ProductInterface]
+
+  """Product custom attributes."""
+  custom_attributesV2(filters: AttributeFilterInput): ProductCustomAttributes
 
   """
   Detailed information about the product. The value can include simple HTML tags.
@@ -7305,7 +8199,7 @@ interface ProductInterface {
   image: ProductImage
 
   """A number representing the product's manufacturer."""
-  manufacturer: Int
+  manufacturer: Int @deprecated(reason: "Use the `custom_attributes` field instead.")
 
   """An array of media gallery objects."""
   media_gallery: [MediaGalleryInterface]
@@ -7772,10 +8666,10 @@ This enumeration states whether a product stock status is in stock or out of sto
 """
 enum ProductStockStatus {
   """"""
-  IN_STOCK @deprecated
+  IN_STOCK
 
   """"""
-  OUT_OF_STOCK @deprecated
+  OUT_OF_STOCK
 }
 
 """
@@ -7854,6 +8748,23 @@ type Products {
 
 """"""
 type Query {
+  """
+  Retrieve EAV attributes associated to a frontend form. Use countries query provided by DirectoryGraphQl module to retrieve region_id and country_id attribute options.
+  """
+  attributesForm(
+    """Form code."""
+    formCode: String!
+  ): AttributesFormOutput!
+
+  """Returns a list of attributes metadata for a given entity type."""
+  attributesList(
+    """Entity type."""
+    entityType: AttributeEntityTypeEnum!
+
+    """Identifies which filter inputs to search for and return."""
+    filters: AttributeFilterInput
+  ): AttributesMetadataOutput
+
   """Get a list of available store views and their config information."""
   availableStores(
     """Filter store views by the current store group."""
@@ -7941,7 +8852,10 @@ type Query {
     An input object that specifies the attribute code and entity type to search.
     """
     attributes: [AttributeInput!]!
-  ): CustomAttributeMetadata
+  ): CustomAttributeMetadata @deprecated(reason: "Use `customAttributeMetadataV2` query instead.")
+
+  """Retrieve EAV attributes metadata."""
+  customAttributeMetadataV2(attributes: [AttributeInput!]): AttributesMetadataOutput!
 
   """Return detailed information about a customer account."""
   customer: Customer
@@ -7973,6 +8887,12 @@ type Query {
     """
     input: PayflowLinkTokenInput!
   ): PayflowLinkToken
+
+  """Retrieve guest order details based on number, email and postcode."""
+  guestOrder(input: OrderInformationInput!): CustomerOrder!
+
+  """Retrieve guest order details based on token."""
+  guestOrderByToken(input: OrderTokenInput!): CustomerOrder!
 
   """
   Check whether the specified email has already been used to create a customer account.
@@ -8038,6 +8958,9 @@ type Query {
     sort: ProductAttributeSortInput
   ): Products
 
+  """Returns details about Google reCAPTCHA V3-Invisible configuration."""
+  recaptchaV3Config: ReCaptchaConfigurationV3
+
   """
   Return the full details for a specified product, category, or CMS page.
   """
@@ -8057,6 +8980,80 @@ type Query {
 
   """Return the contents of a customer's wish list."""
   wishlist: WishlistOutput @deprecated(reason: "Moved under `Customer.wishlist`.")
+}
+
+"""Specifies the field to use for sorting quote items"""
+input QuoteItemsSortInput {
+  """Specifies the quote items field to sort by"""
+  field: SortQuoteItemsEnum!
+
+  """Specifies the order of quote items' sorting"""
+  order: SortEnum!
+}
+
+"""Contains reCAPTCHA V3-Invisible configuration details."""
+type ReCaptchaConfigurationV3 {
+  """The position of the invisible reCAPTCHA badge on each page."""
+  badge_position: String!
+
+  """The message that appears to the user if validation fails."""
+  failure_message: String!
+
+  """
+  A list of forms on the storefront that have been configured to use reCAPTCHA V3.
+  """
+  forms: [ReCaptchaFormEnum]!
+
+  """Return whether recaptcha is enabled or not"""
+  is_enabled: Boolean!
+
+  """
+  A two-character code that specifies the language that is used for Google reCAPTCHA text and messaging.
+  """
+  language_code: String
+
+  """
+  The minimum score that identifies a user interaction as a potential risk.
+  """
+  minimum_score: Float!
+
+  """
+  The website key generated when the Google reCAPTCHA account was registered.
+  """
+  website_key: String!
+}
+
+""""""
+enum ReCaptchaFormEnum {
+  """"""
+  BRAINTREE
+
+  """"""
+  CONTACT
+
+  """"""
+  CUSTOMER_CREATE
+
+  """"""
+  CUSTOMER_EDIT
+
+  """"""
+  CUSTOMER_FORGOT_PASSWORD
+
+  """"""
+  CUSTOMER_LOGIN
+
+  """"""
+  NEWSLETTER
+
+  """"""
+  PLACE_ORDER
+
+  """"""
+  PRODUCT_REVIEW
+
+  """"""
+  SENDFRIEND
 }
 
 """"""
@@ -8152,6 +9149,24 @@ interface RoutableInterface {
   type: UrlRewriteEntityTypeEnum
 }
 
+"""
+Default implementation of RoutableInterface. This type is returned when the URL is not linked to an entity.
+"""
+type RoutableUrl implements RoutableInterface {
+  """
+  Contains 0 when there is no redirect error. A value of 301 indicates the URL of the requested resource has been changed permanently, while a value of 302 indicates a temporary redirect.
+  """
+  redirect_code: Int!
+
+  """
+  The internal relative URL. If the specified URL is a redirect, the query returns the redirected URL, not the original.
+  """
+  relative_url: String
+
+  """One of PRODUCT, CATEGORY, or CMS_PAGE."""
+  type: UrlRewriteEntityTypeEnum
+}
+
 """Contains details about a comment."""
 type SalesCommentItem {
   """The text of the message."""
@@ -8170,13 +9185,13 @@ type SalesItemInterface {
 """This enumeration defines the scope type for customer orders."""
 enum ScopeTypeEnum {
   """"""
-  GLOBAL @deprecated
+  GLOBAL
 
   """"""
-  STORE @deprecated
+  STORE
 
   """"""
-  WEBSITE @deprecated
+  WEBSITE
 }
 
 """Provides navigation for the query response."""
@@ -8491,10 +9506,10 @@ type SetShippingMethodsOnCartOutput {
 """Defines whether bundle items must be shipped together."""
 enum ShipBundleItemsEnum {
   """"""
-  SEPARATELY @deprecated
+  SEPARATELY
 
   """"""
-  TOGETHER @deprecated
+  TOGETHER
 }
 
 """"""
@@ -8591,16 +9606,27 @@ type ShippingCartAddress implements CartAddressInterface {
   """Text provided by the shopper."""
   customer_notes: String
 
+  """The customer's fax number."""
+  fax: String
+
   """The first name of the customer or guest."""
   firstname: String!
   items_weight: Float @deprecated(reason: "This information should not be exposed on the frontend.")
 
   """The last name of the customer or guest."""
   lastname: String!
+
+  """
+  The middle name of the person associated with the billing/shipping address.
+  """
+  middlename: String
   pickup_location_code: String
 
   """The ZIP or postal code of the billing or shipping address."""
   postcode: String
+
+  """An honorific, such as Dr., Mr., or Mrs."""
+  prefix: String
 
   """An object containing the region label and code."""
   region: CartAddressRegion
@@ -8610,6 +9636,9 @@ type ShippingCartAddress implements CartAddressInterface {
 
   """An array containing the street for the billing or shipping address."""
   street: [String]!
+
+  """A value such as Sr., Jr., or III."""
+  suffix: String
 
   """The telephone number for the billing or shipping address."""
   telephone: String
@@ -8673,6 +9702,11 @@ type SimpleCartItem implements CartItemInterface {
   id: String! @deprecated(reason: "Use `uid` instead.")
 
   """
+  True if requested quantity is less than available stock, false otherwise.
+  """
+  is_available: Boolean!
+
+  """
   Contains details about the price of the item, including taxes and discounts.
   """
   prices: CartItemPrices
@@ -8701,6 +9735,7 @@ type SimpleProduct implements CustomizableProductInterface & PhysicalProductInte
 
   """The categories assigned to a product."""
   categories: [CategoryInterface]
+  color: Int @deprecated(reason: "Use the `custom_attributes` field instead.")
 
   """The product's country of origin."""
   country_of_manufacture: String
@@ -8710,6 +9745,9 @@ type SimpleProduct implements CustomizableProductInterface & PhysicalProductInte
 
   """Crosssell Products"""
   crosssell_products: [ProductInterface]
+
+  """Product custom attributes."""
+  custom_attributesV2(filters: AttributeFilterInput): ProductCustomAttributes
 
   """
   Detailed information about the product. The value can include simple HTML tags.
@@ -8726,7 +9764,7 @@ type SimpleProduct implements CustomizableProductInterface & PhysicalProductInte
   image: ProductImage
 
   """A number representing the product's manufacturer."""
-  manufacturer: Int
+  manufacturer: Int @deprecated(reason: "Use the `custom_attributes` field instead.")
 
   """An array of media gallery objects."""
   media_gallery: [MediaGalleryInterface]
@@ -8917,10 +9955,10 @@ type SimpleWishlistItem implements WishlistItemInterface {
 """Indicates whether to return results in ascending or descending order."""
 enum SortEnum {
   """"""
-  ASC @deprecated
+  ASC
 
   """"""
-  DESC @deprecated
+  DESC
 }
 
 """Defines a possible sort field."""
@@ -8941,6 +9979,108 @@ type SortFields {
 
   """An array of possible sort fields."""
   options: [SortField]
+}
+
+"""Specifies the field to use for sorting quote items"""
+enum SortQuoteItemsEnum {
+  """"""
+  BASE_DISCOUNT_AMOUNT
+
+  """"""
+  BASE_DISCOUNT_TAX_COMPENSATION_AMOUNT
+
+  """"""
+  BASE_PRICE
+
+  """"""
+  BASE_PRICE_INC_TAX
+
+  """"""
+  BASE_ROW_TOTAL
+
+  """"""
+  BASE_ROW_TOTAL_INC_TAX
+
+  """"""
+  BASE_TAX_AMOUNT
+
+  """"""
+  BASE_TAX_BEFORE_DISCOUNT
+
+  """"""
+  CREATED_AT
+
+  """"""
+  CUSTOM_PRICE
+
+  """"""
+  DESCRIPTION
+
+  """"""
+  DISCOUNT_AMOUNT
+
+  """"""
+  DISCOUNT_PERCENT
+
+  """"""
+  DISCOUNT_TAX_COMPENSATION_AMOUNT
+
+  """"""
+  FREE_SHIPPING
+
+  """"""
+  ITEM_ID
+
+  """"""
+  NAME
+
+  """"""
+  ORIGINAL_CUSTOM_PRICE
+
+  """"""
+  PRICE
+
+  """"""
+  PRICE_INC_TAX
+
+  """"""
+  PRODUCT_ID
+
+  """"""
+  PRODUCT_TYPE
+
+  """"""
+  QTY
+
+  """"""
+  ROW_TOTAL
+
+  """"""
+  ROW_TOTAL_INC_TAX
+
+  """"""
+  ROW_TOTAL_WITH_DISCOUNT
+
+  """"""
+  ROW_WEIGHT
+
+  """"""
+  SKU
+
+  """"""
+  TAX_AMOUNT
+
+  """"""
+  TAX_BEFORE_DISCOUNT
+
+  """"""
+  TAX_PERCENT
+
+  """"""
+  UPDATED_AT
+
+  """"""
+  WEIGHT
 }
 
 """Contains information about a store's configuration."""
@@ -8984,6 +10124,12 @@ type StoreConfig {
 
   """The store’s fully-qualified base URL."""
   base_url: String
+
+  """Extended Config Data - checkout/cart/delete_quote_after"""
+  cart_expires_in_days: Int
+
+  """Extended Config Data - checkout/cart_link/use_qty"""
+  cart_summary_display_quantity: Int
 
   """The default sort order of the search results list."""
   catalog_default_sort_by: String
@@ -9059,8 +10205,23 @@ type StoreConfig {
   """
   configurable_thumbnail_source: String
 
+  """Indicates whether the Contact Us form in enabled."""
+  contact_enabled: Boolean!
+
   """The copyright statement that appears at the bottom of each page."""
   copyright: String
+
+  """Extended Config Data - general/region/state_required"""
+  countries_with_required_region: String
+
+  """Indicates if the new accounts need confirmation."""
+  create_account_confirmation: Boolean
+
+  """Customer access token lifetime."""
+  customer_access_token_lifetime: Float
+
+  """Extended Config Data - general/country/default"""
+  default_country: String
 
   """
   The description that provides a summary of your site for search engine listings. It should not be more than 160 characters in length.
@@ -9084,6 +10245,9 @@ type StoreConfig {
   Controls the display of the demo store notice at the top of the page. Options: 0 (No) or 1 (Yes).
   """
   demonotice: Int
+
+  """Extended Config Data - general/region/display_all"""
+  display_state_if_optional: Boolean
 
   """The landing page that is associated with the base URL."""
   front: String
@@ -9122,6 +10286,12 @@ type StoreConfig {
   """
   is_default_store_group: Boolean
 
+  """Extended Config Data - checkout/options/guest_checkout"""
+  is_guest_checkout_enabled: Boolean
+
+  """Extended Config Data - checkout/options/onepage_checkout_enabled"""
+  is_one_page_checkout_enabled: Boolean
+
   """The format of the search results list."""
   list_mode: String
 
@@ -9148,13 +10318,34 @@ type StoreConfig {
   """Indicates whether wishlists are enabled (1) or disabled (0)."""
   magento_wishlist_general_is_enabled: String
 
+  """Extended Config Data - checkout/options/max_items_display_count"""
+  max_items_in_order_summary: Int
+
+  """Extended Config Data - checkout/sidebar/display"""
+  minicart_display: Boolean
+
+  """Extended Config Data - checkout/sidebar/count"""
+  minicart_max_items: Int
+
   """The minimum number of characters required for a valid password."""
   minimum_password_length: String
+
+  """Indicates whether newsletters are enabled."""
+  newsletter_enabled: Boolean!
 
   """
   The default page that displays when a 404 'Page not Found' error occurs.
   """
   no_route: String
+
+  """Extended Config Data - general/country/optional_zip_countries"""
+  optional_zip_countries: String
+
+  """Indicates whether orders can be cancelled by customers or not."""
+  order_cancellation_enabled: Boolean!
+
+  """An array containing available cancellation reasons."""
+  order_cancellation_reasons: [CancellationReason]!
 
   """Payflow Pro vault status."""
   payment_payflowpro_cc_vault_active: String
@@ -9208,6 +10399,27 @@ type StoreConfig {
 
   """Email to a Friend configuration."""
   send_friend: SendFriendConfiguration
+
+  """Extended Config Data - tax/cart_display/full_summary"""
+  shopping_cart_display_full_summary: Boolean
+
+  """Extended Config Data - tax/cart_display/grandtotal"""
+  shopping_cart_display_grand_total: Boolean
+
+  """Extended Config Data - tax/cart_display/price"""
+  shopping_cart_display_price: Int
+
+  """Extended Config Data - tax/cart_display/shipping"""
+  shopping_cart_display_shipping: Int
+
+  """Extended Config Data - tax/cart_display/subtotal"""
+  shopping_cart_display_subtotal: Int
+
+  """Extended Config Data - tax/cart_display/gift_wrapping"""
+  shopping_cart_display_tax_gift_wrapping: TaxWrappingEnum
+
+  """Extended Config Data - tax/cart_display/zero_tax"""
+  shopping_cart_display_zero_tax: Boolean
 
   """
   Indicates whether a breadcrumb trail appears on all CMS pages in the catalog. 0 (No) or 1 (Yes).
@@ -9336,16 +10548,16 @@ type SubscribeEmailToNewsletterOutput {
 """Indicates the status of the request."""
 enum SubscriptionStatusesEnum {
   """"""
-  NOT_ACTIVE @deprecated
+  NOT_ACTIVE
 
   """"""
-  SUBSCRIBED @deprecated
+  SUBSCRIBED
 
   """"""
-  UNCONFIRMED @deprecated
+  UNCONFIRMED
 
   """"""
-  UNSUBSCRIBED @deprecated
+  UNSUBSCRIBED
 }
 
 """Describes the swatch type and a value."""
@@ -9361,6 +10573,63 @@ type SwatchData {
 interface SwatchDataInterface {
   """The value can be represented as color (HEX code), image link, or text."""
   value: String
+}
+
+"""Swatch attribute metadata input types."""
+enum SwatchInputTypeEnum {
+  """"""
+  BOOLEAN
+
+  """"""
+  DATE
+
+  """"""
+  DATETIME
+
+  """"""
+  DROPDOWN
+
+  """"""
+  FILE
+
+  """"""
+  GALLERY
+
+  """"""
+  HIDDEN
+
+  """"""
+  IMAGE
+
+  """"""
+  MEDIA_IMAGE
+
+  """"""
+  MULTILINE
+
+  """"""
+  MULTISELECT
+
+  """"""
+  PRICE
+
+  """"""
+  SELECT
+
+  """"""
+  TEXT
+
+  """"""
+  TEXTAREA
+
+  """"""
+  UNDEFINED
+
+  """"""
+  VISUAL
+
+  """"""
+  WEIGHT
 }
 
 """"""
@@ -9394,6 +10663,18 @@ type TaxItem {
 
   """A title that describes the tax."""
   title: String!
+}
+
+""""""
+enum TaxWrappingEnum {
+  """"""
+  DISPLAY_EXCLUDING_TAX
+
+  """"""
+  DISPLAY_INCLUDING_TAX
+
+  """"""
+  DISPLAY_TYPE_BOTH
 }
 
 """"""
@@ -9452,25 +10733,64 @@ type UrlRewrite {
 """This enumeration defines the entity type."""
 enum UrlRewriteEntityTypeEnum {
   """"""
-  CATEGORY @deprecated
+  CATEGORY
 
   """"""
-  CMS_PAGE @deprecated
+  CMS_PAGE
 
   """"""
-  PRODUCT @deprecated
+  PRODUCT
 }
 
 """Defines whether the attribute is filterable in layered navigation."""
 enum UseInLayeredNavigationOptions {
   """"""
-  FILTERABLE_NO_RESULT @deprecated
+  FILTERABLE_NO_RESULT
 
   """"""
-  FILTERABLE_WITH_RESULTS @deprecated
+  FILTERABLE_WITH_RESULTS
 
   """"""
-  NO @deprecated
+  NO
+}
+
+"""Defines a customer attribute validation rule."""
+type ValidationRule {
+  """Validation rule name applied to a customer attribute."""
+  name: ValidationRuleEnum
+
+  """Validation rule value."""
+  value: String
+}
+
+"""List of validation rule names applied to a customer attribute."""
+enum ValidationRuleEnum {
+  """"""
+  DATE_RANGE_MAX
+
+  """"""
+  DATE_RANGE_MIN
+
+  """"""
+  FILE_EXTENSIONS
+
+  """"""
+  INPUT_VALIDATION
+
+  """"""
+  MAX_FILE_SIZE
+
+  """"""
+  MAX_IMAGE_HEIGHT
+
+  """"""
+  MAX_IMAGE_WIDTH
+
+  """"""
+  MAX_TEXT_LENGTH
+
+  """"""
+  MIN_TEXT_LENGTH
 }
 
 """Contains required input for payment methods with Vault support."""
@@ -9487,6 +10807,11 @@ type VirtualCartItem implements CartItemInterface {
   """An array of errors encountered while loading the cart item"""
   errors: [CartItemError]
   id: String! @deprecated(reason: "Use `uid` instead.")
+
+  """
+  True if requested quantity is less than available stock, false otherwise.
+  """
+  is_available: Boolean!
 
   """
   Contains details about the price of the item, including taxes and discounts.
@@ -9517,6 +10842,7 @@ type VirtualProduct implements CustomizableProductInterface & ProductInterface &
 
   """The categories assigned to a product."""
   categories: [CategoryInterface]
+  color: Int @deprecated(reason: "Use the `custom_attributes` field instead.")
 
   """The product's country of origin."""
   country_of_manufacture: String
@@ -9526,6 +10852,9 @@ type VirtualProduct implements CustomizableProductInterface & ProductInterface &
 
   """Crosssell Products"""
   crosssell_products: [ProductInterface]
+
+  """Product custom attributes."""
+  custom_attributesV2(filters: AttributeFilterInput): ProductCustomAttributes
 
   """
   Detailed information about the product. The value can include simple HTML tags.
@@ -9542,7 +10871,7 @@ type VirtualProduct implements CustomizableProductInterface & ProductInterface &
   image: ProductImage
 
   """A number representing the product's manufacturer."""
-  manufacturer: Int
+  manufacturer: Int @deprecated(reason: "Use the `custom_attributes` field instead.")
 
   """An array of media gallery objects."""
   media_gallery: [MediaGalleryInterface]
@@ -9762,10 +11091,10 @@ type WishListUserInputError {
 """A list of possible error types."""
 enum WishListUserInputErrorType {
   """"""
-  PRODUCT_NOT_FOUND @deprecated
+  PRODUCT_NOT_FOUND
 
   """"""
-  UNDEFINED @deprecated
+  UNDEFINED
 }
 
 """Contains a customer wish list."""
@@ -9807,16 +11136,16 @@ type WishlistCartUserInputError {
 """A list of possible error types."""
 enum WishlistCartUserInputErrorType {
   """"""
-  INSUFFICIENT_STOCK @deprecated
+  INSUFFICIENT_STOCK
 
   """"""
-  NOT_SALABLE @deprecated
+  NOT_SALABLE
 
   """"""
-  PRODUCT_NOT_FOUND @deprecated
+  PRODUCT_NOT_FOUND
 
   """"""
-  UNDEFINED @deprecated
+  UNDEFINED
 }
 
 """Contains details about a wish list item."""
