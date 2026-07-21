@@ -68,6 +68,21 @@ type AddVirtualProductsToCartOutput {
   cart: Cart!
 }
 
+type AddWishlistItemsToCartOutput {
+  """
+  An array of errors encountered while adding products to the customer's cart
+  """
+  add_wishlist_items_to_cart_user_errors: [WishlistCartUserInputError]!
+
+  """
+  Indicates whether the attempt to add items to the customer's cart was successful
+  """
+  status: Boolean!
+
+  """Contains the wish list with all items that were successfully added"""
+  wishlist: Wishlist!
+}
+
 """
 A bucket that contains information for each filterable option (such as price, category `UID`, and custom attributes).
 """
@@ -83,6 +98,9 @@ type Aggregation {
 
   """Array of options for the aggregation."""
   options: [AggregationOption]
+
+  """The relative position of the attribute in a layered navigation block"""
+  position: Int
 }
 
 type AggregationOption implements AggregationOptionInterface {
@@ -159,6 +177,11 @@ type Attribute {
 
   """The frontend input type of the attribute"""
   input_type: String
+
+  """
+  Contains details about the storefront properties configured for the attribute
+  """
+  storefront_properties: StorefrontProperties
 }
 
 """AttributeInput specifies the attribute_code and entity_type to search"""
@@ -453,9 +476,9 @@ type BundleOrderItem implements OrderItemInterface {
 }
 
 """
-BundleProduct defines basic features of a bundle product and contains multiple BundleItems.
+Defines basic features of a bundle product and contains multiple BundleItems
 """
-type BundleProduct implements CustomizableProductInterface & PhysicalProductInterface & ProductInterface {
+type BundleProduct implements CustomizableProductInterface & PhysicalProductInterface & ProductInterface & RoutableInterface {
   """The attribute set assigned to the product."""
   attribute_set_id: Int @deprecated(reason: "The field should not be used on the storefront.")
 
@@ -569,8 +592,20 @@ type BundleProduct implements CustomizableProductInterface & PhysicalProductInte
   """The average of all the ratings given to the product."""
   rating_summary: Float!
 
+  """
+  Contains 0 when there is no redirect error. A value of 301 indicates the URL
+  of the requested resource has been changed permanently, while a value of 302
+  indicates a temporary redirect
+  """
+  redirect_code: Int!
+
   """Related Products"""
   related_products: [ProductInterface]
+
+  """
+  The internal relative URL. If the specified URL is a redirect, the query returns the redirected URL, not the original
+  """
+  relative_url: String
 
   """The total count of all the reviews given to the product."""
   review_count: Int!
@@ -623,6 +658,9 @@ type BundleProduct implements CustomizableProductInterface & PhysicalProductInte
 
   """An array of ProductTierPrices objects."""
   tier_prices: [ProductTierPrices] @deprecated(reason: "Use price_tiers for product tier price information.")
+
+  """One of PRODUCT, CATEGORY, or CMS_PAGE."""
+  type: UrlRewriteEntityTypeEnum
 
   """
   One of simple, virtual, bundle, downloadable, grouped, or configurable.
@@ -812,6 +850,9 @@ interface CartItemInterface {
 type CartItemPrices {
   """An array of discounts to be applied to the cart item"""
   discounts: [Discount]
+
+  """Applied FPT to the cart item."""
+  fixed_product_taxes: [FixedProductTax]
   price: Money!
   row_total: Money!
   row_total_including_tax: Money!
@@ -1041,8 +1082,8 @@ type CategoryResult {
   total_count: Int
 }
 
-"""Category Tree implementation."""
-type CategoryTree implements CategoryInterface {
+"""Category tree implementation"""
+type CategoryTree implements CategoryInterface & RoutableInterface {
   available_sort_by: [String]
 
   """Breadcrumbs, parent categories info."""
@@ -1121,6 +1162,21 @@ type CategoryTree implements CategoryInterface {
     """
     sort: ProductAttributeSortInput
   ): CategoryProducts
+
+  """
+  Contains 0 when there is no redirect error. A value of 301 indicates the URL
+  of the requested resource has been changed permanently, while a value of 302
+  indicates a temporary redirect
+  """
+  redirect_code: Int!
+
+  """
+  The internal relative URL. If the specified URL is a redirect, the query returns the redirected URL, not the original
+  """
+  relative_url: String
+
+  """One of PRODUCT, CATEGORY, or CMS_PAGE."""
+  type: UrlRewriteEntityTypeEnum
 
   """The unique ID for a `CategoryInterface` object."""
   uid: ID!
@@ -1207,7 +1263,7 @@ type CmsBlocks {
 }
 
 """CMS page defines all CMS page information"""
-type CmsPage {
+type CmsPage implements RoutableInterface {
   """CMS page content"""
   content: String
 
@@ -1229,8 +1285,23 @@ type CmsPage {
   """CMS page content heading"""
   page_layout: String
 
+  """
+  Contains 0 when there is no redirect error. A value of 301 indicates the URL
+  of the requested resource has been changed permanently, while a value of 302
+  indicates a temporary redirect
+  """
+  redirect_code: Int!
+
+  """
+  The internal relative URL. If the specified URL is a redirect, the query returns the redirected URL, not the original
+  """
+  relative_url: String
+
   """CMS page title"""
   title: String
+
+  """One of PRODUCT, CATEGORY, or CMS_PAGE."""
+  type: UrlRewriteEntityTypeEnum
 
   """URL key of CMS page"""
   url_key: String
@@ -1299,6 +1370,9 @@ type ConfigurableAttributeOption {
 
 type ConfigurableCartItem implements CartItemInterface {
   configurable_options: [SelectedConfigurableOption]!
+
+  """Product details of the cart item"""
+  configured_variant: ProductInterface!
   customizable_options: [SelectedCustomizableOption]
 
   """The entered gift message for the cart item"""
@@ -1326,7 +1400,7 @@ type ConfigurableOptionAvailableForSelection {
 """
 ConfigurableProduct defines basic features of a configurable product and its simple product variants
 """
-type ConfigurableProduct implements CustomizableProductInterface & PhysicalProductInterface & ProductInterface {
+type ConfigurableProduct implements CustomizableProductInterface & PhysicalProductInterface & ProductInterface & RoutableInterface {
   """The attribute set assigned to the product."""
   attribute_set_id: Int @deprecated(reason: "The field should not be used on the storefront.")
 
@@ -1342,7 +1416,7 @@ type ConfigurableProduct implements CustomizableProductInterface & PhysicalProdu
   """An array of linked simple product items"""
   configurable_options: [ConfigurableProductOptions]
 
-  """Metadata for the specified configurable options selection"""
+  """Specified configurable product options selection"""
   configurable_product_options_selection(configurableOptionValueUids: [ID!]): ConfigurableProductOptionsSelection
 
   """The product's country of origin."""
@@ -1429,8 +1503,20 @@ type ConfigurableProduct implements CustomizableProductInterface & PhysicalProdu
   """The average of all the ratings given to the product."""
   rating_summary: Float!
 
+  """
+  Contains 0 when there is no redirect error. A value of 301 indicates the URL
+  of the requested resource has been changed permanently, while a value of 302
+  indicates a temporary redirect
+  """
+  redirect_code: Int!
+
   """Related Products"""
   related_products: [ProductInterface]
+
+  """
+  The internal relative URL. If the specified URL is a redirect, the query returns the redirected URL, not the original
+  """
+  relative_url: String
 
   """The total count of all the reviews given to the product."""
   review_count: Int!
@@ -1481,6 +1567,9 @@ type ConfigurableProduct implements CustomizableProductInterface & PhysicalProdu
   """An array of ProductTierPrices objects."""
   tier_prices: [ProductTierPrices] @deprecated(reason: "Use price_tiers for product tier price information.")
 
+  """One of PRODUCT, CATEGORY, or CMS_PAGE."""
+  type: UrlRewriteEntityTypeEnum
+
   """
   One of simple, virtual, bundle, downloadable, grouped, or configurable.
   """
@@ -1524,6 +1613,21 @@ input ConfigurableProductCartItemInput {
 
   """Deprecated. Use CartItemInput.sku instead."""
   variant_sku: String
+}
+
+type ConfigurableProductOption {
+  attribute_code: String!
+  label: String!
+  uid: ID!
+  values: [ConfigurableProductOptionValue]
+}
+
+type ConfigurableProductOptionValue {
+  is_available: Boolean!
+  is_use_default: Boolean!
+  label: String!
+  swatch: SwatchDataInterface
+  uid: ID!
 }
 
 """
@@ -1570,6 +1674,11 @@ type ConfigurableProductOptions {
 
 """Metadata corresponding to the configurable options selection."""
 type ConfigurableProductOptionsSelection {
+  """
+  Configurable options available for further selection based on current selection.
+  """
+  configurable_options: [ConfigurableProductOption]
+
   """
   Product images and videos corresponding to the specified configurable options selection.
   """
@@ -3374,6 +3483,13 @@ type CustomizableDateOption implements CustomizableOptionInterface {
   value: CustomizableDateValue
 }
 
+"""This enumeration customizable date type."""
+enum CustomizableDateTypeEnum {
+  DATE
+  DATE_TIME
+  TIME
+}
+
 """
 CustomizableDateValue defines the price and sku of a product whose page contains a customized date picker.
 """
@@ -3386,6 +3502,9 @@ type CustomizableDateValue {
 
   """The Stock Keeping Unit for this option."""
   sku: String
+
+  """DATE, DATE_TIME or TIME"""
+  type: CustomizableDateTypeEnum
 
   """The unique ID for a `CustomizableDateValue` object."""
   uid: ID!
@@ -3852,8 +3971,8 @@ type DownloadableOrderItem implements OrderItemInterface {
   status: String
 }
 
-"""DownloadableProduct defines a product that the customer downloads"""
-type DownloadableProduct implements CustomizableProductInterface & ProductInterface {
+"""DownloadableProduct defines a product that the shopper downloads"""
+type DownloadableProduct implements CustomizableProductInterface & ProductInterface & RoutableInterface {
   """The attribute set assigned to the product."""
   attribute_set_id: Int @deprecated(reason: "The field should not be used on the storefront.")
 
@@ -3968,8 +4087,20 @@ type DownloadableProduct implements CustomizableProductInterface & ProductInterf
   """The average of all the ratings given to the product."""
   rating_summary: Float!
 
+  """
+  Contains 0 when there is no redirect error. A value of 301 indicates the URL
+  of the requested resource has been changed permanently, while a value of 302
+  indicates a temporary redirect
+  """
+  redirect_code: Int!
+
   """Related Products"""
   related_products: [ProductInterface]
+
+  """
+  The internal relative URL. If the specified URL is a redirect, the query returns the redirected URL, not the original
+  """
+  relative_url: String
 
   """The total count of all the reviews given to the product."""
   review_count: Int!
@@ -4019,6 +4150,9 @@ type DownloadableProduct implements CustomizableProductInterface & ProductInterf
 
   """An array of ProductTierPrices objects."""
   tier_prices: [ProductTierPrices] @deprecated(reason: "Use price_tiers for product tier price information.")
+
+  """One of PRODUCT, CATEGORY, or CMS_PAGE."""
+  type: UrlRewriteEntityTypeEnum
 
   """
   One of simple, virtual, bundle, downloadable, grouped, or configurable.
@@ -4350,8 +4484,10 @@ input GiftMessageInput {
   to: String!
 }
 
-"""GroupedProduct defines a grouped product"""
-type GroupedProduct implements PhysicalProductInterface & ProductInterface {
+"""
+A grouped product consists of simple standalone products that are presented as a group
+"""
+type GroupedProduct implements PhysicalProductInterface & ProductInterface & RoutableInterface {
   """The attribute set assigned to the product."""
   attribute_set_id: Int @deprecated(reason: "The field should not be used on the storefront.")
 
@@ -4448,8 +4584,20 @@ type GroupedProduct implements PhysicalProductInterface & ProductInterface {
   """The average of all the ratings given to the product."""
   rating_summary: Float!
 
+  """
+  Contains 0 when there is no redirect error. A value of 301 indicates the URL
+  of the requested resource has been changed permanently, while a value of 302
+  indicates a temporary redirect
+  """
+  redirect_code: Int!
+
   """Related Products"""
   related_products: [ProductInterface]
+
+  """
+  The internal relative URL. If the specified URL is a redirect, the query returns the redirected URL, not the original
+  """
+  relative_url: String
 
   """The total count of all the reviews given to the product."""
   review_count: Int!
@@ -4499,6 +4647,9 @@ type GroupedProduct implements PhysicalProductInterface & ProductInterface {
 
   """An array of ProductTierPrices objects."""
   tier_prices: [ProductTierPrices] @deprecated(reason: "Use price_tiers for product tier price information.")
+
+  """One of PRODUCT, CATEGORY, or CMS_PAGE."""
+  type: UrlRewriteEntityTypeEnum
 
   """
   One of simple, virtual, bundle, downloadable, grouped, or configurable.
@@ -4888,6 +5039,18 @@ type Mutation {
   addProductsToWishlist(wishlistId: ID!, wishlistItems: [WishlistItemInput!]!): AddProductsToWishlistOutput
   addSimpleProductsToCart(input: AddSimpleProductsToCartInput): AddSimpleProductsToCartOutput
   addVirtualProductsToCart(input: AddVirtualProductsToCartInput): AddVirtualProductsToCartOutput
+
+  """Add items in the specified wishlist to the customer's cart"""
+  addWishlistItemsToCart(
+    """The unique ID of the wish list"""
+    wishlistId: ID!
+
+    """
+    An array of IDs representing products to be added to the cart. If no IDs are
+    specified, all items in the wishlist will be added to the cart
+    """
+    wishlistItemIds: [ID!]
+  ): AddWishlistItemsToCartOutput
   applyCouponToCart(input: ApplyCouponToCartInput): ApplyCouponToCartOutput
 
   """Assign the specified compare list to the logged in customer"""
@@ -6713,6 +6876,12 @@ type Query {
     sort: ProductAttributeSortInput
   ): Products
 
+  """
+  Return the full details for a specified product, category, or CMS page given
+  the specified url_key, appended by the url_suffix, if one exists
+  """
+  route(url: String!): RoutableInterface
+
   """The store config query"""
   storeConfig: StoreConfig
 
@@ -6720,7 +6889,7 @@ type Query {
   The urlResolver query returns the relative URL for a specified product,
   category or CMS page, using as input a url_key appended by the url_suffix, if
   """
-  urlResolver(url: String!): EntityUrl
+  urlResolver(url: String!): EntityUrl @deprecated(reason: "Use the 'route' query instead")
 
   """The wishlist query returns the contents of a customer's wish list"""
   wishlist: WishlistOutput @deprecated(reason: "Moved under `Customer` `wishlist`")
@@ -6785,6 +6954,24 @@ type ReorderItemsOutput {
 
 type RevokeCustomerTokenOutput {
   result: Boolean!
+}
+
+"""Routable entities serve as the model for a rendered page"""
+interface RoutableInterface {
+  """
+  Contains 0 when there is no redirect error. A value of 301 indicates the URL
+  of the requested resource has been changed permanently, while a value of 302
+  indicates a temporary redirect
+  """
+  redirect_code: Int!
+
+  """
+  The internal relative URL. If the specified URL is a redirect, the query returns the redirected URL, not the original
+  """
+  relative_url: String
+
+  """One of PRODUCT, CATEGORY, or CMS_PAGE."""
+  type: UrlRewriteEntityTypeEnum
 }
 
 """Comment item details"""
@@ -7119,9 +7306,9 @@ type SimpleCartItem implements CartItemInterface {
 }
 
 """
-A simple product is tangible and are usually sold as single units or in fixed quantities.
+A simple product is tangible and is usually sold in single units or in fixed quantities
 """
-type SimpleProduct implements CustomizableProductInterface & PhysicalProductInterface & ProductInterface {
+type SimpleProduct implements CustomizableProductInterface & PhysicalProductInterface & ProductInterface & RoutableInterface {
   """The attribute set assigned to the product."""
   attribute_set_id: Int @deprecated(reason: "The field should not be used on the storefront.")
 
@@ -7218,8 +7405,20 @@ type SimpleProduct implements CustomizableProductInterface & PhysicalProductInte
   """The average of all the ratings given to the product."""
   rating_summary: Float!
 
+  """
+  Contains 0 when there is no redirect error. A value of 301 indicates the URL
+  of the requested resource has been changed permanently, while a value of 302
+  indicates a temporary redirect
+  """
+  redirect_code: Int!
+
   """Related Products"""
   related_products: [ProductInterface]
+
+  """
+  The internal relative URL. If the specified URL is a redirect, the query returns the redirected URL, not the original
+  """
+  relative_url: String
 
   """The total count of all the reviews given to the product."""
   review_count: Int!
@@ -7269,6 +7468,9 @@ type SimpleProduct implements CustomizableProductInterface & PhysicalProductInte
 
   """An array of ProductTierPrices objects."""
   tier_prices: [ProductTierPrices] @deprecated(reason: "Use price_tiers for product tier price information.")
+
+  """One of PRODUCT, CATEGORY, or CMS_PAGE."""
+  type: UrlRewriteEntityTypeEnum
 
   """
   One of simple, virtual, bundle, downloadable, grouped, or configurable.
@@ -7602,6 +7804,27 @@ type StoreConfig {
   welcome: String
 }
 
+type StorefrontProperties {
+  """The relative position of the attribute in the layered navigation block"""
+  position: Int
+
+  """
+  Indicates whether the attribute is filterable with results, without results, or not at all
+  """
+  use_in_layered_navigation: UseInLayeredNavigationOptions
+
+  """Indicates whether the attribute is displayed in product listings"""
+  use_in_product_listing: Boolean
+
+  """
+  Indicates whether the attribute can be used in layered navigation on search results pages
+  """
+  use_in_search_results_layered_navigation: Boolean
+
+  """Indicates whether the attribute is displayed on product pages"""
+  visible_on_catalog_pages: Boolean
+}
+
 type SubscribeEmailToNewsletterOutput {
   """Returns the status of the subscription request"""
   status: SubscriptionStatusesEnum
@@ -7709,6 +7932,12 @@ enum UrlRewriteEntityTypeEnum {
   PRODUCT
 }
 
+enum UseInLayeredNavigationOptions {
+  FILTERABLE_NO_RESULT
+  FILTERABLE_WITH_RESULTS
+  NO
+}
+
 """Required input for payment methods with Vault support."""
 input VaultTokenInput {
   """The public hash of the payment token"""
@@ -7728,9 +7957,9 @@ type VirtualCartItem implements CartItemInterface {
 }
 
 """
-A virtual product is non-tangible product that does not require shipping and is not kept in inventory.
+A virtual product is a non-tangible product that does not require shipping and is not kept in inventory
 """
-type VirtualProduct implements CustomizableProductInterface & ProductInterface {
+type VirtualProduct implements CustomizableProductInterface & ProductInterface & RoutableInterface {
   """The attribute set assigned to the product."""
   attribute_set_id: Int @deprecated(reason: "The field should not be used on the storefront.")
 
@@ -7827,8 +8056,20 @@ type VirtualProduct implements CustomizableProductInterface & ProductInterface {
   """The average of all the ratings given to the product."""
   rating_summary: Float!
 
+  """
+  Contains 0 when there is no redirect error. A value of 301 indicates the URL
+  of the requested resource has been changed permanently, while a value of 302
+  indicates a temporary redirect
+  """
+  redirect_code: Int!
+
   """Related Products"""
   related_products: [ProductInterface]
+
+  """
+  The internal relative URL. If the specified URL is a redirect, the query returns the redirected URL, not the original
+  """
+  relative_url: String
 
   """The total count of all the reviews given to the product."""
   review_count: Int!
@@ -7878,6 +8119,9 @@ type VirtualProduct implements CustomizableProductInterface & ProductInterface {
 
   """An array of ProductTierPrices objects."""
   tier_prices: [ProductTierPrices] @deprecated(reason: "Use price_tiers for product tier price information.")
+
+  """One of PRODUCT, CATEGORY, or CMS_PAGE."""
+  type: UrlRewriteEntityTypeEnum
 
   """
   One of simple, virtual, bundle, downloadable, grouped, or configurable.
@@ -7986,6 +8230,27 @@ type Wishlist {
 
   """The time of the last modification to the wish list"""
   updated_at: String
+}
+
+type WishlistCartUserInputError {
+  """An error code that describes the error encountered"""
+  code: WishlistCartUserInputErrorType!
+
+  """A localized error message"""
+  message: String!
+
+  """The unique ID of the `Wishlist` object containing an error"""
+  wishlistId: ID!
+
+  """The unique ID of the wish list item containing an error"""
+  wishlistItemId: ID!
+}
+
+enum WishlistCartUserInputErrorType {
+  INSUFFICIENT_STOCK
+  NOT_SALABLE
+  PRODUCT_NOT_FOUND
+  UNDEFINED
 }
 
 type WishlistItem {
