@@ -661,6 +661,7 @@ type BundleProduct implements CustomizableProductInterface & PhysicalProductInte
 
   """The categories assigned to a product."""
   categories: [CategoryInterface]
+  color: Int @deprecated(reason: "Use the `custom_attributes` field instead.")
 
   """The product's country of origin."""
   country_of_manufacture: String
@@ -700,7 +701,7 @@ type BundleProduct implements CustomizableProductInterface & PhysicalProductInte
   items: [BundleItem]
 
   """A number representing the product's manufacturer."""
-  manufacturer: Int
+  manufacturer: Int @deprecated(reason: "Use the `custom_attributes` field instead.")
 
   """An array of media gallery objects."""
   media_gallery: [MediaGalleryInterface]
@@ -1798,6 +1799,7 @@ type ConfigurableProduct implements CustomizableProductInterface & PhysicalProdu
 
   """The categories assigned to a product."""
   categories: [CategoryInterface]
+  color: Int @deprecated(reason: "Use the `custom_attributes` field instead.")
 
   """An array of options for the configurable product."""
   configurable_options: [ConfigurableProductOptions]
@@ -1831,7 +1833,7 @@ type ConfigurableProduct implements CustomizableProductInterface & PhysicalProdu
   image: ProductImage
 
   """A number representing the product's manufacturer."""
-  manufacturer: Int
+  manufacturer: Int @deprecated(reason: "Use the `custom_attributes` field instead.")
 
   """An array of media gallery objects."""
   media_gallery: [MediaGalleryInterface]
@@ -4855,6 +4857,7 @@ type DownloadableProduct implements CustomizableProductInterface & ProductInterf
 
   """The categories assigned to a product."""
   categories: [CategoryInterface]
+  color: Int @deprecated(reason: "Use the `custom_attributes` field instead.")
 
   """The product's country of origin."""
   country_of_manufacture: String
@@ -4898,7 +4901,7 @@ type DownloadableProduct implements CustomizableProductInterface & ProductInterf
   links_title: String
 
   """A number representing the product's manufacturer."""
-  manufacturer: Int
+  manufacturer: Int @deprecated(reason: "Use the `custom_attributes` field instead.")
 
   """An array of media gallery objects."""
   media_gallery: [MediaGalleryInterface]
@@ -5380,6 +5383,7 @@ type GroupedProduct implements PhysicalProductInterface & ProductInterface & Rou
 
   """The categories assigned to a product."""
   categories: [CategoryInterface]
+  color: Int @deprecated(reason: "Use the `custom_attributes` field instead.")
 
   """The product's country of origin."""
   country_of_manufacture: String
@@ -5408,7 +5412,7 @@ type GroupedProduct implements PhysicalProductInterface & ProductInterface & Rou
   items: [GroupedProductItem]
 
   """A number representing the product's manufacturer."""
-  manufacturer: Int
+  manufacturer: Int @deprecated(reason: "Use the `custom_attributes` field instead.")
 
   """An array of media gallery objects."""
   media_gallery: [MediaGalleryInterface]
@@ -6965,6 +6969,33 @@ type PickupLocations {
   total_count: Int
 }
 
+"""An error encountered while placing an order."""
+type PlaceOrderError {
+  """An error code that is specific to place order."""
+  code: PlaceOrderErrorCodes!
+
+  """A localized error message."""
+  message: String!
+}
+
+""""""
+enum PlaceOrderErrorCodes {
+  """"""
+  CART_NOT_ACTIVE @deprecated
+
+  """"""
+  CART_NOT_FOUND @deprecated
+
+  """"""
+  GUEST_EMAIL_MISSING @deprecated
+
+  """"""
+  UNABLE_TO_PLACE_ORDER @deprecated
+
+  """"""
+  UNDEFINED @deprecated
+}
+
 """Specifies the quote to be converted to an order."""
 input PlaceOrderInput {
   """The unique ID of a `Cart` object."""
@@ -6973,8 +7004,11 @@ input PlaceOrderInput {
 
 """Contains the results of the request to place an order."""
 type PlaceOrderOutput {
+  """An array of place order errors."""
+  errors: [PlaceOrderError]!
+
   """The ID of the order."""
-  order: Order!
+  order: Order
 }
 
 """
@@ -7082,6 +7116,21 @@ input ProductAttributeFilterInput {
   """Filter product by the unique ID for a `CategoryInterface` object."""
   category_uid: FilterEqualTypeInput
 
+  """Attribute label: Description"""
+  description: FilterMatchTypeInput
+
+  """Attribute label: Product Name"""
+  name: FilterMatchTypeInput
+
+  """Attribute label: Price"""
+  price: FilterRangeTypeInput
+
+  """Attribute label: Short Description"""
+  short_description: FilterMatchTypeInput
+
+  """Attribute label: SKU"""
+  sku: FilterEqualTypeInput
+
   """The part of the URL that identifies the product"""
   url_key: FilterEqualTypeInput
 }
@@ -7090,8 +7139,14 @@ input ProductAttributeFilterInput {
 Specifies the attribute to use for sorting search results and indicates whether the results are sorted in ascending or descending order. It's possible to sort products using searchable attributes with enabled 'Use in Filter Options' option
 """
 input ProductAttributeSortInput {
+  """Attribute label: Product Name"""
+  name: SortEnum
+
   """Sort by the position assigned to each product."""
   position: SortEnum
+
+  """Attribute label: Price"""
+  price: SortEnum
 
   """Sort by the search relevance score (default)."""
   relevance: SortEnum
@@ -7280,6 +7335,7 @@ interface ProductInterface {
 
   """The categories assigned to a product."""
   categories: [CategoryInterface]
+  color: Int @deprecated(reason: "Use the `custom_attributes` field instead.")
 
   """The product's country of origin."""
   country_of_manufacture: String
@@ -7305,7 +7361,7 @@ interface ProductInterface {
   image: ProductImage
 
   """A number representing the product's manufacturer."""
-  manufacturer: Int
+  manufacturer: Int @deprecated(reason: "Use the `custom_attributes` field instead.")
 
   """An array of media gallery objects."""
   media_gallery: [MediaGalleryInterface]
@@ -8701,6 +8757,7 @@ type SimpleProduct implements CustomizableProductInterface & PhysicalProductInte
 
   """The categories assigned to a product."""
   categories: [CategoryInterface]
+  color: Int @deprecated(reason: "Use the `custom_attributes` field instead.")
 
   """The product's country of origin."""
   country_of_manufacture: String
@@ -8726,7 +8783,7 @@ type SimpleProduct implements CustomizableProductInterface & PhysicalProductInte
   image: ProductImage
 
   """A number representing the product's manufacturer."""
-  manufacturer: Int
+  manufacturer: Int @deprecated(reason: "Use the `custom_attributes` field instead.")
 
   """An array of media gallery objects."""
   media_gallery: [MediaGalleryInterface]
@@ -9517,6 +9574,7 @@ type VirtualProduct implements CustomizableProductInterface & ProductInterface &
 
   """The categories assigned to a product."""
   categories: [CategoryInterface]
+  color: Int @deprecated(reason: "Use the `custom_attributes` field instead.")
 
   """The product's country of origin."""
   country_of_manufacture: String
@@ -9542,7 +9600,7 @@ type VirtualProduct implements CustomizableProductInterface & ProductInterface &
   image: ProductImage
 
   """A number representing the product's manufacturer."""
-  manufacturer: Int
+  manufacturer: Int @deprecated(reason: "Use the `custom_attributes` field instead.")
 
   """An array of media gallery objects."""
   media_gallery: [MediaGalleryInterface]
