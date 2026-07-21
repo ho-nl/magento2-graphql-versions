@@ -402,6 +402,9 @@ type BundleCartItem implements CartItemInterface {
   """An array containing the customizable options the shopper selected."""
   customizable_options: [SelectedCustomizableOption]!
 
+  """An array of errors encountered while loading the cart item"""
+  errors: [CartItemError]
+
   """The entered gift message for the cart item"""
   gift_message: GiftMessage
   id: String! @deprecated(reason: "Use `uid` instead.")
@@ -495,6 +498,9 @@ type BundleItem {
   A number indicating the sequence order of this item compared to the other bundle items.
   """
   position: Int
+
+  """The range of prices for the product"""
+  price_range: PriceRange!
 
   """Indicates whether the item must be included in the bundle."""
   required: Boolean
@@ -705,10 +711,10 @@ type BundleProduct implements CustomizableProductInterface & PhysicalProductInte
   """
   The beginning date for new product listings, and determines if the product is featured as a new product.
   """
-  new_from_date: String @deprecated(reason: "The field should not be used on the storefront.")
+  new_from_date: String
 
   """The end date for new product listings."""
-  new_to_date: String @deprecated(reason: "The field should not be used on the storefront.")
+  new_to_date: String
 
   """Product stock only x left count"""
   only_x_left_in_stock: Float
@@ -1048,6 +1054,20 @@ type CartDiscount {
   label: [String]!
 }
 
+type CartItemError {
+  """An error code that describes the error encountered"""
+  code: CartItemErrorType!
+
+  """A localized error message"""
+  message: String!
+}
+
+enum CartItemErrorType {
+  ITEM_INCREMENTS @deprecated
+  ITEM_QTY @deprecated
+  UNDEFINED @deprecated
+}
+
 """Defines an item to be added to the cart."""
 input CartItemInput {
   """
@@ -1074,6 +1094,8 @@ input CartItemInput {
 
 """An interface for products in a cart."""
 interface CartItemInterface {
+  """An array of errors encountered while loading the cart item"""
+  errors: [CartItemError]
   id: String! @deprecated(reason: "Use `uid` instead.")
 
   """
@@ -1106,6 +1128,12 @@ type CartItemPrices {
   include tax, depending on the configured display settings for cart.
   """
   price: Money!
+
+  """
+  The price of the item before any discounts were applied. The price that might
+  include tax, depending on the configured display settings for cart.
+  """
+  price_including_tax: Money!
 
   """The value of the price multiplied by the quantity of the item."""
   row_total: Money!
@@ -1682,7 +1710,10 @@ type ConfigurableCartItem implements CartItemInterface {
   configured_variant: ProductInterface!
 
   """An array containing the customizable options the shopper selected."""
-  customizable_options: [SelectedCustomizableOption]
+  customizable_options: [SelectedCustomizableOption]!
+
+  """An array of errors encountered while loading the cart item"""
+  errors: [CartItemError]
 
   """The entered gift message for the cart item"""
   gift_message: GiftMessage
@@ -1792,10 +1823,10 @@ type ConfigurableProduct implements CustomizableProductInterface & PhysicalProdu
   """
   The beginning date for new product listings, and determines if the product is featured as a new product.
   """
-  new_from_date: String @deprecated(reason: "The field should not be used on the storefront.")
+  new_from_date: String
 
   """The end date for new product listings."""
-  new_to_date: String @deprecated(reason: "The field should not be used on the storefront.")
+  new_to_date: String
 
   """Product stock only x left count"""
   only_x_left_in_stock: Float
@@ -2072,10 +2103,15 @@ type ConfigurableWishlistItem implements WishlistItemInterface {
   """
   The SKU of the simple product corresponding to a set of selected configurable options.
   """
-  child_sku: String!
+  child_sku: String! @deprecated(reason: "Use `ConfigurableWishlistItem.configured_variant.sku` instead.")
 
   """An array of selected configurable options."""
   configurable_options: [SelectedConfigurableOption]
+
+  """
+  Product details of the selected variant. The value is null if some options are not configured.
+  """
+  configured_variant: ProductInterface
 
   """Custom options selected for the wish list item."""
   customizable_options: [SelectedCustomizableOption]!
@@ -4222,6 +4258,9 @@ type Discount {
 type DownloadableCartItem implements CartItemInterface {
   """An array containing the customizable options the shopper selected."""
   customizable_options: [SelectedCustomizableOption]!
+
+  """An array of errors encountered while loading the cart item"""
+  errors: [CartItemError]
   id: String! @deprecated(reason: "Use `uid` instead.")
 
   """
@@ -4469,10 +4508,10 @@ type DownloadableProduct implements CustomizableProductInterface & ProductInterf
   """
   The beginning date for new product listings, and determines if the product is featured as a new product.
   """
-  new_from_date: String @deprecated(reason: "The field should not be used on the storefront.")
+  new_from_date: String
 
   """The end date for new product listings."""
-  new_to_date: String @deprecated(reason: "The field should not be used on the storefront.")
+  new_to_date: String
 
   """Product stock only x left count"""
   only_x_left_in_stock: Float
@@ -4997,10 +5036,10 @@ type GroupedProduct implements PhysicalProductInterface & ProductInterface & Rou
   """
   The beginning date for new product listings, and determines if the product is featured as a new product.
   """
-  new_from_date: String @deprecated(reason: "The field should not be used on the storefront.")
+  new_from_date: String
 
   """The end date for new product listings."""
-  new_to_date: String @deprecated(reason: "The field should not be used on the storefront.")
+  new_to_date: String
 
   """Product stock only x left count"""
   only_x_left_in_stock: Float
@@ -6937,10 +6976,10 @@ interface ProductInterface {
   """
   The beginning date for new product listings, and determines if the product is featured as a new product.
   """
-  new_from_date: String @deprecated(reason: "The field should not be used on the storefront.")
+  new_from_date: String
 
   """The end date for new product listings."""
-  new_to_date: String @deprecated(reason: "The field should not be used on the storefront.")
+  new_to_date: String
 
   """Product stock only x left count"""
   only_x_left_in_stock: Float
@@ -7635,9 +7674,6 @@ type Query {
     sort: ProductAttributeSortInput
   ): Products
 
-  """Returns details about Google reCAPTCHA V3-Invisible configuration."""
-  recaptchaV3Config: ReCaptchaConfigurationV3
-
   """
   Return the full details for a specified product, category, or CMS page.
   """
@@ -7657,51 +7693,6 @@ type Query {
 
   """Return the contents of a customer's wish list."""
   wishlist: WishlistOutput @deprecated(reason: "Moved under `Customer.wishlist`.")
-}
-
-"""Contains reCAPTCHA V3-Invisible configuration details."""
-type ReCaptchaConfigurationV3 {
-  """The position of the invisible reCAPTCHA badge on each page."""
-  badge_position: String!
-
-  """The message that appears to the user if validation fails."""
-  failure_message: String!
-
-  """
-  A list of forms on the storefront that have been configured to use reCAPTCHA V3.
-  """
-  forms: [ReCaptchaFormEnum]!
-
-  """Return whether recaptcha is enabled or not"""
-  is_enabled: Boolean!
-
-  """
-  A two-character code that specifies the language that is used for Google reCAPTCHA text and messaging.
-  """
-  language_code: String
-
-  """
-  The minimum score that identifies a user interaction as a potential risk.
-  """
-  minimum_score: Float!
-
-  """
-  The website key generated when the Google reCAPTCHA account was registered.
-  """
-  website_key: String!
-}
-
-enum ReCaptchaFormEnum {
-  BRAINTREE @deprecated
-  CONTACT @deprecated
-  CUSTOMER_CREATE @deprecated
-  CUSTOMER_EDIT @deprecated
-  CUSTOMER_FORGOT_PASSWORD @deprecated
-  CUSTOMER_LOGIN @deprecated
-  NEWSLETTER @deprecated
-  PLACE_ORDER @deprecated
-  PRODUCT_REVIEW @deprecated
-  SENDFRIEND @deprecated
 }
 
 type Region {
@@ -8286,6 +8277,9 @@ type SimpleCartItem implements CartItemInterface {
   """An array containing the customizable options the shopper selected."""
   customizable_options: [SelectedCustomizableOption]!
 
+  """An array of errors encountered while loading the cart item"""
+  errors: [CartItemError]
+
   """The entered gift message for the cart item"""
   gift_message: GiftMessage
   id: String! @deprecated(reason: "Use `uid` instead.")
@@ -8374,10 +8368,10 @@ type SimpleProduct implements CustomizableProductInterface & PhysicalProductInte
   """
   The beginning date for new product listings, and determines if the product is featured as a new product.
   """
-  new_from_date: String @deprecated(reason: "The field should not be used on the storefront.")
+  new_from_date: String
 
   """The end date for new product listings."""
-  new_to_date: String @deprecated(reason: "The field should not be used on the storefront.")
+  new_to_date: String
 
   """Product stock only x left count"""
   only_x_left_in_stock: Float
@@ -9089,6 +9083,9 @@ input VaultTokenInput {
 type VirtualCartItem implements CartItemInterface {
   """An array containing customizable options the shopper selected."""
   customizable_options: [SelectedCustomizableOption]!
+
+  """An array of errors encountered while loading the cart item"""
+  errors: [CartItemError]
   id: String! @deprecated(reason: "Use `uid` instead.")
 
   """
@@ -9175,10 +9172,10 @@ type VirtualProduct implements CustomizableProductInterface & ProductInterface &
   """
   The beginning date for new product listings, and determines if the product is featured as a new product.
   """
-  new_from_date: String @deprecated(reason: "The field should not be used on the storefront.")
+  new_from_date: String
 
   """The end date for new product listings."""
-  new_to_date: String @deprecated(reason: "The field should not be used on the storefront.")
+  new_to_date: String
 
   """Product stock only x left count"""
   only_x_left_in_stock: Float
