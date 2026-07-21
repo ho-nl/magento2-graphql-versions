@@ -28,6 +28,7 @@ type AddConfigurableProductsToCartOutput {
   cart: Cart!
 }
 
+""""""
 input AddDownloadableProductsToCartInput {
   """The ID of the cart."""
   cart_id: String!
@@ -272,6 +273,9 @@ type AvailablePaymentMethod {
   """The payment method code."""
   code: String!
 
+  """If the payment method is an online integration"""
+  is_deferred: Boolean!
+
   """The payment method title."""
   title: String!
 }
@@ -313,9 +317,15 @@ type AvailableShippingMethod {
   price_incl_tax: Money!
 }
 
+""""""
 enum BatchMutationStatus {
+  """"""
   FAILURE @deprecated
+
+  """"""
   MIXED_RESULTS @deprecated
+
+  """"""
   SUCCESS @deprecated
 }
 
@@ -369,6 +379,12 @@ type BillingCartAddress implements CartAddressInterface {
 
   """The telephone number for the billing or shipping address."""
   telephone: String
+
+  """The unique id of the customer address."""
+  uid: String!
+
+  """The VAT company number for billing or shipping address."""
+  vat_id: String
 }
 
 """
@@ -585,6 +601,9 @@ type BundleOrderItem implements OrderItemInterface {
   """The entered option for the base product, such as a logo or image."""
   entered_options: [OrderItemOption]
 
+  """The selected gift message for the order item"""
+  gift_message: GiftMessage
+
   """The unique ID for an `OrderItemInterface` object."""
   id: ID!
 
@@ -636,8 +655,7 @@ type BundleProduct implements CustomizableProductInterface & PhysicalProductInte
   attribute_set_id: Int @deprecated(reason: "The field should not be used on the storefront.")
 
   """
-  The relative canonical URL. This value is returned only if the system setting
-  'Use Canonical Link Meta Tag For Products' is enabled.
+  The relative canonical URL. This value is returned only if the system setting 'Use Canonical Link Meta Tag For Products' is enabled.
   """
   canonical_url: String
 
@@ -746,9 +764,7 @@ type BundleProduct implements CustomizableProductInterface & PhysicalProductInte
   rating_summary: Float!
 
   """
-  Contains 0 when there is no redirect error. A value of 301 indicates the URL
-  of the requested resource has been changed permanently, while a value of 302
-  indicates a temporary redirect.
+  Contains 0 when there is no redirect error. A value of 301 indicates the URL of the requested resource has been changed permanently, while a value of 302 indicates a temporary redirect.
   """
   redirect_code: Int!
 
@@ -1002,8 +1018,12 @@ input CartAddressInput {
 
   """The telephone number for the billing or shipping address."""
   telephone: String
+
+  """The VAT company number for billing or shipping address."""
+  vat_id: String
 }
 
+""""""
 interface CartAddressInterface {
   """The city specified for the billing or shipping address."""
   city: String!
@@ -1031,6 +1051,12 @@ interface CartAddressInterface {
 
   """The telephone number for the billing or shipping address."""
   telephone: String
+
+  """The unique id of the customer address."""
+  uid: String!
+
+  """The VAT company number for billing or shipping address."""
+  vat_id: String
 }
 
 """Contains details about the region in a billing or shipping address."""
@@ -1054,6 +1080,7 @@ type CartDiscount {
   label: [String]!
 }
 
+""""""
 type CartItemError {
   """An error code that describes the error encountered"""
   code: CartItemErrorType!
@@ -1062,9 +1089,15 @@ type CartItemError {
   message: String!
 }
 
+""""""
 enum CartItemErrorType {
+  """"""
   ITEM_INCREMENTS @deprecated
+
+  """"""
   ITEM_QTY @deprecated
+
+  """"""
   UNDEFINED @deprecated
 }
 
@@ -1082,9 +1115,7 @@ input CartItemInput {
   quantity: Float!
 
   """
-  The selected options for the base product, such as color or size, using the
-  unique ID for an object such as `CustomizableRadioOption`,
-  `CustomizableDropDownOption`, or `ConfigurableProductOptionsValues`.
+  The selected options for the base product, such as color or size, using the unique ID for an object such as `CustomizableRadioOption`, `CustomizableDropDownOption`, or `ConfigurableProductOptionsValues`.
   """
   selected_options: [ID]
 
@@ -1124,14 +1155,12 @@ type CartItemPrices {
   fixed_product_taxes: [FixedProductTax]
 
   """
-  The price of the item before any discounts were applied. The price that might
-  include tax, depending on the configured display settings for cart.
+  The price of the item before any discounts were applied. The price that might include tax, depending on the configured display settings for cart.
   """
   price: Money!
 
   """
-  The price of the item before any discounts were applied. The price that might
-  include tax, depending on the configured display settings for cart.
+  The price of the item before any discounts were applied. The price that might include tax, depending on the configured display settings for cart.
   """
   price_including_tax: Money!
 
@@ -1193,7 +1222,9 @@ type CartPrices {
   applied_taxes: [CartTaxItem]
   discount: CartDiscount @deprecated(reason: "Use discounts instead.")
 
-  """An array containing all discounts applied to the cart."""
+  """
+  An array containing cart rule discounts, store credit and gift cards applied to the cart.
+  """
   discounts: [Discount]
 
   """The total, including discounts, taxes, shipping, and other fees."""
@@ -1227,16 +1258,23 @@ type CartUserInputError {
   message: String!
 }
 
+""""""
 enum CartUserInputErrorType {
+  """"""
   INSUFFICIENT_STOCK @deprecated
+
+  """"""
   NOT_SALABLE @deprecated
+
+  """"""
   PRODUCT_NOT_FOUND @deprecated
+
+  """"""
   UNDEFINED @deprecated
 }
 
 """
-Defines the filters to be used in the search. A filter contains at least one
-attribute, a comparison operator, and the value that is being searched for.
+Defines the filters to be used in the search. A filter contains at least one attribute, a comparison operator, and the value that is being searched for.
 """
 input CategoryFilterInput {
   """Filter by the unique category ID for a `CategoryInterface` object."""
@@ -1277,8 +1315,7 @@ interface CategoryInterface {
   breadcrumbs: [Breadcrumb]
 
   """
-  The relative canonical URL. This value is returned only if the system setting
-  'Use Canonical Link Meta Tag For Categories' is enabled.
+  The relative canonical URL. This value is returned only if the system setting 'Use Canonical Link Meta Tag For Categories' is enabled.
   """
   canonical_url: String
   children_count: String
@@ -1326,8 +1363,7 @@ interface CategoryInterface {
   position: Int
 
   """
-  The number of products in the category that are marked as visible. By default,
-  in complex products, parent products are visible, but their child products are
+  The number of products in the category that are marked as visible. By default, in complex products, parent products are visible, but their child products are not.
   """
   product_count: Int
 
@@ -1372,8 +1408,7 @@ type CategoryProducts {
   page_info: SearchResultPageInfo
 
   """
-  The number of products in the category that are marked as visible. By default,
-  in complex products, parent products are visible, but their child products are
+  The number of products in the category that are marked as visible. By default, in complex products, parent products are visible, but their child products are not.
   """
   total_count: Int
 }
@@ -1402,8 +1437,7 @@ type CategoryTree implements CategoryInterface & RoutableInterface {
   breadcrumbs: [Breadcrumb]
 
   """
-  The relative canonical URL. This value is returned only if the system setting
-  'Use Canonical Link Meta Tag For Categories' is enabled.
+  The relative canonical URL. This value is returned only if the system setting 'Use Canonical Link Meta Tag For Categories' is enabled.
   """
   canonical_url: String
 
@@ -1454,8 +1488,7 @@ type CategoryTree implements CategoryInterface & RoutableInterface {
   position: Int
 
   """
-  The number of products in the category that are marked as visible. By default,
-  in complex products, parent products are visible, but their child products are
+  The number of products in the category that are marked as visible. By default, in complex products, parent products are visible, but their child products are not.
   """
   product_count: Int
 
@@ -1476,9 +1509,7 @@ type CategoryTree implements CategoryInterface & RoutableInterface {
   ): CategoryProducts
 
   """
-  Contains 0 when there is no redirect error. A value of 301 indicates the URL
-  of the requested resource has been changed permanently, while a value of 302
-  indicates a temporary redirect.
+  Contains 0 when there is no redirect error. A value of 301 indicates the URL of the requested resource has been changed permanently, while a value of 302 indicates a temporary redirect.
   """
   redirect_code: Int!
 
@@ -1550,18 +1581,26 @@ type CheckoutUserInputError {
   message: String!
 
   """
-  The path to the input field that caused an error. See the GraphQL
-  specification about path errors for details:
-  http://spec.graphql.org/draft/#sec-Errors
+  The path to the input field that caused an error. See the GraphQL specification about path errors for details: http://spec.graphql.org/draft/#sec-Errors
   """
   path: [String]!
 }
 
+""""""
 enum CheckoutUserInputErrorCodes {
+  """"""
   INSUFFICIENT_STOCK @deprecated
+
+  """"""
   NOT_SALABLE @deprecated
+
+  """"""
   PRODUCT_NOT_FOUND @deprecated
+
+  """"""
   REORDER_NOT_AVAILABLE @deprecated
+
+  """"""
   UNDEFINED @deprecated
 }
 
@@ -1611,9 +1650,7 @@ type CmsPage implements RoutableInterface {
   page_layout: String
 
   """
-  Contains 0 when there is no redirect error. A value of 301 indicates the URL
-  of the requested resource has been changed permanently, while a value of 302
-  indicates a temporary redirect.
+  Contains 0 when there is no redirect error. A value of 301 indicates the URL of the requested resource has been changed permanently, while a value of 302 indicates a temporary redirect.
   """
   redirect_code: Int!
 
@@ -1636,6 +1673,7 @@ type CmsPage implements RoutableInterface {
   url_key: String
 }
 
+""""""
 type ColorSwatchData implements SwatchDataInterface {
   """The value can be represented as color (HEX code), image link, or text."""
   value: String
@@ -1681,6 +1719,7 @@ type CompareList {
   uid: ID!
 }
 
+""""""
 type ComplexTextValue {
   """Text that can contain HTML tags."""
   html: String!
@@ -1753,8 +1792,7 @@ type ConfigurableProduct implements CustomizableProductInterface & PhysicalProdu
   attribute_set_id: Int @deprecated(reason: "The field should not be used on the storefront.")
 
   """
-  The relative canonical URL. This value is returned only if the system setting
-  'Use Canonical Link Meta Tag For Products' is enabled.
+  The relative canonical URL. This value is returned only if the system setting 'Use Canonical Link Meta Tag For Products' is enabled.
   """
   canonical_url: String
 
@@ -1765,8 +1803,7 @@ type ConfigurableProduct implements CustomizableProductInterface & PhysicalProdu
   configurable_options: [ConfigurableProductOptions]
 
   """
-  An array of media gallery items and other details about selected configurable
-  product options as well as details about remaining selectable options.
+  An array of media gallery items and other details about selected configurable product options as well as details about remaining selectable options.
   """
   configurable_product_options_selection(configurableOptionValueUids: [ID!]): ConfigurableProductOptionsSelection
 
@@ -1855,9 +1892,7 @@ type ConfigurableProduct implements CustomizableProductInterface & PhysicalProdu
   rating_summary: Float!
 
   """
-  Contains 0 when there is no redirect error. A value of 301 indicates the URL
-  of the requested resource has been changed permanently, while a value of 302
-  indicates a temporary redirect.
+  Contains 0 when there is no redirect error. A value of 301 indicates the URL of the requested resource has been changed permanently, while a value of 302 indicates a temporary redirect.
   """
   redirect_code: Int!
 
@@ -1955,6 +1990,7 @@ type ConfigurableProduct implements CustomizableProductInterface & PhysicalProdu
   weight: Float
 }
 
+""""""
 input ConfigurableProductCartItemInput {
   """The ID and value of the option."""
   customizable_options: [CustomizableOptionInput]
@@ -2056,8 +2092,7 @@ type ConfigurableProductOptionsSelection {
   options_available_for_selection: [ConfigurableOptionAvailableForSelection]
 
   """
-  A variant represented by the specified configurable options selection. The
-  value is expected to be null until selections are made for each configurable
+  A variant represented by the specified configurable options selection. The value is expected to be null until selections are made for each configurable option.
   """
   variant: SimpleProduct
 }
@@ -2129,6 +2164,7 @@ type ConfigurableWishlistItem implements WishlistItemInterface {
   quantity: Float!
 }
 
+""""""
 type Country {
   """An array of regions within a particular country."""
   available_regions: [Region]
@@ -2976,6 +3012,7 @@ type CreditMemo {
   total: CreditMemoTotal
 }
 
+""""""
 type CreditMemoItem implements CreditMemoItemInterface {
   """
   Details about the final discount amount for the base product, including discounts on options.
@@ -3057,6 +3094,7 @@ type CreditMemoTotal {
   total_tax: Money!
 }
 
+""""""
 type Currency {
   """
   An array of three-letter currency codes accepted by the store, such as USD and EUR.
@@ -3083,175 +3121,514 @@ type Currency {
 
 """The list of available currency codes."""
 enum CurrencyEnum {
+  """"""
   AED @deprecated
+
+  """"""
   AFN @deprecated
+
+  """"""
   ALL @deprecated
+
+  """"""
   AMD @deprecated
+
+  """"""
   ANG @deprecated
+
+  """"""
   AOA @deprecated
+
+  """"""
   ARS @deprecated
+
+  """"""
   AUD @deprecated
+
+  """"""
   AWG @deprecated
+
+  """"""
   AZM @deprecated
+
+  """"""
   AZN @deprecated
+
+  """"""
   BAM @deprecated
+
+  """"""
   BBD @deprecated
+
+  """"""
   BDT @deprecated
+
+  """"""
   BGN @deprecated
+
+  """"""
   BHD @deprecated
+
+  """"""
   BIF @deprecated
+
+  """"""
   BMD @deprecated
+
+  """"""
   BND @deprecated
+
+  """"""
   BOB @deprecated
+
+  """"""
   BRL @deprecated
+
+  """"""
   BSD @deprecated
+
+  """"""
   BTN @deprecated
+
+  """"""
   BUK @deprecated
+
+  """"""
   BWP @deprecated
+
+  """"""
   BYN @deprecated
+
+  """"""
   BZD @deprecated
+
+  """"""
   CAD @deprecated
+
+  """"""
   CDF @deprecated
+
+  """"""
   CHE @deprecated
+
+  """"""
   CHF @deprecated
+
+  """"""
   CHW @deprecated
+
+  """"""
   CLP @deprecated
+
+  """"""
   CNY @deprecated
+
+  """"""
   COP @deprecated
+
+  """"""
   CRC @deprecated
+
+  """"""
   CUP @deprecated
+
+  """"""
   CVE @deprecated
+
+  """"""
   CZK @deprecated
+
+  """"""
   DJF @deprecated
+
+  """"""
   DKK @deprecated
+
+  """"""
   DOP @deprecated
+
+  """"""
   DZD @deprecated
+
+  """"""
   EEK @deprecated
+
+  """"""
   EGP @deprecated
+
+  """"""
   ERN @deprecated
+
+  """"""
   ETB @deprecated
+
+  """"""
   EUR @deprecated
+
+  """"""
   FJD @deprecated
+
+  """"""
   FKP @deprecated
+
+  """"""
   GBP @deprecated
+
+  """"""
   GEK @deprecated
+
+  """"""
   GEL @deprecated
+
+  """"""
   GHS @deprecated
+
+  """"""
   GIP @deprecated
+
+  """"""
   GMD @deprecated
+
+  """"""
   GNF @deprecated
+
+  """"""
   GQE @deprecated
+
+  """"""
   GTQ @deprecated
+
+  """"""
   GYD @deprecated
+
+  """"""
   HKD @deprecated
+
+  """"""
   HNL @deprecated
+
+  """"""
   HRK @deprecated
+
+  """"""
   HTG @deprecated
+
+  """"""
   HUF @deprecated
+
+  """"""
   IDR @deprecated
+
+  """"""
   ILS @deprecated
+
+  """"""
   INR @deprecated
+
+  """"""
   IQD @deprecated
+
+  """"""
   IRR @deprecated
+
+  """"""
   ISK @deprecated
+
+  """"""
   JMD @deprecated
+
+  """"""
   JOD @deprecated
+
+  """"""
   JPY @deprecated
+
+  """"""
   KES @deprecated
+
+  """"""
   KGS @deprecated
+
+  """"""
   KHR @deprecated
+
+  """"""
   KMF @deprecated
+
+  """"""
   KPW @deprecated
+
+  """"""
   KRW @deprecated
+
+  """"""
   KWD @deprecated
+
+  """"""
   KYD @deprecated
+
+  """"""
   KZT @deprecated
+
+  """"""
   LAK @deprecated
+
+  """"""
   LBP @deprecated
+
+  """"""
   LKR @deprecated
+
+  """"""
   LRD @deprecated
+
+  """"""
   LSL @deprecated
+
+  """"""
   LSM @deprecated
+
+  """"""
   LTL @deprecated
+
+  """"""
   LVL @deprecated
+
+  """"""
   LYD @deprecated
+
+  """"""
   MAD @deprecated
+
+  """"""
   MDL @deprecated
+
+  """"""
   MGA @deprecated
+
+  """"""
   MKD @deprecated
+
+  """"""
   MMK @deprecated
+
+  """"""
   MNT @deprecated
+
+  """"""
   MOP @deprecated
+
+  """"""
   MRO @deprecated
+
+  """"""
   MUR @deprecated
+
+  """"""
   MVR @deprecated
+
+  """"""
   MWK @deprecated
+
+  """"""
   MXN @deprecated
+
+  """"""
   MYR @deprecated
+
+  """"""
   MZN @deprecated
+
+  """"""
   NAD @deprecated
+
+  """"""
   NGN @deprecated
+
+  """"""
   NIC @deprecated
+
+  """"""
   NOK @deprecated
+
+  """"""
   NPR @deprecated
+
+  """"""
   NZD @deprecated
+
+  """"""
   OMR @deprecated
+
+  """"""
   PAB @deprecated
+
+  """"""
   PEN @deprecated
+
+  """"""
   PGK @deprecated
+
+  """"""
   PHP @deprecated
+
+  """"""
   PKR @deprecated
+
+  """"""
   PLN @deprecated
+
+  """"""
   PYG @deprecated
+
+  """"""
   QAR @deprecated
+
+  """"""
   RHD @deprecated
+
+  """"""
   ROL @deprecated
+
+  """"""
   RON @deprecated
+
+  """"""
   RSD @deprecated
+
+  """"""
   RUB @deprecated
+
+  """"""
   RWF @deprecated
+
+  """"""
   SAR @deprecated
+
+  """"""
   SBD @deprecated
+
+  """"""
   SCR @deprecated
+
+  """"""
   SDG @deprecated
+
+  """"""
   SEK @deprecated
+
+  """"""
   SGD @deprecated
+
+  """"""
   SHP @deprecated
+
+  """"""
   SKK @deprecated
+
+  """"""
   SLL @deprecated
+
+  """"""
   SOS @deprecated
+
+  """"""
   SRD @deprecated
+
+  """"""
   STD @deprecated
+
+  """"""
   SVC @deprecated
+
+  """"""
   SYP @deprecated
+
+  """"""
   SZL @deprecated
+
+  """"""
   THB @deprecated
+
+  """"""
   TJS @deprecated
+
+  """"""
   TMM @deprecated
+
+  """"""
   TND @deprecated
+
+  """"""
   TOP @deprecated
+
+  """"""
   TRL @deprecated
+
+  """"""
   TRY @deprecated
+
+  """"""
   TTD @deprecated
+
+  """"""
   TWD @deprecated
+
+  """"""
   TZS @deprecated
+
+  """"""
   UAH @deprecated
+
+  """"""
   UGX @deprecated
+
+  """"""
   USD @deprecated
+
+  """"""
   UYU @deprecated
+
+  """"""
   UZS @deprecated
+
+  """"""
   VEB @deprecated
+
+  """"""
   VEF @deprecated
+
+  """"""
   VND @deprecated
+
+  """"""
   VUV @deprecated
+
+  """"""
   WST @deprecated
+
+  """"""
   XCD @deprecated
+
+  """"""
   XOF @deprecated
+
+  """"""
   XPF @deprecated
+
+  """"""
   YER @deprecated
+
+  """"""
   YTL @deprecated
+
+  """"""
   ZAR @deprecated
+
+  """"""
   ZMK @deprecated
+
+  """"""
   ZWD @deprecated
 }
 
@@ -3321,6 +3698,16 @@ type Customer {
     Specifies the maximum number of results to return at once. The default value is 20.
     """
     pageSize: Int = 20
+
+    """
+    Specifies the scope to search for customer orders. The Store request header identifies the customer's store view code. The default value of STORE limits the search to the value specified in the header. Specify WEBSITE to expand the search to include all customer orders assigned to the website that is defined in the header, or specify GLOBAL to include all customer orders across all websites and stores.
+    """
+    scope: ScopeTypeEnum
+
+    """
+    Specifies which field to sort on, and whether to return the results in ascending or descending order.
+    """
+    sort: CustomerOrderSortInput
   ): CustomerOrders
 
   """An honorific, such as Dr., Mr., or Mrs."""
@@ -3352,8 +3739,7 @@ type Customer {
   wishlist_v2(id: ID!): Wishlist
 
   """
-  An array of wishlists. In Magento Open Source, customers are limited to one
-  wish list. The number of wish lists is configurable for Adobe Commerce.
+  An array of wishlists. In Magento Open Source, customers are limited to one wish list. The number of wish lists is configurable for Adobe Commerce.
   """
   wishlists(
     """Specifies which page of results to return. The default value is 1."""
@@ -3719,6 +4105,28 @@ type CustomerOrder {
 }
 
 """
+CustomerOrderSortInput specifies the field to use for sorting search results and indicates whether the results are sorted in ascending or descending order.
+"""
+input CustomerOrderSortInput {
+  """
+  This enumeration indicates whether to return results in ascending or descending order
+  """
+  sort_direction: SortEnum!
+
+  """Specifies the field to use for sorting"""
+  sort_field: CustomerOrderSortableField!
+}
+
+"""Specifies the field to use for sorting"""
+enum CustomerOrderSortableField {
+  """Sorts customer orders by created_at field"""
+  CREATED_AT @deprecated
+
+  """Sorts customer orders by number"""
+  NUMBER @deprecated
+}
+
+"""
 The collection of orders that match the conditions defined in the filter.
 """
 type CustomerOrders {
@@ -3919,8 +4327,13 @@ type CustomizableDateOption implements CustomizableOptionInterface {
 
 """Defines the customizable date type."""
 enum CustomizableDateTypeEnum {
+  """"""
   DATE @deprecated
+
+  """"""
   DATE_TIME @deprecated
+
+  """"""
   TIME @deprecated
 }
 
@@ -4319,8 +4732,12 @@ type DownloadableCreditMemoItem implements CreditMemoItemInterface {
   quantity_refunded: Float
 }
 
+""""""
 enum DownloadableFileTypeEnum {
+  """"""
   FILE @deprecated(reason: "`sample_url` serves to get the downloadable sample")
+
+  """"""
   URL @deprecated(reason: "`sample_url` serves to get the downloadable sample")
 }
 
@@ -4380,6 +4797,9 @@ type DownloadableOrderItem implements OrderItemInterface {
   """The entered option for the base product, such as a logo or image."""
   entered_options: [OrderItemOption]
 
+  """The selected gift message for the order item"""
+  gift_message: GiftMessage
+
   """The unique ID for an `OrderItemInterface` object."""
   id: ID!
 
@@ -4429,8 +4849,7 @@ type DownloadableProduct implements CustomizableProductInterface & ProductInterf
   attribute_set_id: Int @deprecated(reason: "The field should not be used on the storefront.")
 
   """
-  The relative canonical URL. This value is returned only if the system setting
-  'Use Canonical Link Meta Tag For Products' is enabled.
+  The relative canonical URL. This value is returned only if the system setting 'Use Canonical Link Meta Tag For Products' is enabled.
   """
   canonical_url: String
 
@@ -4540,9 +4959,7 @@ type DownloadableProduct implements CustomizableProductInterface & ProductInterf
   rating_summary: Float!
 
   """
-  Contains 0 when there is no redirect error. A value of 301 indicates the URL
-  of the requested resource has been changed permanently, while a value of 302
-  indicates a temporary redirect.
+  Contains 0 when there is no redirect error. A value of 301 indicates the URL of the requested resource has been changed permanently, while a value of 302 indicates a temporary redirect.
   """
   redirect_code: Int!
 
@@ -4725,9 +5142,7 @@ type DownloadableWishlistItem implements WishlistItemInterface {
 """Defines a customer-entered option."""
 input EnteredOptionInput {
   """
-  The unique ID for a `CustomizableOptionInterface` object, such as a
-  `CustomizableFieldOption`, `CustomizableFileOption`, or
-  `CustomizableAreaOption` object.
+  The unique ID for a `CustomizableOptionInterface` object, such as a `CustomizableFieldOption`, `CustomizableFileOption`, or `CustomizableAreaOption` object.
   """
   uid: ID!
 
@@ -4740,9 +5155,7 @@ type EntityUrl {
   canonical_url: String @deprecated(reason: "Use `relative_url` instead.")
 
   """
-  The unique ID for a `ProductInterface`, `CategoryInterface`, `CmsPage`, or
-  similar object associated with the specified URL. This could be a product,
-  category, or CMS page UID.
+  The unique ID for a `ProductInterface`, `CategoryInterface`, `CmsPage`, or similar object associated with the specified URL. This could be a product, category, or CMS page UID.
   """
   entity_uid: ID
 
@@ -4752,9 +5165,7 @@ type EntityUrl {
   id: Int @deprecated(reason: "Use `entity_uid` instead.")
 
   """
-  Contains 0 when there is no redirect error. A value of 301 indicates the URL
-  of the requested resource has been changed permanently, while a value of 302
-  indicates a temporary redirect.
+  Contains 0 when there is no redirect error. A value of 301 indicates the URL of the requested resource has been changed permanently, while a value of 302 indicates a temporary redirect.
   """
   redirectCode: Int
 
@@ -4767,6 +5178,7 @@ type EntityUrl {
   type: UrlRewriteEntityTypeEnum
 }
 
+""""""
 interface ErrorInterface {
   """The returned error message."""
   message: String!
@@ -4784,14 +5196,12 @@ type ExchangeRate {
 """Defines a filter that matches the input exactly."""
 input FilterEqualTypeInput {
   """
-  Use this attribute to exactly match the specified string. For example, to
-  filter on a specific category ID, specify a value such as `5`.
+  Use this attribute to exactly match the specified string. For example, to filter on a specific category ID, specify a value such as `5`.
   """
   eq: String
 
   """
-  Use this attribute to filter on an array of values. For example, to filter on
-  category IDs 4, 5, and 6, specify a value of `["4", "5", "6"]`.
+  Use this attribute to filter on an array of values. For example, to filter on category IDs 4, 5, and 6, specify a value of `["4", "5", "6"]`.
   """
   in: [String]
 }
@@ -4799,8 +5209,7 @@ input FilterEqualTypeInput {
 """Defines a filter that performs a fuzzy search."""
 input FilterMatchTypeInput {
   """
-  Use this attribute to exactly match the specified string. For example, to
-  filter on a specific SKU, specify a value such as `24-MB01`.
+  Use this attribute to exactly match the specified string. For example, to filter on a specific SKU, specify a value such as `24-MB01`.
   """
   match: String
 }
@@ -4836,6 +5245,8 @@ input FilterStringTypeInput {
 input FilterTypeInput {
   """Equals."""
   eq: String
+
+  """"""
   finset: [String]
 
   """From. Must be used with the `to` field."""
@@ -4892,17 +5303,12 @@ type FixedProductTax {
 """Lists display settings for the Fixed Product Tax."""
 enum FixedProductTaxDisplaySettings {
   """
-  The displayed price does not include the FPT amount. The values of
-  `ProductPrice.fixed_product_taxes` and the price including the FPT are
-  displayed separately. This value corresponds to 'Excluding FPT, Including FPT
-  description and final price.'
+  The displayed price does not include the FPT amount. The values of `ProductPrice.fixed_product_taxes` and the price including the FPT are displayed separately. This value corresponds to 'Excluding FPT, Including FPT description and final price.'
   """
   EXCLUDE_FPT_AND_INCLUDE_WITH_DETAILS @deprecated
 
   """
-  The displayed price does not include the FPT amount. The values from
-  `ProductPrice.fixed_product_taxes` are not displayed. This value corresponds
-  to 'Excluding FPT'.
+  The displayed price does not include the FPT amount. The values from `ProductPrice.fixed_product_taxes` are not displayed. This value corresponds to 'Excluding FPT'.
   """
   EXCLUDE_FPT_WITHOUT_DETAILS @deprecated
 
@@ -4912,16 +5318,12 @@ enum FixedProductTaxDisplaySettings {
   FPT_DISABLED @deprecated
 
   """
-  The displayed price includes the FPT amount without displaying the
-  `ProductPrice.fixed_product_taxes` values. This value corresponds to
-  'Including FPT only'.
+  The displayed price includes the FPT amount without displaying the `ProductPrice.fixed_product_taxes` values. This value corresponds to 'Including FPT only'.
   """
   INCLUDE_FPT_WITHOUT_DETAILS @deprecated
 
   """
-  The displayed price includes the FPT amount while displaying the values of
-  `ProductPrice.fixed_product_taxes` separately. This value corresponds to
-  'Including FPT and FPT description'.
+  The displayed price includes the FPT amount while displaying the values of `ProductPrice.fixed_product_taxes` separately. This value corresponds to 'Including FPT and FPT description'.
   """
   INCLUDE_FPT_WITH_DETAILS @deprecated
 }
@@ -4972,8 +5374,7 @@ type GroupedProduct implements PhysicalProductInterface & ProductInterface & Rou
   attribute_set_id: Int @deprecated(reason: "The field should not be used on the storefront.")
 
   """
-  The relative canonical URL. This value is returned only if the system setting
-  'Use Canonical Link Meta Tag For Products' is enabled.
+  The relative canonical URL. This value is returned only if the system setting 'Use Canonical Link Meta Tag For Products' is enabled.
   """
   canonical_url: String
 
@@ -5065,9 +5466,7 @@ type GroupedProduct implements PhysicalProductInterface & ProductInterface & Rou
   rating_summary: Float!
 
   """
-  Contains 0 when there is no redirect error. A value of 301 indicates the URL
-  of the requested resource has been changed permanently, while a value of 302
-  indicates a temporary redirect.
+  Contains 0 when there is no redirect error. A value of 301 indicates the URL of the requested resource has been changed permanently, while a value of 302 indicates a temporary redirect.
   """
   redirect_code: Int!
 
@@ -5196,27 +5595,16 @@ type GroupedProductWishlistItem implements WishlistItemInterface {
 }
 
 """
-Contains a set of relative URLs that PayPal uses in response to various actions
-during the authorization process. Magento prepends the base URL to this value to
-create a full URL. For example, if the full URL is
-https://www.example.com/path/to/page.html, the relative URL is
-path/to/page.html. Use this input for Payments Pro Hosted Solution payment
+Contains a set of relative URLs that PayPal uses in response to various actions during the authorization process. Magento prepends the base URL to this value to create a full URL. For example, if the full URL is https://www.example.com/path/to/page.html, the relative URL is path/to/page.html. Use this input for Payments Pro Hosted Solution payment method.
 """
 input HostedProInput {
   """
-  The relative URL of the page that PayPal redirects to when the buyer cancels
-  the transaction in order to choose a different payment method. For example, if
-  the full URL to this page is
-  https://www.example.com/paypal/action/cancel.html, the relative URL is
-  paypal/action/cancel.html.
+  The relative URL of the page that PayPal redirects to when the buyer cancels the transaction in order to choose a different payment method. For example, if the full URL to this page is https://www.example.com/paypal/action/cancel.html, the relative URL is paypal/action/cancel.html.
   """
   cancel_url: String!
 
   """
-  The relative URL of the final confirmation page that PayPal redirects to upon
-  payment success. For example, if the full URL to this page is
-  https://www.example.com/paypal/action/return.html, the relative URL is
-  paypal/action/return.html.
+  The relative URL of the final confirmation page that PayPal redirects to upon payment success. For example, if the full URL to this page is https://www.example.com/paypal/action/return.html, the relative URL is paypal/action/return.html.
   """
   return_url: String!
 }
@@ -5246,6 +5634,7 @@ type HttpQueryParameter {
   value: String
 }
 
+""""""
 type ImageSwatchData implements SwatchDataInterface {
   """The URL assigned to the thumbnail of the swatch image."""
   thumbnail: String
@@ -5278,6 +5667,7 @@ type Invoice {
   total: InvoiceTotal
 }
 
+""""""
 type InvoiceItem implements InvoiceItemInterface {
   """
   Information about the final discount amount for the base product, including discounts on options.
@@ -5424,6 +5814,7 @@ type LayerFilter {
   request_var: String @deprecated(reason: "Use `Aggregation.attribute_code` instead.")
 }
 
+""""""
 type LayerFilterItem implements LayerFilterItemInterface {
   """The count of items per filter."""
   items_count: Int @deprecated(reason: "Use `AggregationOption.count` instead.")
@@ -5435,6 +5826,7 @@ type LayerFilterItem implements LayerFilterItemInterface {
   value_string: String @deprecated(reason: "Use `AggregationOption.value` instead.")
 }
 
+""""""
 interface LayerFilterItemInterface {
   """The count of items per filter."""
   items_count: Int @deprecated(reason: "Use `AggregationOption.count` instead.")
@@ -5511,6 +5903,7 @@ type Money {
   value: Float
 }
 
+""""""
 type Mutation {
   """
   Add one or more bundle products to the specified cart. We recommend using `addProductsToCart` instead.
@@ -5592,8 +5985,7 @@ type Mutation {
     wishlistId: ID!
 
     """
-    An array of IDs representing products to be added to the cart. If no IDs are
-    specified, all items in the wishlist will be added to the cart
+    An array of IDs representing products to be added to the cart. If no IDs are specified, all items in the wishlist will be added to the cart
     """
     wishlistItemIds: [ID!]
   ): AddWishlistItemsToCartOutput
@@ -5659,8 +6051,7 @@ type Mutation {
   ): CreatePayflowProTokenOutput
 
   """
-  Initiate an Express Checkout transaction and receive a token. Use this
-  mutation for Express Checkout and Payments Standard payment methods.
+  Initiate an Express Checkout transaction and receive a token. Use this mutation for Express Checkout and Payments Standard payment methods.
   """
   createPaypalExpressToken(
     """
@@ -5682,6 +6073,9 @@ type Mutation {
     """The unique ID of the compare list to be deleted."""
     uid: ID!
   ): DeleteCompareListOutput
+
+  """Delete customer account"""
+  deleteCustomer: Boolean
 
   """Delete the billing or shipping address of a customer."""
   deleteCustomerAddress(
@@ -5713,8 +6107,7 @@ type Mutation {
   ): GenerateCustomerTokenAsAdminOutput
 
   """
-  Handle a payment response and save the payment in Quote. Use this mutation for
-  Payflow Pro and Payments Pro payment methods.
+  Handle a payment response and save the payment in Quote. Use this mutation for Payflow Pro and Payments Pro payment methods.
   """
   handlePayflowProResponse(
     """
@@ -5751,8 +6144,7 @@ type Mutation {
   ): RemoveCouponFromCartOutput
 
   """
-  Delete the entire quantity of a specified item from the cart. If you remove
-  all items from the cart, the cart continues to exist.
+  Delete the entire quantity of a specified item from the cart. If you remove all items from the cart, the cart continues to exist.
   """
   removeItemFromCart(
     """An input object that defines which products to remove from the cart."""
@@ -5788,8 +6180,7 @@ type Mutation {
   ): Boolean
 
   """
-  Reset a customer's password using the reset password token that the customer
-  received in an email after requesting it using `requestPasswordResetEmail`.
+  Reset a customer's password using the reset password token that the customer received in an email after requesting it using `requestPasswordResetEmail`.
   """
   resetPassword(
     """The customer's email address."""
@@ -5977,12 +6368,16 @@ type OrderAddress {
   vat_id: String
 }
 
+""""""
 type OrderItem implements OrderItemInterface {
   """The final discount information for the product."""
   discounts: [Discount]
 
   """The entered option for the base product, such as a logo or image."""
   entered_options: [OrderItemOption]
+
+  """The selected gift message for the order item"""
+  gift_message: GiftMessage
 
   """The unique ID for an `OrderItemInterface` object."""
   id: ID!
@@ -6034,6 +6429,9 @@ interface OrderItemInterface {
 
   """The entered option for the base product, such as a logo or image."""
   entered_options: [OrderItemOption]
+
+  """The selected gift message for the order item"""
+  gift_message: GiftMessage
 
   """The unique ID for an `OrderItemInterface` object."""
   id: ID!
@@ -6156,34 +6554,21 @@ input PayflowExpressInput {
 }
 
 """
-A set of relative URLs that PayPal uses in response to various actions during
-the authorization process. Adobe Commerce prepends the base URL to this value to
-create a full URL. For example, if the full URL is
-https://www.example.com/path/to/page.html, the relative URL is
-path/to/page.html. Use this input for Payflow Link and Payments Advanced payment
+A set of relative URLs that PayPal uses in response to various actions during the authorization process. Adobe Commerce prepends the base URL to this value to create a full URL. For example, if the full URL is https://www.example.com/path/to/page.html, the relative URL is path/to/page.html. Use this input for Payflow Link and Payments Advanced payment methods.
 """
 input PayflowLinkInput {
   """
-  The relative URL of the page that PayPal redirects to when the buyer cancels
-  the transaction in order to choose a different payment method. If the full URL
-  to this page is https://www.example.com/paypal/action/cancel.html, the
-  relative URL is paypal/action/cancel.html.
+  The relative URL of the page that PayPal redirects to when the buyer cancels the transaction in order to choose a different payment method. If the full URL to this page is https://www.example.com/paypal/action/cancel.html, the relative URL is paypal/action/cancel.html.
   """
   cancel_url: String!
 
   """
-  The relative URL of the transaction error page that PayPal redirects to upon
-  payment error. If the full URL to this page is
-  https://www.example.com/paypal/action/error.html, the relative URL is
-  paypal/action/error.html.
+  The relative URL of the transaction error page that PayPal redirects to upon payment error. If the full URL to this page is https://www.example.com/paypal/action/error.html, the relative URL is paypal/action/error.html.
   """
   error_url: String!
 
   """
-  The relative URL of the order confirmation page that PayPal redirects to when
-  the payment is successful and additional confirmation is not needed. If the
-  full URL to this page is https://www.example.com/paypal/action/return.html,
-  the relative URL is paypal/action/return.html.
+  The relative URL of the order confirmation page that PayPal redirects to when the payment is successful and additional confirmation is not needed. If the full URL to this page is https://www.example.com/paypal/action/return.html, the relative URL is paypal/action/return.html.
   """
   return_url: String!
 }
@@ -6192,13 +6577,15 @@ input PayflowLinkInput {
 Indicates the mode for payment. Applies to the Payflow Link and Payments Advanced payment methods.
 """
 enum PayflowLinkMode {
+  """"""
   LIVE @deprecated
+
+  """"""
   TEST @deprecated
 }
 
 """
-Contains information used to generate PayPal iframe for transaction. Applies to
-Payflow Link and Payments Advanced payment methods.
+Contains information used to generate PayPal iframe for transaction. Applies to Payflow Link and Payments Advanced payment methods.
 """
 type PayflowLinkToken {
   """The mode for the Payflow transaction."""
@@ -6228,9 +6615,7 @@ input PayflowProInput {
   cc_details: CreditCardDetailsInput!
 
   """
-  Indicates whether details about the shopper's credit/debit card should be
-  tokenized for later usage. Required only if Vault is enabled for the PayPal
-  Payflow Pro payment integration.
+  Indicates whether details about the shopper's credit/debit card should be tokenized for later usage. Required only if Vault is enabled for the PayPal Payflow Pro payment integration.
   """
   is_active_payment_token_enabler: Boolean
 }
@@ -6246,6 +6631,7 @@ input PayflowProResponseInput {
   paypal_payload: String!
 }
 
+""""""
 type PayflowProResponseOutput {
   """The cart with the updated selected payment method."""
   cart: Cart!
@@ -6287,34 +6673,21 @@ input PayflowProTokenInput {
 }
 
 """
-Contains a set of relative URLs that PayPal uses in response to various actions
-during the authorization process. Magento prepends the base URL to this value to
-create a full URL. For example, if the full URL is
-https://www.example.com/path/to/page.html, the relative URL is
-path/to/page.html. Use this input for the Payflow Pro and Payment Pro payment
+Contains a set of relative URLs that PayPal uses in response to various actions during the authorization process. Magento prepends the base URL to this value to create a full URL. For example, if the full URL is https://www.example.com/path/to/page.html, the relative URL is path/to/page.html. Use this input for the Payflow Pro and Payment Pro payment methods.
 """
 input PayflowProUrlInput {
   """
-  The relative URL of the page that PayPal redirects to when the buyer cancels
-  the transaction in order to choose a different payment method. If the full URL
-  to this page is https://www.example.com/paypal/action/cancel.html, the
-  relative URL is paypal/action/cancel.html.
+  The relative URL of the page that PayPal redirects to when the buyer cancels the transaction in order to choose a different payment method. If the full URL to this page is https://www.example.com/paypal/action/cancel.html, the relative URL is paypal/action/cancel.html.
   """
   cancel_url: String!
 
   """
-  The relative URL of the transaction error page that PayPal redirects to upon
-  payment error. If the full URL to this page is
-  https://www.example.com/paypal/action/error.html, the relative URL is
-  paypal/action/error.html.
+  The relative URL of the transaction error page that PayPal redirects to upon payment error. If the full URL to this page is https://www.example.com/paypal/action/error.html, the relative URL is paypal/action/error.html.
   """
   error_url: String!
 
   """
-  The relative URL of the final confirmation page that PayPal redirects to upon
-  payment success. If the full URL to this page is
-  https://www.example.com/paypal/action/return.html, the relative URL is
-  paypal/action/return.html.
+  The relative URL of the final confirmation page that PayPal redirects to upon payment success. If the full URL to this page is https://www.example.com/paypal/action/return.html, the relative URL is paypal/action/return.html.
   """
   return_url: String!
 }
@@ -6419,9 +6792,7 @@ input PaypalExpressTokenInput {
 }
 
 """
-Contains the token returned by PayPal and a set of URLs that allow the buyer to
-authorize payment and adjust checkout details. Applies to Express Checkout and
-Payments Standard payment methods.
+Contains the token returned by PayPal and a set of URLs that allow the buyer to authorize payment and adjust checkout details. Applies to Express Checkout and Payments Standard payment methods.
 """
 type PaypalExpressTokenOutput {
   """
@@ -6434,8 +6805,7 @@ type PaypalExpressTokenOutput {
 }
 
 """
-Contains a set of URLs that allow the buyer to authorize payment and adjust
-checkout details for Express Checkout and Payments Standard transactions.
+Contains a set of URLs that allow the buyer to authorize payment and adjust checkout details for Express Checkout and Payments Standard transactions.
 """
 type PaypalExpressUrlList {
   """The PayPal URL that allows the buyer to edit their checkout details."""
@@ -6446,45 +6816,26 @@ type PaypalExpressUrlList {
 }
 
 """
-Contains a set of relative URLs that PayPal uses in response to various actions
-during the authorization process. Magento prepends the base URL to this value to
-create a full URL. For example, if the full URL is
-https://www.example.com/path/to/page.html, the relative URL is
-path/to/page.html. Use this input for Express Checkout and Payments Standard
-payment methods.
+Contains a set of relative URLs that PayPal uses in response to various actions during the authorization process. Magento prepends the base URL to this value to create a full URL. For example, if the full URL is https://www.example.com/path/to/page.html, the relative URL is path/to/page.html. Use this input for Express Checkout and Payments Standard payment methods.
 """
 input PaypalExpressUrlsInput {
   """
-  The relative URL of the page that PayPal redirects to when the buyer cancels
-  the transaction in order to choose a different payment method. If the full URL
-  to this page is https://www.example.com/paypal/action/cancel.html, the
-  relative URL is paypal/action/cancel.html.
+  The relative URL of the page that PayPal redirects to when the buyer cancels the transaction in order to choose a different payment method. If the full URL to this page is https://www.example.com/paypal/action/cancel.html, the relative URL is paypal/action/cancel.html.
   """
   cancel_url: String!
 
   """
-  The relative URL of the page that PayPal redirects to when the payment has
-  been put on hold for additional review. This condition mostly applies to ACH
-  transactions, and is not applicable to most PayPal solutions. If the full URL
-  to this page is https://www.example.com/paypal/action/success_pending.html,
-  the relative URL is paypal/action/success_pending.html.
+  The relative URL of the page that PayPal redirects to when the payment has been put on hold for additional review. This condition mostly applies to ACH transactions, and is not applicable to most PayPal solutions. If the full URL to this page is https://www.example.com/paypal/action/success_pending.html, the relative URL is paypal/action/success_pending.html.
   """
   pending_url: String
 
   """
-  The relative URL of the final confirmation page that PayPal redirects to upon
-  payment success. If the full URL to this page is
-  https://www.example.com/paypal/action/return.html, the relative URL is
-  paypal/action/return.html.
+  The relative URL of the final confirmation page that PayPal redirects to upon payment success. If the full URL to this page is https://www.example.com/paypal/action/return.html, the relative URL is paypal/action/return.html.
   """
   return_url: String!
 
   """
-  The relative URL of the order confirmation page that PayPal redirects to when
-  the payment is successful and additional confirmation is not needed. Not
-  applicable to most PayPal solutions. If the full URL to this page is
-  https://www.example.com/paypal/action/success.html, the relative URL is
-  paypal/action/success.html.
+  The relative URL of the order confirmation page that PayPal redirects to when the payment is successful and additional confirmation is not needed. Not applicable to most PayPal solutions. If the full URL to this page is https://www.example.com/paypal/action/success.html, the relative URL is paypal/action/success.html.
   """
   success_url: String
 }
@@ -6544,8 +6895,7 @@ input PickupLocationFilterInput {
 }
 
 """
-PickupLocationSortInput specifies attribute to use for sorting search results
-and indicates whether the results are sorted in ascending or descending order.
+PickupLocationSortInput specifies attribute to use for sorting search results and indicates whether the results are sorted in ascending or descending order.
 """
 input PickupLocationSortInput {
   """City where pickup location is placed."""
@@ -6561,8 +6911,7 @@ input PickupLocationSortInput {
   description: SortEnum
 
   """
-  Distance to the address, requested by distance filter. Applicable only with
-  distance filter. If distance sort order is present, all other sort orders will
+  Distance to the address, requested by distance filter. Applicable only with distance filter. If distance sort order is present, all other sort orders will be ignored.
   """
   distance: SortEnum
 
@@ -6642,9 +6991,7 @@ type Price {
 }
 
 """
-Deprecated. Taxes will be included or excluded in the price. Defines the amount
-of money to apply as an adjustment, the type of adjustment to apply, and whether
-the item is included or excluded from the adjustment.
+Deprecated. Taxes will be included or excluded in the price. Defines the amount of money to apply as an adjustment, the type of adjustment to apply, and whether the item is included or excluded from the adjustment.
 """
 type PriceAdjustment {
   """The amount of the price adjustment and its currency code."""
@@ -6661,8 +7008,13 @@ type PriceAdjustment {
 
 """`PriceAdjustment.code` is deprecated."""
 enum PriceAdjustmentCodesEnum {
+  """"""
   TAX @deprecated(reason: "`PriceAdjustmentCodesEnum` is deprecated. Tax is included or excluded in the price. Tax is not shown separately in Catalog.")
+
+  """"""
   WEEE @deprecated(reason: "WEEE code is deprecated. Use `fixed_product_taxes.label` instead.")
+
+  """"""
   WEEE_TAX @deprecated(reason: "Use `fixed_product_taxes` instead.  Tax is included or excluded in price. The tax is not shown separtely in Catalog.")
 }
 
@@ -6670,7 +7022,10 @@ enum PriceAdjustmentCodesEnum {
 `PriceAdjustmentDescriptionEnum` is deprecated. States whether a price adjustment is included or excluded.
 """
 enum PriceAdjustmentDescriptionEnum {
+  """"""
   EXCLUDED @deprecated
+
+  """"""
   INCLUDED @deprecated
 }
 
@@ -6687,8 +7042,13 @@ type PriceRange {
 
 """Defines the price type."""
 enum PriceTypeEnum {
+  """"""
   DYNAMIC @deprecated
+
+  """"""
   FIXED @deprecated
+
+  """"""
   PERCENT @deprecated
 }
 
@@ -6696,7 +7056,10 @@ enum PriceTypeEnum {
 Defines whether a bundle product's price is displayed as the lowest possible value or as a range.
 """
 enum PriceViewEnum {
+  """"""
   AS_LOW_AS @deprecated
+
+  """"""
   PRICE_RANGE @deprecated
 }
 
@@ -6710,8 +7073,7 @@ type ProductAttribute {
 }
 
 """
-Defines the filters to be used in the search. A filter contains at least one
-attribute, a comparison operator, and the value that is being searched for.
+Defines the filters to be used in the search. A filter contains at least one attribute, a comparison operator, and the value that is being searched for.
 """
 input ProductAttributeFilterInput {
   """Deprecated: use `category_uid` to filter product by category ID."""
@@ -6725,9 +7087,7 @@ input ProductAttributeFilterInput {
 }
 
 """
-Specifies the attribute to use for sorting search results and indicates whether
-the results are sorted in ascending or descending order. It's possible to sort
-products using searchable attributes with enabled 'Use in Filter Options' option
+Specifies the attribute to use for sorting search results and indicates whether the results are sorted in ascending or descending order. It's possible to sort products using searchable attributes with enabled 'Use in Filter Options' option
 """
 input ProductAttributeSortInput {
   """Sort by the position assigned to each product."""
@@ -6747,10 +7107,7 @@ type ProductDiscount {
 }
 
 """
-ProductFilterInput is deprecated, use @ProductAttributeFilterInput instead.
-ProductFilterInput defines the filters to be used in the search. A filter
-contains at least one attribute, a comparison operator, and the value that is
-being searched for.
+ProductFilterInput is deprecated, use @ProductAttributeFilterInput instead. ProductFilterInput defines the filters to be used in the search. A filter contains at least one attribute, a comparison operator, and the value that is being searched for.
 """
 input ProductFilterInput {
   """The category ID the product belongs to."""
@@ -6882,6 +7239,8 @@ input ProductFilterInput {
 
   """The part of the URL that identifies the product"""
   url_key: FilterTypeInput
+
+  """"""
   url_path: FilterTypeInput
 
   """The weight of the item, in units defined by the store."""
@@ -6915,8 +7274,7 @@ interface ProductInterface {
   attribute_set_id: Int @deprecated(reason: "The field should not be used on the storefront.")
 
   """
-  The relative canonical URL. This value is returned only if the system setting
-  'Use Canonical Link Meta Tag For Products' is enabled.
+  The relative canonical URL. This value is returned only if the system setting 'Use Canonical Link Meta Tag For Products' is enabled.
   """
   canonical_url: String
 
@@ -7181,20 +7539,16 @@ type ProductPrice {
 }
 
 """
-Deprecated. Use `PriceRange` instead. Contains the regular price of an item, as
-well as its minimum and maximum prices. Only composite products, which include
-bundle, configurable, and grouped products, can contain a minimum and maximum
+Deprecated. Use `PriceRange` instead. Contains the regular price of an item, as well as its minimum and maximum prices. Only composite products, which include bundle, configurable, and grouped products, can contain a minimum and maximum price.
 """
 type ProductPrices {
   """
-  The highest possible final price for all the options defined within a
-  composite product. If you are specifying a price range, this would be the `to`
+  The highest possible final price for all the options defined within a composite product. If you are specifying a price range, this would be the `to` value.
   """
   maximalPrice: Price @deprecated(reason: "Use `PriceRange.maximum_price` instead.")
 
   """
-  The lowest possible final price for all the options defined within a composite
-  product. If you are specifying a price range, this would be the `from` value.
+  The lowest possible final price for all the options defined within a composite product. If you are specifying a price range, this would be the `from` value.
   """
   minimalPrice: Price @deprecated(reason: "Use `PriceRange.minimum_price` instead.")
 
@@ -7289,9 +7643,7 @@ type ProductReviews {
 }
 
 """
-Deprecated. Use `ProductAttributeSortInput` instead. Specifies the attribute to
-use for sorting search results and indicates whether the results are sorted in
-ascending or descending order.
+Deprecated. Use `ProductAttributeSortInput` instead. Specifies the attribute to use for sorting search results and indicates whether the results are sorted in ascending or descending order.
 """
 input ProductSortInput {
   """The product's country of origin."""
@@ -7407,6 +7759,8 @@ input ProductSortInput {
 
   """The part of the URL that identifies the product"""
   url_key: SortEnum
+
+  """"""
   url_path: SortEnum
 
   """The weight of the item, in units defined by the store."""
@@ -7417,13 +7771,15 @@ input ProductSortInput {
 This enumeration states whether a product stock status is in stock or out of stock
 """
 enum ProductStockStatus {
+  """"""
   IN_STOCK @deprecated
+
+  """"""
   OUT_OF_STOCK @deprecated
 }
 
 """
-Deprecated. Use `TierPrice` instead. Defines a tier price, which is a quantity
-discount offered to a specific customer group.
+Deprecated. Use `TierPrice` instead. Defines a tier price, which is a quantity discount offered to a specific customer group.
 """
 type ProductTierPrices {
   """The ID of the customer group."""
@@ -7491,12 +7847,12 @@ type Products {
   suggestions: [SearchSuggestion]
 
   """
-  The number of products that are marked as visible. By default, in complex
-  products, parent products are visible, but their child products are not.
+  The number of products that are marked as visible. By default, in complex products, parent products are visible, but their child products are not.
   """
   total_count: Int
 }
 
+""""""
 type Query {
   """Get a list of available store views and their config information."""
   availableStores(
@@ -7530,13 +7886,21 @@ type Query {
   category(
     """The category ID to use as the root of the search."""
     id: Int
-  ): CategoryTree @deprecated(reason: "Use `categoryList` instead.")
+  ): CategoryTree @deprecated(reason: "Use `categories` instead.")
 
   """Return an array of categories based on the specified filters."""
   categoryList(
+    """Specifies which page of results to return. The default value is 1."""
+    currentPage: Int = 1
+
     """Identifies which Category filter inputs to search for and return."""
     filters: CategoryFilterInput
-  ): [CategoryTree]
+
+    """
+    Specifies the maximum number of results to return at once. The default value is 20.
+    """
+    pageSize: Int = 20
+  ): [CategoryTree] @deprecated(reason: "Use `categories` instead.")
 
   """Return Terms and Conditions configuration information."""
   checkoutAgreements: [CheckoutAgreement]
@@ -7695,6 +8059,7 @@ type Query {
   wishlist: WishlistOutput @deprecated(reason: "Moved under `Customer.wishlist`.")
 }
 
+""""""
 type Region {
   """The two-letter code for the region, such as TX for Texas."""
   code: String
@@ -7774,9 +8139,7 @@ type RevokeCustomerTokenOutput {
 """Routable entities serve as the model for a rendered page."""
 interface RoutableInterface {
   """
-  Contains 0 when there is no redirect error. A value of 301 indicates the URL
-  of the requested resource has been changed permanently, while a value of 302
-  indicates a temporary redirect.
+  Contains 0 when there is no redirect error. A value of 301 indicates the URL of the requested resource has been changed permanently, while a value of 302 indicates a temporary redirect.
   """
   redirect_code: Int!
 
@@ -7798,9 +8161,22 @@ type SalesCommentItem {
   timestamp: String!
 }
 
+""""""
 type SalesItemInterface {
   """The entered gift message for the order item"""
   gift_message: GiftMessage
+}
+
+"""This enumeration defines the scope type for customer orders."""
+enum ScopeTypeEnum {
+  """"""
+  GLOBAL @deprecated
+
+  """"""
+  STORE @deprecated
+
+  """"""
+  WEBSITE @deprecated
 }
 
 """Provides navigation for the query response."""
@@ -7876,9 +8252,7 @@ type SelectedConfigurableOption {
 """Identifies a customized product that has been placed in a cart."""
 type SelectedCustomizableOption {
   """
-  The unique ID for a specific `CustomizableOptionInterface` object, such as a
-  `CustomizableFieldOption`, `CustomizableFileOption`, or
-  `CustomizableAreaOption` object.
+  The unique ID for a specific `CustomizableOptionInterface` object, such as a `CustomizableFieldOption`, `CustomizableFileOption`, or `CustomizableAreaOption` object.
   """
   customizable_option_uid: ID!
   id: Int! @deprecated(reason: "Use `SelectedCustomizableOption.customizable_option_uid` instead.")
@@ -7948,6 +8322,12 @@ type SelectedShippingMethod {
 
   """The label for the method code."""
   method_title: String!
+
+  """The cost of shipping using this shipping method, excluding tax."""
+  price_excl_tax: Money!
+
+  """The cost of shipping using this shipping method, including tax."""
+  price_incl_tax: Money!
 }
 
 """Defines the referenced product and the email sender and recipients."""
@@ -8110,10 +8490,14 @@ type SetShippingMethodsOnCartOutput {
 
 """Defines whether bundle items must be shipped together."""
 enum ShipBundleItemsEnum {
+  """"""
   SEPARATELY @deprecated
+
+  """"""
   TOGETHER @deprecated
 }
 
+""""""
 type ShipmentItem implements ShipmentItemInterface {
   """The unique ID for a `ShipmentItemInterface` object."""
   id: ID!
@@ -8229,6 +8613,12 @@ type ShippingCartAddress implements CartAddressInterface {
 
   """The telephone number for the billing or shipping address."""
   telephone: String
+
+  """The unique id of the customer address."""
+  uid: String!
+
+  """The VAT company number for billing or shipping address."""
+  vat_id: String
 }
 
 """
@@ -8265,9 +8655,7 @@ input ShippingMethodInput {
   carrier_code: String!
 
   """
-  A string that indicates which service a commercial carrier will use to ship
-  items. For offline delivery methods, this value is similar to the label
-  displayed on the checkout page.
+  A string that indicates which service a commercial carrier will use to ship items. For offline delivery methods, this value is similar to the label displayed on the checkout page.
   """
   method_code: String!
 }
@@ -8307,8 +8695,7 @@ type SimpleProduct implements CustomizableProductInterface & PhysicalProductInte
   attribute_set_id: Int @deprecated(reason: "The field should not be used on the storefront.")
 
   """
-  The relative canonical URL. This value is returned only if the system setting
-  'Use Canonical Link Meta Tag For Products' is enabled.
+  The relative canonical URL. This value is returned only if the system setting 'Use Canonical Link Meta Tag For Products' is enabled.
   """
   canonical_url: String
 
@@ -8400,9 +8787,7 @@ type SimpleProduct implements CustomizableProductInterface & PhysicalProductInte
   rating_summary: Float!
 
   """
-  Contains 0 when there is no redirect error. A value of 301 indicates the URL
-  of the requested resource has been changed permanently, while a value of 302
-  indicates a temporary redirect.
+  Contains 0 when there is no redirect error. A value of 301 indicates the URL of the requested resource has been changed permanently, while a value of 302 indicates a temporary redirect.
   """
   redirect_code: Int!
 
@@ -8531,7 +8916,10 @@ type SimpleWishlistItem implements WishlistItemInterface {
 
 """Indicates whether to return results in ascending or descending order."""
 enum SortEnum {
+  """"""
   ASC @deprecated
+
+  """"""
   DESC @deprecated
 }
 
@@ -8601,8 +8989,7 @@ type StoreConfig {
   catalog_default_sort_by: String
 
   """
-  Corresponds to the 'Display Prices In Product Lists' field in the Admin. It
-  indicates how FPT information is displayed on category pages.
+  Corresponds to the 'Display Prices In Product Lists' field in the Admin. It indicates how FPT information is displayed on category pages.
   """
   category_fixed_product_tax_display_setting: FixedProductTaxDisplaySettings
 
@@ -8642,8 +9029,7 @@ type StoreConfig {
   check_money_order_send_check_to: String
 
   """
-  A number indicating the position of the Check/Money Order payment method in
-  the list of available payment methods during checkout.
+  A number indicating the position of the Check/Money Order payment method in the list of available payment methods during checkout.
   """
   check_money_order_sort_order: Int
 
@@ -8677,8 +9063,7 @@ type StoreConfig {
   copyright: String
 
   """
-  The description that provides a summary of your site for search engine
-  listings. It should not be more than 160 characters in length.
+  The description that provides a summary of your site for search engine listings. It should not be more than 160 characters in length.
   """
   default_description: String
 
@@ -8775,8 +9160,7 @@ type StoreConfig {
   payment_payflowpro_cc_vault_active: String
 
   """
-  Corresponds to the 'Display Prices On Product View Page' field in the Admin.
-  It indicates how FPT information is displayed on product pages.
+  Corresponds to the 'Display Prices On Product View Page' field in the Admin. It indicates how FPT information is displayed on product pages.
   """
   product_fixed_product_tax_display_setting: FixedProductTaxDisplaySettings
 
@@ -8800,8 +9184,7 @@ type StoreConfig {
   root_category_uid: ID
 
   """
-  Corresponds to the 'Display Prices In Sales Modules' field in the Admin. It
-  indicates how FPT information is displayed on cart, checkout, and order pages.
+  Corresponds to the 'Display Prices In Sales Modules' field in the Admin. It indicates how FPT information is displayed on cart, checkout, and order pages.
   """
   sales_fixed_product_tax_display_setting: FixedProductTaxDisplaySettings
 
@@ -8832,9 +9215,7 @@ type StoreConfig {
   show_cms_breadcrumbs: Int
 
   """
-  The unique ID of the store view. In the Admin, this is called the Store View
-  Code. When making a GraphQL call, assign this value to the `Store` header to
-  provide the scope.
+  The unique ID of the store view. In the Admin, this is called the Store View Code. When making a GraphQL call, assign this value to the `Store` header to provide the scope.
   """
   store_code: ID
 
@@ -8902,8 +9283,7 @@ type StoreConfig {
   zero_subtotal_new_order_status: String
 
   """
-  When the new order status is 'Processing', this can be set to
-  `authorize_capture` to automatically invoice all items that have a zero
+  When the new order status is 'Processing', this can be set to `authorize_capture` to automatically invoice all items that have a zero balance.
   """
   zero_subtotal_payment_action: String
 
@@ -8913,8 +9293,7 @@ type StoreConfig {
   zero_subtotal_payment_from_specific_countries: String
 
   """
-  A number indicating the position of the Zero Subtotal payment method in the
-  list of available payment methods during checkout.
+  A number indicating the position of the Zero Subtotal payment method in the list of available payment methods during checkout.
   """
   zero_subtotal_sort_order: Int
 
@@ -8956,9 +9335,16 @@ type SubscribeEmailToNewsletterOutput {
 
 """Indicates the status of the request."""
 enum SubscriptionStatusesEnum {
+  """"""
   NOT_ACTIVE @deprecated
+
+  """"""
   SUBSCRIBED @deprecated
+
+  """"""
   UNCONFIRMED @deprecated
+
+  """"""
   UNSUBSCRIBED @deprecated
 }
 
@@ -8971,11 +9357,13 @@ type SwatchData {
   value: String
 }
 
+""""""
 interface SwatchDataInterface {
   """The value can be represented as color (HEX code), image link, or text."""
   value: String
 }
 
+""""""
 type SwatchLayerFilterItem implements LayerFilterItemInterface & SwatchLayerFilterItemInterface {
   """The count of items per filter."""
   items_count: Int @deprecated(reason: "Use `AggregationOption.count` instead.")
@@ -8990,6 +9378,7 @@ type SwatchLayerFilterItem implements LayerFilterItemInterface & SwatchLayerFilt
   value_string: String @deprecated(reason: "Use `AggregationOption.value` instead.")
 }
 
+""""""
 interface SwatchLayerFilterItemInterface {
   """Data required to render a swatch filter item."""
   swatch_data: SwatchData
@@ -9007,6 +9396,7 @@ type TaxItem {
   title: String!
 }
 
+""""""
 type TextSwatchData implements SwatchDataInterface {
   """The value can be represented as color (HEX code), image link, or text."""
   value: String
@@ -9061,15 +9451,25 @@ type UrlRewrite {
 
 """This enumeration defines the entity type."""
 enum UrlRewriteEntityTypeEnum {
+  """"""
   CATEGORY @deprecated
+
+  """"""
   CMS_PAGE @deprecated
+
+  """"""
   PRODUCT @deprecated
 }
 
 """Defines whether the attribute is filterable in layered navigation."""
 enum UseInLayeredNavigationOptions {
+  """"""
   FILTERABLE_NO_RESULT @deprecated
+
+  """"""
   FILTERABLE_WITH_RESULTS @deprecated
+
+  """"""
   NO @deprecated
 }
 
@@ -9111,8 +9511,7 @@ type VirtualProduct implements CustomizableProductInterface & ProductInterface &
   attribute_set_id: Int @deprecated(reason: "The field should not be used on the storefront.")
 
   """
-  The relative canonical URL. This value is returned only if the system setting
-  'Use Canonical Link Meta Tag For Products' is enabled.
+  The relative canonical URL. This value is returned only if the system setting 'Use Canonical Link Meta Tag For Products' is enabled.
   """
   canonical_url: String
 
@@ -9204,9 +9603,7 @@ type VirtualProduct implements CustomizableProductInterface & ProductInterface &
   rating_summary: Float!
 
   """
-  Contains 0 when there is no redirect error. A value of 301 indicates the URL
-  of the requested resource has been changed permanently, while a value of 302
-  indicates a temporary redirect.
+  Contains 0 when there is no redirect error. A value of 301 indicates the URL of the requested resource has been changed permanently, while a value of 302 indicates a temporary redirect.
   """
   redirect_code: Int!
 
@@ -9364,7 +9761,10 @@ type WishListUserInputError {
 
 """A list of possible error types."""
 enum WishListUserInputErrorType {
+  """"""
   PRODUCT_NOT_FOUND @deprecated
+
+  """"""
   UNDEFINED @deprecated
 }
 
@@ -9406,9 +9806,16 @@ type WishlistCartUserInputError {
 
 """A list of possible error types."""
 enum WishlistCartUserInputErrorType {
+  """"""
   INSUFFICIENT_STOCK @deprecated
+
+  """"""
   NOT_SALABLE @deprecated
+
+  """"""
   PRODUCT_NOT_FOUND @deprecated
+
+  """"""
   UNDEFINED @deprecated
 }
 
