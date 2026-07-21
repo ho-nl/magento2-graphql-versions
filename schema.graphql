@@ -33,6 +33,14 @@ type AddProductsToCartOutput {
   user_errors: [CartUserInputError]!
 }
 
+input AddProductsToCompareListInput {
+  """An array of product IDs to add to the compare list"""
+  products: [ID]!
+
+  """The unique identifier of the compare list to modify"""
+  uid: ID!
+}
+
 """Contains the customer's wish list and any errors encountered"""
 type AddProductsToWishlistOutput {
   """An array of errors encountered while adding products to a wish list"""
@@ -61,7 +69,7 @@ type AddVirtualProductsToCartOutput {
 }
 
 """
-A bucket that contains information for each filterable option (such as price, category ID, and custom attributes).
+A bucket that contains information for each filterable option (such as price, category `UID`, and custom attributes).
 """
 type Aggregation {
   """Attribute code of the aggregation group."""
@@ -123,6 +131,12 @@ input AreaInput {
   The country code where search must be performed. Required parameter together with region, city or postcode.
   """
   search_term: String!
+}
+
+type AssignCompareListToCustomerOutput {
+  """The contents of the customer's compare list"""
+  compare_list: CompareList
+  result: Boolean!
 }
 
 """
@@ -219,13 +233,16 @@ type BillingCartAddress implements CartAddressInterface {
 """Breadcrumb item."""
 type Breadcrumb {
   """Category ID."""
-  category_id: Int
+  category_id: Int @deprecated(reason: "Use the `category_uid` argument instead.")
 
   """Category level."""
   category_level: Int
 
   """Category name."""
   category_name: String
+
+  """The unique ID for a `Breadcrumb` object."""
+  category_uid: ID!
 
   """Category URL key."""
   category_url_key: String
@@ -240,10 +257,13 @@ type BundleCartItem implements CartItemInterface {
 
   """The entered gift message for the cart item"""
   gift_message: GiftMessage
-  id: String!
+  id: String! @deprecated(reason: "Use `uid` instead")
   prices: CartItemPrices
   product: ProductInterface!
   quantity: Float!
+
+  """The unique ID for a `CartItemInterface` object"""
+  uid: ID!
 }
 
 type BundleCreditMemoItem implements CreditMemoItemInterface {
@@ -255,7 +275,7 @@ type BundleCreditMemoItem implements CreditMemoItemInterface {
   """
   discounts: [Discount]
 
-  """The unique ID of the credit memo item, used for API purposes"""
+  """The unique ID for a `CreditMemoItemInterface` object"""
   id: ID!
 
   """The order item the credit memo is applied to"""
@@ -283,7 +303,7 @@ type BundleInvoiceItem implements InvoiceItemInterface {
   """
   discounts: [Discount]
 
-  """The unique ID of the invoice item"""
+  """The unique ID for a `InvoiceItemInterface` object"""
   id: ID!
 
   """Contains details about an individual order item"""
@@ -305,7 +325,7 @@ type BundleInvoiceItem implements InvoiceItemInterface {
 """BundleItem defines an individual item in a bundle product."""
 type BundleItem {
   """An ID assigned to each type of item in a bundle product."""
-  option_id: Int
+  option_id: Int @deprecated(reason: "Use `uid` instead")
 
   """An array of additional options for this bundle item."""
   options: [BundleItemOption]
@@ -326,6 +346,9 @@ type BundleItem {
   The input type that the customer uses to select the item. Examples include radio button and checkbox.
   """
   type: String
+
+  """The unique ID for a `BundleItem` object."""
+  uid: ID
 }
 
 """
@@ -338,7 +361,7 @@ type BundleItemOption {
   can_change_quantity: Boolean
 
   """The ID assigned to the bundled item option."""
-  id: Int
+  id: Int @deprecated(reason: "Use `uid` instead")
 
   """Indicates whether this option is the default option."""
   is_default: Boolean
@@ -366,7 +389,7 @@ type BundleItemOption {
   """Indicates the quantity of this specific bundle item."""
   quantity: Float
 
-  """A string that encodes option details."""
+  """The unique ID for a `BundleItemOption` object."""
   uid: ID!
 }
 
@@ -386,7 +409,7 @@ type BundleOrderItem implements OrderItemInterface {
   """The entered option for the base product, such as a logo or image"""
   entered_options: [OrderItemOption]
 
-  """The unique identifier of the order item"""
+  """The unique ID for a `OrderItemInterface` object"""
   id: ID!
 
   """The name of the base product"""
@@ -434,7 +457,7 @@ BundleProduct defines basic features of a bundle product and contains multiple B
 """
 type BundleProduct implements CustomizableProductInterface & PhysicalProductInterface & ProductInterface {
   """The attribute set assigned to the product."""
-  attribute_set_id: Int
+  attribute_set_id: Int @deprecated(reason: "The field should not be used on the storefront.")
 
   """
   Relative canonical URL. This value is returned only if the system setting 'Use
@@ -449,7 +472,7 @@ type BundleProduct implements CustomizableProductInterface & PhysicalProductInte
   country_of_manufacture: String
 
   """Timestamp indicating when the product was created."""
-  created_at: String
+  created_at: String @deprecated(reason: "The field should not be used on the storefront.")
 
   """Crosssell Products"""
   crosssell_products: [ProductInterface]
@@ -474,7 +497,7 @@ type BundleProduct implements CustomizableProductInterface & PhysicalProductInte
   gift_message_available: String
 
   """The ID number assigned to the product."""
-  id: Int
+  id: Int @deprecated(reason: "Use the `uid` field instead.")
 
   """The relative path to the main image on the product page."""
   image: ProductImage
@@ -512,10 +535,10 @@ type BundleProduct implements CustomizableProductInterface & PhysicalProductInte
   """
   The beginning date for new product listings, and determines if the product is featured as a new product.
   """
-  new_from_date: String
+  new_from_date: String @deprecated(reason: "The field should not be used on the storefront.")
 
   """The end date for new product listings."""
-  new_to_date: String
+  new_to_date: String @deprecated(reason: "The field should not be used on the storefront.")
 
   """Product stock only x left count"""
   only_x_left_in_stock: Float
@@ -576,7 +599,7 @@ type BundleProduct implements CustomizableProductInterface & PhysicalProductInte
   small_image: ProductImage
 
   """The beginning date that a product has a special price."""
-  special_from_date: String
+  special_from_date: String @deprecated(reason: "The field should not be used on the storefront.")
 
   """The discounted price of the product."""
   special_price: Float
@@ -606,8 +629,11 @@ type BundleProduct implements CustomizableProductInterface & PhysicalProductInte
   """
   type_id: String @deprecated(reason: "Use __typename instead.")
 
+  """The unique ID for a `ProductInterface` object."""
+  uid: ID!
+
   """Timestamp indicating when the product was updated."""
-  updated_at: String
+  updated_at: String @deprecated(reason: "The field should not be used on the storefront.")
 
   """Upsell Products"""
   upsell_products: [ProductInterface]
@@ -639,7 +665,7 @@ type BundleShipmentItem implements ShipmentItemInterface {
   """A list of bundle options that are assigned to the bundle product"""
   bundle_options: [ItemSelectedBundleOption]
 
-  """Shipment item unique identifier"""
+  """The unique ID for a `ShipmentItemInterface` object"""
   id: ID!
 
   """Associated order item"""
@@ -658,9 +684,32 @@ type BundleShipmentItem implements ShipmentItemInterface {
   quantity_shipped: Float!
 }
 
+type BundleWishlistItem implements WishlistItemInterface {
+  """The date and time the item was added to the wish list"""
+  added_at: String!
+
+  """An array containing information about the selected bundle items"""
+  bundle_options: [SelectedBundleOption]
+
+  """Custom options selected for the wish list item"""
+  customizable_options: [SelectedCustomizableOption]!
+
+  """The description of the item"""
+  description: String
+
+  """The unique ID for a `WishlistItemInterface` object"""
+  id: ID!
+
+  """Product details of the wish list item"""
+  product: ProductInterface
+
+  """The quantity of this wish list item"""
+  quantity: Float!
+}
+
 type Cart {
   """An array of coupons that have been applied to the cart"""
-  applied_coupon: AppliedCoupon @deprecated(reason: "Use applied_coupons instead ")
+  applied_coupon: AppliedCoupon @deprecated(reason: "Use applied_coupons instead")
 
   """
   An array of `AppliedCoupon` objects. Each object contains the `code` text attribute, which specifies the coupon code
@@ -675,7 +724,7 @@ type Cart {
   """The entered gift message for the cart"""
   gift_message: GiftMessage
 
-  """The ID of the cart."""
+  """The unique ID for a `Cart` object"""
   id: ID!
   is_virtual: Boolean!
   items: [CartItemInterface]
@@ -741,16 +790,23 @@ input CartItemInput {
   parent_sku: String
   quantity: Float!
 
-  """The selected options for the base product, such as color or size"""
+  """
+  The selected options for the base product, such as color or size with  unique
+  ID for a `CustomizableRadioOption`, `CustomizableDropDownOption`,
+  `ConfigurableProductOptionsValues`, etc. objects
+  """
   selected_options: [ID]
   sku: String!
 }
 
 interface CartItemInterface {
-  id: String!
+  id: String! @deprecated(reason: "Use `uid` instead")
   prices: CartItemPrices
   product: ProductInterface!
   quantity: Float!
+
+  """The unique ID for a `CartItemInterface` object"""
+  uid: ID!
 }
 
 type CartItemPrices {
@@ -779,7 +835,11 @@ type CartItemSelectedOptionValuePrice {
 }
 
 input CartItemUpdateInput {
-  cart_item_id: Int!
+  """Deprecated. Use `cart_item_uid` instead."""
+  cart_item_id: Int
+
+  """The unique ID for a `CartItemInterface` object"""
+  cart_item_uid: ID
   customizable_options: [CustomizableOptionInput]
 
   """Gift message details for the cart item"""
@@ -826,11 +886,26 @@ contains at least one attribute, a comparison operator, and the value that is
 being searched for.
 """
 input CategoryFilterInput {
-  """Filter by category ID that uniquely identifies the category."""
+  """Filter by the unique category ID for a `CategoryInterface` object."""
+  category_uid: FilterEqualTypeInput
+
+  """
+  Deprecated: use 'category_uid' to filter uniquely identifiers of categories.
+  """
   ids: FilterEqualTypeInput
 
   """Filter by the display name of the category."""
   name: FilterMatchTypeInput
+
+  """
+  Filter by the unique parent category ID for a `CategoryInterface` object.
+  """
+  parent_category_uid: FilterEqualTypeInput
+
+  """
+  Filter by the unique parent category ID for a `CategoryInterface` object.
+  """
+  parent_id: FilterEqualTypeInput
 
   """Filter by the part of the URL that identifies the category."""
   url_key: FilterEqualTypeInput
@@ -859,7 +934,7 @@ interface CategoryInterface {
   cms_block: CmsBlock
 
   """Timestamp indicating when the category was created."""
-  created_at: String
+  created_at: String @deprecated(reason: "The field should not be used on the storefront.")
   custom_layout_update_file: String
 
   """The attribute to use for sorting."""
@@ -871,7 +946,7 @@ interface CategoryInterface {
   filter_price_range: Float
 
   """An ID that uniquely identifies the category."""
-  id: Int
+  id: Int @deprecated(reason: "Use the `uid` argument instead.")
   image: String
   include_in_menu: Int
   is_anchor: Int
@@ -919,8 +994,11 @@ interface CategoryInterface {
     sort: ProductAttributeSortInput
   ): CategoryProducts
 
+  """The unique ID for a `CategoryInterface` object."""
+  uid: ID!
+
   """Timestamp indicating when the category was updated."""
-  updated_at: String
+  updated_at: String @deprecated(reason: "The field should not be used on the storefront.")
 
   """The url key assigned to the category."""
   url_key: String
@@ -984,7 +1062,7 @@ type CategoryTree implements CategoryInterface {
   cms_block: CmsBlock
 
   """Timestamp indicating when the category was created."""
-  created_at: String
+  created_at: String @deprecated(reason: "The field should not be used on the storefront.")
   custom_layout_update_file: String
 
   """The attribute to use for sorting."""
@@ -996,7 +1074,7 @@ type CategoryTree implements CategoryInterface {
   filter_price_range: Float
 
   """An ID that uniquely identifies the category."""
-  id: Int
+  id: Int @deprecated(reason: "Use the `uid` argument instead.")
   image: String
   include_in_menu: Int
   is_anchor: Int
@@ -1044,8 +1122,11 @@ type CategoryTree implements CategoryInterface {
     sort: ProductAttributeSortInput
   ): CategoryProducts
 
+  """The unique ID for a `CategoryInterface` object."""
+  uid: ID!
+
   """Timestamp indicating when the category was updated."""
-  updated_at: String
+  updated_at: String @deprecated(reason: "The field should not be used on the storefront.")
 
   """The url key assigned to the category."""
   url_key: String
@@ -1160,6 +1241,39 @@ type ColorSwatchData implements SwatchDataInterface {
   value: String
 }
 
+type ComparableAttribute {
+  """An attribute code that is enabled for product comparisons"""
+  code: String!
+
+  """The label of the attribute code"""
+  label: String!
+}
+
+type ComparableItem {
+  """An array of product attributes that can be used to compare products"""
+  attributes: [ProductAttribute]!
+
+  """Contains details about a product in a compare list"""
+  product: ProductInterface!
+
+  """The unique ID of an item in a compare list"""
+  uid: ID!
+}
+
+type CompareList {
+  """An array of attributes that can be used for comparing products"""
+  attributes: [ComparableAttribute]
+
+  """The number of items in the compare list"""
+  item_count: Int!
+
+  """An array of products to compare"""
+  items: [ComparableItem]
+
+  """The unique ID assigned to the compare list"""
+  uid: ID!
+}
+
 type ComplexTextValue {
   """HTML format"""
   html: String!
@@ -1176,7 +1290,7 @@ type ConfigurableAttributeOption {
   """A string that describes the configurable attribute option"""
   label: String
 
-  """A string that encodes option details."""
+  """The unique ID for a `ConfigurableAttributeOption` object"""
   uid: ID!
 
   """A unique index number assigned to the configurable product option"""
@@ -1189,10 +1303,24 @@ type ConfigurableCartItem implements CartItemInterface {
 
   """The entered gift message for the cart item"""
   gift_message: GiftMessage
-  id: String!
+  id: String! @deprecated(reason: "Use `uid` instead")
   prices: CartItemPrices
   product: ProductInterface!
   quantity: Float!
+
+  """The unique ID for a `CartItemInterface` object"""
+  uid: ID!
+}
+
+"""
+Configurable option available for further selection based on current selection.
+"""
+type ConfigurableOptionAvailableForSelection {
+  """Attribute code that uniquely identifies configurable option."""
+  attribute_code: String!
+
+  """Configurable option values available for further selection."""
+  option_value_uids: [ID]!
 }
 
 """
@@ -1200,7 +1328,7 @@ ConfigurableProduct defines basic features of a configurable product and its sim
 """
 type ConfigurableProduct implements CustomizableProductInterface & PhysicalProductInterface & ProductInterface {
   """The attribute set assigned to the product."""
-  attribute_set_id: Int
+  attribute_set_id: Int @deprecated(reason: "The field should not be used on the storefront.")
 
   """
   Relative canonical URL. This value is returned only if the system setting 'Use
@@ -1214,11 +1342,14 @@ type ConfigurableProduct implements CustomizableProductInterface & PhysicalProdu
   """An array of linked simple product items"""
   configurable_options: [ConfigurableProductOptions]
 
+  """Metadata for the specified configurable options selection"""
+  configurable_product_options_selection(configurableOptionValueUids: [ID!]): ConfigurableProductOptionsSelection
+
   """The product's country of origin."""
   country_of_manufacture: String
 
   """Timestamp indicating when the product was created."""
-  created_at: String
+  created_at: String @deprecated(reason: "The field should not be used on the storefront.")
 
   """Crosssell Products"""
   crosssell_products: [ProductInterface]
@@ -1232,7 +1363,7 @@ type ConfigurableProduct implements CustomizableProductInterface & PhysicalProdu
   gift_message_available: String
 
   """The ID number assigned to the product."""
-  id: Int
+  id: Int @deprecated(reason: "Use the `uid` field instead.")
 
   """The relative path to the main image on the product page."""
   image: ProductImage
@@ -1267,10 +1398,10 @@ type ConfigurableProduct implements CustomizableProductInterface & PhysicalProdu
   """
   The beginning date for new product listings, and determines if the product is featured as a new product.
   """
-  new_from_date: String
+  new_from_date: String @deprecated(reason: "The field should not be used on the storefront.")
 
   """The end date for new product listings."""
-  new_to_date: String
+  new_to_date: String @deprecated(reason: "The field should not be used on the storefront.")
 
   """Product stock only x left count"""
   only_x_left_in_stock: Float
@@ -1325,7 +1456,7 @@ type ConfigurableProduct implements CustomizableProductInterface & PhysicalProdu
   small_image: ProductImage
 
   """The beginning date that a product has a special price."""
-  special_from_date: String
+  special_from_date: String @deprecated(reason: "The field should not be used on the storefront.")
 
   """The discounted price of the product."""
   special_price: Float
@@ -1355,8 +1486,11 @@ type ConfigurableProduct implements CustomizableProductInterface & PhysicalProdu
   """
   type_id: String @deprecated(reason: "Use __typename instead.")
 
+  """The unique ID for a `ProductInterface` object."""
+  uid: ID!
+
   """Timestamp indicating when the product was updated."""
-  updated_at: String
+  updated_at: String @deprecated(reason: "The field should not be used on the storefront.")
 
   """Upsell Products"""
   upsell_products: [ProductInterface]
@@ -1387,6 +1521,8 @@ input ConfigurableProductCartItemInput {
 
   """Configurable product SKU."""
   parent_sku: String
+
+  """Deprecated. Use CartItemInput.sku instead."""
   variant_sku: String
 }
 
@@ -1398,13 +1534,16 @@ type ConfigurableProductOptions {
   attribute_code: String
 
   """The ID assigned to the attribute"""
-  attribute_id: String @deprecated(reason: "Use attribute_id_v2 instead")
+  attribute_id: String @deprecated(reason: "Use attribute_uid instead")
 
   """The ID assigned to the attribute"""
-  attribute_id_v2: Int
+  attribute_id_v2: Int @deprecated(reason: "Use attribute_uid instead")
+
+  """The unique ID for a `Attribute` object"""
+  attribute_uid: ID!
 
   """The configurable option ID number assigned by the system"""
-  id: Int
+  id: Int @deprecated(reason: "Use uid instead")
 
   """
   A string that describes the configurable product option, which is displayed on the UI
@@ -1415,7 +1554,10 @@ type ConfigurableProductOptions {
   position: Int
 
   """This is the same as a product's id field"""
-  product_id: Int
+  product_id: Int @deprecated(reason: "`product_id` is not needed and can be obtained from it's parent")
+
+  """The unique ID for a `ConfigurableProductOptions` object"""
+  uid: ID!
 
   """Indicates whether the option is the default"""
   use_default: Boolean
@@ -1424,6 +1566,25 @@ type ConfigurableProductOptions {
   An array that defines the value_index codes assigned to the configurable product
   """
   values: [ConfigurableProductOptionsValues]
+}
+
+"""Metadata corresponding to the configurable options selection."""
+type ConfigurableProductOptionsSelection {
+  """
+  Product images and videos corresponding to the specified configurable options selection.
+  """
+  media_gallery: [MediaGalleryInterface]
+
+  """
+  Configurable options available for further selection based on current selection.
+  """
+  options_available_for_selection: [ConfigurableOptionAvailableForSelection]
+
+  """
+  Variant represented by the specified configurable options selection. It is
+  expected to be null, until selections are made for each configurable option.
+  """
+  variant: SimpleProduct
 }
 
 """
@@ -1442,11 +1603,14 @@ type ConfigurableProductOptionsValues {
   """Swatch data for configurable product option"""
   swatch_data: SwatchDataInterface
 
+  """The unique ID for a `ConfigurableProductOptionsValues` object"""
+  uid: ID
+
   """Indicates whether to use the default_label"""
   use_default_value: Boolean
 
   """A unique index number assigned to the configurable product option"""
-  value_index: Int
+  value_index: Int @deprecated(reason: "Use `uid` instead")
 }
 
 """
@@ -1457,10 +1621,41 @@ type ConfigurableVariant {
   product: SimpleProduct
 }
 
+"""A configurable product wish list item"""
+type ConfigurableWishlistItem implements WishlistItemInterface {
+  """The date and time the item was added to the wish list"""
+  added_at: String!
+
+  """
+  The SKU of the simple product corresponding to a set of selected configurable options
+  """
+  child_sku: String!
+
+  """An array of selected configurable options"""
+  configurable_options: [SelectedConfigurableOption]
+
+  """Custom options selected for the wish list item"""
+  customizable_options: [SelectedCustomizableOption]!
+
+  """The description of the item"""
+  description: String
+
+  """The unique ID for a `WishlistItemInterface` object"""
+  id: ID!
+
+  """Product details of the wish list item"""
+  product: ProductInterface
+
+  """The quantity of this wish list item"""
+  quantity: Float!
+}
+
 type Country {
   available_regions: [Region]
   full_name_english: String
   full_name_locale: String
+
+  """The unique ID for a `Country` object."""
   id: String
   three_letter_abbreviation: String
   two_letter_abbreviation: String
@@ -2204,6 +2399,11 @@ enum CountryCodeEnum {
   ZW
 }
 
+input CreateCompareListInput {
+  """An array of product IDs to add to the compare list"""
+  products: [ID]
+}
+
 """
 Contains the secure information used to authorize transaction. Applies to Payflow Pro and Payments Pro payment methods.
 """
@@ -2257,7 +2457,7 @@ type CreditMemo {
   """Comments on the credit memo"""
   comments: [SalesCommentItem]
 
-  """The unique ID of the credit memo, used for API purposes"""
+  """The unique ID for a `CreditMemo` object"""
   id: ID!
 
   """An array containing details about refunded items"""
@@ -2276,7 +2476,7 @@ type CreditMemoItem implements CreditMemoItemInterface {
   """
   discounts: [Discount]
 
-  """The unique ID of the credit memo item, used for API purposes"""
+  """The unique ID for a `CreditMemoItemInterface` object"""
   id: ID!
 
   """The order item the credit memo is applied to"""
@@ -2302,7 +2502,7 @@ interface CreditMemoItemInterface {
   """
   discounts: [Discount]
 
-  """The unique ID of the credit memo item, used for API purposes"""
+  """The unique ID for a `CreditMemoItemInterface` object"""
   id: ID!
 
   """The order item the credit memo is applied to"""
@@ -2551,6 +2751,12 @@ type Customer {
   """An array containing the customer's shipping and billing addresses"""
   addresses: [CustomerAddress]
 
+  """Indicates whether the customer has enabled remote shopping assistance"""
+  allow_remote_shopping_assistance: Boolean!
+
+  """The contents of the customer's compare list"""
+  compare_list: CompareList
+
   """Timestamp indicating when the account was created"""
   created_at: String
 
@@ -2620,8 +2826,27 @@ type Customer {
   """The customer's Value-added tax (VAT) number (for corporate customers)"""
   taxvat: String
 
-  """Contains the contents of a customer's wish lists"""
-  wishlist: Wishlist!
+  """Contains a customer's wish lists"""
+  wishlist: Wishlist! @deprecated(reason: "Use `Customer.wishlists` or `Customer.wishlist_v2`")
+
+  """
+  Retrieve the specified wish list identified by the unique ID for a `Wishlist` object
+  """
+  wishlist_v2(id: ID!): Wishlist
+
+  """
+  An array of wishlists. In Magento Open Source, customers are limited to one
+  wish list. The number of wish lists is configurable for Magento Commerce
+  """
+  wishlists(
+    """Specifies which page of results to return. The default value is 1."""
+    currentPage: Int = 1
+
+    """
+    Specifies the maximum number of results to return at once. This attribute is optional.
+    """
+    pageSize: Int = 20
+  ): [Wishlist]!
 }
 
 """
@@ -2802,6 +3027,9 @@ input CustomerAddressRegionInput {
 }
 
 input CustomerCreateInput {
+  """Indicates whether the customer has enabled remote shopping assistance"""
+  allow_remote_shopping_assistance: Boolean
+
   """The customer's date of birth"""
   date_of_birth: String
 
@@ -2913,7 +3141,7 @@ type CustomerOrder {
   gift_message: GiftMessage
   grand_total: Float @deprecated(reason: "Use the totals.grand_total attribute instead")
 
-  """Unique identifier for the order"""
+  """The unique ID for a `CustomerOrder` object"""
   id: ID!
   increment_id: String @deprecated(reason: "Use the id attribute instead")
 
@@ -2986,6 +3214,9 @@ type CustomerToken {
 }
 
 input CustomerUpdateInput {
+  """Indicates whether the customer has enabled remote shopping assistance"""
+  allow_remote_shopping_assistance: Boolean
+
   """The customer's date of birth"""
   date_of_birth: String
 
@@ -3024,7 +3255,7 @@ CustomizableAreaOption contains information about a text area that is defined as
 """
 type CustomizableAreaOption implements CustomizableOptionInterface {
   """Option ID."""
-  option_id: Int
+  option_id: Int @deprecated(reason: "Use `uid` instead")
 
   """The Stock Keeping Unit of the base product."""
   product_sku: String
@@ -3037,6 +3268,9 @@ type CustomizableAreaOption implements CustomizableOptionInterface {
 
   """The display name for this option."""
   title: String
+
+  """The unique ID for a `CustomizableOptionInterface` object."""
+  uid: ID!
 
   """An object that defines a text area."""
   value: CustomizableAreaValue
@@ -3060,7 +3294,7 @@ type CustomizableAreaValue {
   """The Stock Keeping Unit for this option."""
   sku: String
 
-  """A string that encodes option details."""
+  """The unique ID for a `CustomizableAreaValue` object."""
   uid: ID!
 }
 
@@ -3070,7 +3304,7 @@ that are defined as part of a customizable option.
 """
 type CustomizableCheckboxOption implements CustomizableOptionInterface {
   """Option ID."""
-  option_id: Int
+  option_id: Int @deprecated(reason: "Use `uid` instead")
 
   """Indicates whether the option is required."""
   required: Boolean
@@ -3080,6 +3314,9 @@ type CustomizableCheckboxOption implements CustomizableOptionInterface {
 
   """The display name for this option."""
   title: String
+
+  """The unique ID for a `CustomizableOptionInterface` object."""
+  uid: ID!
 
   """An array that defines a set of checkbox values."""
   value: [CustomizableCheckboxValue]
@@ -3107,7 +3344,7 @@ type CustomizableCheckboxValue {
   """The display name for this option."""
   title: String
 
-  """A string that encodes option details."""
+  """The unique ID for a `CustomizableCheckboxValue` object."""
   uid: ID!
 }
 
@@ -3116,7 +3353,7 @@ CustomizableDateOption contains information about a date picker that is defined 
 """
 type CustomizableDateOption implements CustomizableOptionInterface {
   """Option ID."""
-  option_id: Int
+  option_id: Int @deprecated(reason: "Use `uid` instead")
 
   """The Stock Keeping Unit of the base product."""
   product_sku: String
@@ -3129,6 +3366,9 @@ type CustomizableDateOption implements CustomizableOptionInterface {
 
   """The display name for this option."""
   title: String
+
+  """The unique ID for a `CustomizableOptionInterface` object."""
+  uid: ID!
 
   """An object that defines a date field in a customizable option."""
   value: CustomizableDateValue
@@ -3147,7 +3387,7 @@ type CustomizableDateValue {
   """The Stock Keeping Unit for this option."""
   sku: String
 
-  """A string that encodes option details."""
+  """The unique ID for a `CustomizableDateValue` object."""
   uid: ID!
 }
 
@@ -3156,7 +3396,7 @@ CustomizableDropDownOption contains information about a drop down menu that is d
 """
 type CustomizableDropDownOption implements CustomizableOptionInterface {
   """Option ID."""
-  option_id: Int
+  option_id: Int @deprecated(reason: "Use `uid` instead")
 
   """Indicates whether the option is required."""
   required: Boolean
@@ -3166,6 +3406,9 @@ type CustomizableDropDownOption implements CustomizableOptionInterface {
 
   """The display name for this option."""
   title: String
+
+  """The unique ID for a `CustomizableOptionInterface` object."""
+  uid: ID!
 
   """An array that defines the set of options for a drop down menu."""
   value: [CustomizableDropDownValue]
@@ -3193,7 +3436,7 @@ type CustomizableDropDownValue {
   """The display name for this option."""
   title: String
 
-  """A string that encodes option details."""
+  """The unique ID for a `CustomizableDropDownValue` object."""
   uid: ID!
 }
 
@@ -3202,7 +3445,7 @@ CustomizableFieldOption contains information about a text field that is defined 
 """
 type CustomizableFieldOption implements CustomizableOptionInterface {
   """Option ID."""
-  option_id: Int
+  option_id: Int @deprecated(reason: "Use `uid` instead")
 
   """The Stock Keeping Unit of the base product."""
   product_sku: String
@@ -3215,6 +3458,9 @@ type CustomizableFieldOption implements CustomizableOptionInterface {
 
   """The display name for this option."""
   title: String
+
+  """The unique ID for a `CustomizableOptionInterface` object."""
+  uid: ID!
 
   """An object that defines a text field."""
   value: CustomizableFieldValue
@@ -3238,7 +3484,7 @@ type CustomizableFieldValue {
   """The Stock Keeping Unit for this option."""
   sku: String
 
-  """A string that encodes option details."""
+  """The unique ID for a `CustomizableFieldValue` object."""
   uid: ID!
 }
 
@@ -3247,7 +3493,7 @@ CustomizableFileOption contains information about a file picker that is defined 
 """
 type CustomizableFileOption implements CustomizableOptionInterface {
   """Option ID."""
-  option_id: Int
+  option_id: Int @deprecated(reason: "Use `uid` instead")
 
   """The Stock Keeping Unit of the base product."""
   product_sku: String
@@ -3260,6 +3506,9 @@ type CustomizableFileOption implements CustomizableOptionInterface {
 
   """The display name for this option."""
   title: String
+
+  """The unique ID for a `CustomizableOptionInterface` object."""
+  uid: ID!
 
   """An object that defines a file value."""
   value: CustomizableFileValue
@@ -3287,7 +3536,7 @@ type CustomizableFileValue {
   """The Stock Keeping Unit for this option."""
   sku: String
 
-  """A string that encodes option details."""
+  """The unique ID for a `CustomizableFileValue` object."""
   uid: ID!
 }
 
@@ -3296,7 +3545,7 @@ CustomizableMultipleOption contains information about a multiselect that is defi
 """
 type CustomizableMultipleOption implements CustomizableOptionInterface {
   """Option ID."""
-  option_id: Int
+  option_id: Int @deprecated(reason: "Use `uid` instead")
 
   """Indicates whether the option is required."""
   required: Boolean
@@ -3306,6 +3555,9 @@ type CustomizableMultipleOption implements CustomizableOptionInterface {
 
   """The display name for this option."""
   title: String
+
+  """The unique ID for a `CustomizableOptionInterface` object."""
+  uid: ID!
 
   """An array that defines the set of options for a multiselect."""
   value: [CustomizableMultipleValue]
@@ -3333,12 +3585,15 @@ type CustomizableMultipleValue {
   """The display name for this option."""
   title: String
 
-  """A string that encodes option details."""
+  """The unique ID for a `CustomizableMultipleValue` object."""
   uid: ID!
 }
 
 input CustomizableOptionInput {
-  id: Int!
+  """The customizable option id of the product"""
+  id: Int
+
+  """The string value of the option"""
   value_string: String!
 }
 
@@ -3348,7 +3603,7 @@ option. It can be implemented by several types of configurable options.
 """
 interface CustomizableOptionInterface {
   """Option ID."""
-  option_id: Int
+  option_id: Int @deprecated(reason: "Use `uid` instead")
 
   """Indicates whether the option is required."""
   required: Boolean
@@ -3358,6 +3613,9 @@ interface CustomizableOptionInterface {
 
   """The display name for this option."""
   title: String
+
+  """The unique ID for a `CustomizableOptionInterface` object."""
+  uid: ID!
 }
 
 """
@@ -3373,7 +3631,7 @@ CustomizableRadioOption contains information about a set of radio buttons that a
 """
 type CustomizableRadioOption implements CustomizableOptionInterface {
   """Option ID."""
-  option_id: Int
+  option_id: Int @deprecated(reason: "Use `uid` instead")
 
   """Indicates whether the option is required."""
   required: Boolean
@@ -3383,6 +3641,9 @@ type CustomizableRadioOption implements CustomizableOptionInterface {
 
   """The display name for this option."""
   title: String
+
+  """The unique ID for a `CustomizableOptionInterface` object."""
+  uid: ID!
 
   """An array that defines a set of radio buttons."""
   value: [CustomizableRadioValue]
@@ -3410,8 +3671,13 @@ type CustomizableRadioValue {
   """The display name for this option."""
   title: String
 
-  """A string that encodes option details."""
+  """The unique ID for a `CustomizableRadioValue` object."""
   uid: ID!
+}
+
+type DeleteCompareListOutput {
+  """Indicates whether the compare list was successfully deleted"""
+  result: Boolean!
 }
 
 type DeletePaymentTokenOutput {
@@ -3432,8 +3698,8 @@ type Discount {
 
 """Downloadable Cart Item"""
 type DownloadableCartItem implements CartItemInterface {
-  customizable_options: [SelectedCustomizableOption]
-  id: String!
+  customizable_options: [SelectedCustomizableOption]!
+  id: String! @deprecated(reason: "Use `uid` instead")
 
   """
   An array containing information about the links for the added to cart downloadable product
@@ -3447,6 +3713,9 @@ type DownloadableCartItem implements CartItemInterface {
   DownloadableProductSamples defines characteristics of a downloadable product
   """
   samples: [DownloadableProductSamples]
+
+  """The unique ID for a `CartItemInterface` object"""
+  uid: ID!
 }
 
 type DownloadableCreditMemoItem implements CreditMemoItemInterface {
@@ -3460,7 +3729,7 @@ type DownloadableCreditMemoItem implements CreditMemoItemInterface {
   """
   downloadable_links: [DownloadableItemsLinks]
 
-  """The unique ID of the credit memo item, used for API purposes"""
+  """The unique ID for a `CreditMemoItemInterface` object"""
   id: ID!
 
   """The order item the credit memo is applied to"""
@@ -3495,7 +3764,7 @@ type DownloadableInvoiceItem implements InvoiceItemInterface {
   """
   downloadable_links: [DownloadableItemsLinks]
 
-  """The unique ID of the invoice item"""
+  """The unique ID for a `InvoiceItemInterface` object"""
   id: ID!
 
   """Contains details about an individual order item"""
@@ -3524,7 +3793,7 @@ type DownloadableItemsLinks {
   """The display name of the link"""
   title: String
 
-  """A string that encodes option details."""
+  """The unique ID for a `DownloadableItemsLinks` object."""
   uid: ID!
 }
 
@@ -3540,7 +3809,7 @@ type DownloadableOrderItem implements OrderItemInterface {
   """The entered option for the base product, such as a logo or image"""
   entered_options: [OrderItemOption]
 
-  """The unique identifier of the order item"""
+  """The unique ID for a `OrderItemInterface` object"""
   id: ID!
 
   """The name of the base product"""
@@ -3586,7 +3855,7 @@ type DownloadableOrderItem implements OrderItemInterface {
 """DownloadableProduct defines a product that the customer downloads"""
 type DownloadableProduct implements CustomizableProductInterface & ProductInterface {
   """The attribute set assigned to the product."""
-  attribute_set_id: Int
+  attribute_set_id: Int @deprecated(reason: "The field should not be used on the storefront.")
 
   """
   Relative canonical URL. This value is returned only if the system setting 'Use
@@ -3601,7 +3870,7 @@ type DownloadableProduct implements CustomizableProductInterface & ProductInterf
   country_of_manufacture: String
 
   """Timestamp indicating when the product was created."""
-  created_at: String
+  created_at: String @deprecated(reason: "The field should not be used on the storefront.")
 
   """Crosssell Products"""
   crosssell_products: [ProductInterface]
@@ -3625,7 +3894,7 @@ type DownloadableProduct implements CustomizableProductInterface & ProductInterf
   gift_message_available: String
 
   """The ID number assigned to the product."""
-  id: Int
+  id: Int @deprecated(reason: "Use the `uid` field instead.")
 
   """The relative path to the main image on the product page."""
   image: ProductImage
@@ -3668,10 +3937,10 @@ type DownloadableProduct implements CustomizableProductInterface & ProductInterf
   """
   The beginning date for new product listings, and determines if the product is featured as a new product.
   """
-  new_from_date: String
+  new_from_date: String @deprecated(reason: "The field should not be used on the storefront.")
 
   """The end date for new product listings."""
-  new_to_date: String
+  new_to_date: String @deprecated(reason: "The field should not be used on the storefront.")
 
   """Product stock only x left count"""
   only_x_left_in_stock: Float
@@ -3726,7 +3995,7 @@ type DownloadableProduct implements CustomizableProductInterface & ProductInterf
   small_image: ProductImage
 
   """The beginning date that a product has a special price."""
-  special_from_date: String
+  special_from_date: String @deprecated(reason: "The field should not be used on the storefront.")
 
   """The discounted price of the product."""
   special_price: Float
@@ -3756,8 +4025,11 @@ type DownloadableProduct implements CustomizableProductInterface & ProductInterf
   """
   type_id: String @deprecated(reason: "Use __typename instead.")
 
+  """The unique ID for a `ProductInterface` object."""
+  uid: ID!
+
   """Timestamp indicating when the product was updated."""
-  updated_at: String
+  updated_at: String @deprecated(reason: "The field should not be used on the storefront.")
 
   """Upsell Products"""
   upsell_products: [ProductInterface]
@@ -3805,7 +4077,7 @@ type DownloadableProductLinks {
   """The display name of the link"""
   title: String
 
-  """A string that encodes option details."""
+  """The unique ID for a `DownloadableProductLinks` object."""
   uid: ID!
 }
 
@@ -3831,9 +4103,39 @@ type DownloadableProductSamples {
   title: String
 }
 
+"""A downloadable product wish list item"""
+type DownloadableWishlistItem implements WishlistItemInterface {
+  """The date and time the item was added to the wish list"""
+  added_at: String!
+
+  """Custom options selected for the wish list item"""
+  customizable_options: [SelectedCustomizableOption]!
+
+  """The description of the item"""
+  description: String
+
+  """The unique ID for a `WishlistItemInterface` object"""
+  id: ID!
+
+  """An array containing information about the selected links"""
+  links_v2: [DownloadableProductLinks]
+
+  """Product details of the wish list item"""
+  product: ProductInterface
+
+  """The quantity of this wish list item"""
+  quantity: Float!
+
+  """An array containing information about the selected samples"""
+  samples: [DownloadableProductSamples]
+}
+
 """Defines a customer-entered option"""
 input EnteredOptionInput {
-  """An encoded ID"""
+  """
+  The unique ID for a `CustomizableFieldOption`, `CustomizableFileOption`,
+  `CustomizableAreaOption`, etc. of `CustomizableOptionInterface` objects
+  """
   uid: ID!
 
   """Text the customer entered"""
@@ -3847,9 +4149,16 @@ type EntityUrl {
   canonical_url: String @deprecated(reason: "The canonical_url field is deprecated, use relative_url instead.")
 
   """
+  The unique ID for a `ProductInterface`, `CategoryInterface`, `CmsPage`, etc.
+  object associated with the specified url. This could be a product UID,
+  category UID, or cms page UID.
+  """
+  entity_uid: ID
+
+  """
   The ID assigned to the object associated with the specified url. This could be a product ID, category ID, or page ID.
   """
-  id: Int
+  id: Int @deprecated(reason: "Use `entity_uid` instead.")
 
   """
   301 or 302 HTTP code for url permanent or temporary redirect or 0 for the 200 no redirect
@@ -4005,6 +4314,18 @@ enum FixedProductTaxDisplaySettings {
   INCLUDE_FPT_WITH_DETAILS
 }
 
+input GenerateCustomerTokenAsAdminInput {
+  """
+  The email address of the customer requesting remote shopping assistance
+  """
+  customer_email: String!
+}
+
+type GenerateCustomerTokenAsAdminOutput {
+  """The generated customer token"""
+  customer_token: String!
+}
+
 """Contains the text of a gift message, its sender, and recipient"""
 type GiftMessage {
   """Sender name"""
@@ -4032,7 +4353,7 @@ input GiftMessageInput {
 """GroupedProduct defines a grouped product"""
 type GroupedProduct implements PhysicalProductInterface & ProductInterface {
   """The attribute set assigned to the product."""
-  attribute_set_id: Int
+  attribute_set_id: Int @deprecated(reason: "The field should not be used on the storefront.")
 
   """
   Relative canonical URL. This value is returned only if the system setting 'Use
@@ -4047,7 +4368,7 @@ type GroupedProduct implements PhysicalProductInterface & ProductInterface {
   country_of_manufacture: String
 
   """Timestamp indicating when the product was created."""
-  created_at: String
+  created_at: String @deprecated(reason: "The field should not be used on the storefront.")
 
   """Crosssell Products"""
   crosssell_products: [ProductInterface]
@@ -4061,7 +4382,7 @@ type GroupedProduct implements PhysicalProductInterface & ProductInterface {
   gift_message_available: String
 
   """The ID number assigned to the product."""
-  id: Int
+  id: Int @deprecated(reason: "Use the `uid` field instead.")
 
   """The relative path to the main image on the product page."""
   image: ProductImage
@@ -4099,10 +4420,10 @@ type GroupedProduct implements PhysicalProductInterface & ProductInterface {
   """
   The beginning date for new product listings, and determines if the product is featured as a new product.
   """
-  new_from_date: String
+  new_from_date: String @deprecated(reason: "The field should not be used on the storefront.")
 
   """The end date for new product listings."""
-  new_to_date: String
+  new_to_date: String @deprecated(reason: "The field should not be used on the storefront.")
 
   """Product stock only x left count"""
   only_x_left_in_stock: Float
@@ -4154,7 +4475,7 @@ type GroupedProduct implements PhysicalProductInterface & ProductInterface {
   small_image: ProductImage
 
   """The beginning date that a product has a special price."""
-  special_from_date: String
+  special_from_date: String @deprecated(reason: "The field should not be used on the storefront.")
 
   """The discounted price of the product."""
   special_price: Float
@@ -4184,8 +4505,11 @@ type GroupedProduct implements PhysicalProductInterface & ProductInterface {
   """
   type_id: String @deprecated(reason: "Use __typename instead.")
 
+  """The unique ID for a `ProductInterface` object."""
+  uid: ID!
+
   """Timestamp indicating when the product was updated."""
-  updated_at: String
+  updated_at: String @deprecated(reason: "The field should not be used on the storefront.")
 
   """Upsell Products"""
   upsell_products: [ProductInterface]
@@ -4221,6 +4545,27 @@ type GroupedProductItem {
 
   """The quantity of this grouped product item"""
   qty: Float
+}
+
+"""A grouped product wish list item"""
+type GroupedProductWishlistItem implements WishlistItemInterface {
+  """The date and time the item was added to the wish list"""
+  added_at: String!
+
+  """Custom options selected for the wish list item"""
+  customizable_options: [SelectedCustomizableOption]!
+
+  """The description of the item"""
+  description: String
+
+  """The unique ID for a `WishlistItemInterface` object"""
+  id: ID!
+
+  """Product details of the wish list item"""
+  product: ProductInterface
+
+  """The quantity of this wish list item"""
+  quantity: Float!
 }
 
 """
@@ -4286,7 +4631,7 @@ type Invoice {
   """Comments on the invoice"""
   comments: [SalesCommentItem]
 
-  """The ID of the invoice, used for API purposes"""
+  """The unique ID for a `Invoice` object"""
   id: ID!
 
   """Invoiced product details"""
@@ -4305,7 +4650,7 @@ type InvoiceItem implements InvoiceItemInterface {
   """
   discounts: [Discount]
 
-  """The unique ID of the invoice item"""
+  """The unique ID for a `InvoiceItemInterface` object"""
   id: ID!
 
   """Contains details about an individual order item"""
@@ -4331,7 +4676,7 @@ interface InvoiceItemInterface {
   """
   discounts: [Discount]
 
-  """The unique ID of the invoice item"""
+  """The unique ID for a `InvoiceItemInterface` object"""
   id: ID!
 
   """Contains details about an individual order item"""
@@ -4384,11 +4729,14 @@ type IsEmailAvailableOutput {
 
 """A list of options of the selected bundle product"""
 type ItemSelectedBundleOption {
-  """The unique identifier of the option"""
-  id: ID!
+  """The unique ID for a `ItemSelectedBundleOption` object"""
+  id: ID! @deprecated(reason: "Use `uid` instead")
 
   """The label of the option"""
   label: String!
+
+  """The unique ID for a `ItemSelectedBundleOption` object"""
+  uid: ID!
 
   """A list of products that represent the values of the parent option"""
   values: [ItemSelectedBundleOptionValue]
@@ -4396,8 +4744,8 @@ type ItemSelectedBundleOption {
 
 """A list of values for the selected bundle product"""
 type ItemSelectedBundleOptionValue {
-  """The unique identifier of the value"""
-  id: ID!
+  """The unique ID for a `ItemSelectedBundleOptionValue` object"""
+  id: ID! @deprecated(reason: "Use `uid` instead")
 
   """The price of the child bundle product"""
   price: Money!
@@ -4410,6 +4758,9 @@ type ItemSelectedBundleOptionValue {
 
   """Indicates how many of this bundle product were ordered"""
   quantity: Float!
+
+  """The unique ID for a `ItemSelectedBundleOptionValue` object"""
+  uid: ID!
 }
 
 """The key-value type"""
@@ -4471,7 +4822,7 @@ type MediaGalleryEntry {
   file: String
 
   """The identifier assigned to the object."""
-  id: Int
+  id: Int @deprecated(reason: "Use `uid` instead.")
 
   """The alt text displayed on the UI when the user points to the image."""
   label: String
@@ -4486,6 +4837,9 @@ type MediaGalleryEntry {
   Array of image types. It can have the following values: image, small_image, thumbnail.
   """
   types: [String]
+
+  """The unique ID for a `MediaGalleryEntry` object."""
+  uid: ID!
 
   """Contains a ProductMediaGalleryEntriesVideoContent object."""
   video_content: ProductMediaGalleryEntriesVideoContent
@@ -4525,6 +4879,9 @@ type Mutation {
   """Add any type of product to the cart"""
   addProductsToCart(cartId: String!, cartItems: [CartItemInput!]!): AddProductsToCartOutput
 
+  """Add products to the specified compare list"""
+  addProductsToCompareList(input: AddProductsToCompareListInput): CompareList
+
   """
   Adds one or more products to the specified wish list. This mutation supports all product types
   """
@@ -4533,8 +4890,16 @@ type Mutation {
   addVirtualProductsToCart(input: AddVirtualProductsToCartInput): AddVirtualProductsToCartOutput
   applyCouponToCart(input: ApplyCouponToCartInput): ApplyCouponToCartOutput
 
+  """Assign the specified compare list to the logged in customer"""
+  assignCompareListToCustomer(uid: ID!): AssignCompareListToCustomerOutput
+
   """Changes the password for the logged-in customer"""
   changeCustomerPassword(currentPassword: String!, newPassword: String!): Customer
+
+  """
+  Creates a new compare list. The compare list is saved for logged in customers
+  """
+  createCompareList(input: CreateCompareListInput): CompareList
 
   """Create customer account"""
   createCustomer(input: CustomerInput!): CustomerOutput
@@ -4562,6 +4927,9 @@ type Mutation {
   """Creates a product review for the specified SKU"""
   createProductReview(input: CreateProductReviewInput!): CreateProductReviewOutput!
 
+  """Delete the specified compare list"""
+  deleteCompareList(uid: ID!): DeleteCompareListOutput
+
   """Delete customer address"""
   deleteCustomerAddress(id: Int!): Boolean
 
@@ -4572,15 +4940,23 @@ type Mutation {
   generateCustomerToken(email: String!, password: String!): CustomerToken
 
   """
+  Request a customer token so that an administrator can perform remote shopping assistance
+  """
+  generateCustomerTokenAsAdmin(input: GenerateCustomerTokenAsAdminInput!): GenerateCustomerTokenAsAdminOutput
+
+  """
   Handles payment response and saves payment in Quote. Use this mutations for Payflow Pro and Payments Pro payment methods.
   """
   handlePayflowProResponse(input: PayflowProResponseInput!): PayflowProResponseOutput
 
   """Merges the source cart into the destination cart"""
-  mergeCarts(destination_cart_id: String!, source_cart_id: String!): Cart!
+  mergeCarts(destination_cart_id: String, source_cart_id: String!): Cart!
   placeOrder(input: PlaceOrderInput): PlaceOrderOutput
   removeCouponFromCart(input: RemoveCouponFromCartInput): RemoveCouponFromCartOutput
   removeItemFromCart(input: RemoveItemFromCartInput): RemoveItemFromCartOutput
+
+  """Remove products from the specified compare list"""
+  removeProductsFromCompareList(input: RemoveProductsFromCompareListInput): CompareList
 
   """Removes one or more products from the specified wish list"""
   removeProductsFromWishlist(wishlistId: ID!, wishlistItemsIds: [ID!]!): RemoveProductsFromWishlistOutput
@@ -4631,6 +5007,8 @@ type Mutation {
 
 type Order {
   order_id: String @deprecated(reason: "The order_id field is deprecated, use order_number instead.")
+
+  """The unique ID for a `Order` object."""
   order_number: String!
 }
 
@@ -4674,7 +5052,7 @@ type OrderAddress {
   """The state or province name"""
   region: String
 
-  """The unique ID for a pre-defined region"""
+  """The unique ID for a `Region` object of a pre-defined region"""
   region_id: ID
 
   """An array of strings that define the street number and name"""
@@ -4697,7 +5075,7 @@ type OrderItem implements OrderItemInterface {
   """The entered option for the base product, such as a logo or image"""
   entered_options: [OrderItemOption]
 
-  """The unique identifier of the order item"""
+  """The unique ID for a `OrderItemInterface` object"""
   id: ID!
 
   """The name of the base product"""
@@ -4748,7 +5126,7 @@ interface OrderItemInterface {
   """The entered option for the base product, such as a logo or image"""
   entered_options: [OrderItemOption]
 
-  """The unique identifier of the order item"""
+  """The unique ID for a `OrderItemInterface` object"""
   id: ID!
 
   """The name of the base product"""
@@ -4817,7 +5195,7 @@ type OrderShipment {
   """Comments added to the shipment"""
   comments: [SalesCommentItem]
 
-  """The unique ID of the shipment"""
+  """The unique ID for a `OrderShipment` object"""
   id: ID!
 
   """Contains items included in the shipment"""
@@ -5391,14 +5769,25 @@ enum PriceViewEnum {
   PRICE_RANGE
 }
 
+type ProductAttribute {
+  """The unique identifier for a product attribute code."""
+  code: String!
+
+  """The display value of the attribute"""
+  value: String!
+}
+
 """
 ProductAttributeFilterInput defines the filters to be used in the search. A
 filter contains at least one attribute, a comparison operator, and the value
 that is being searched for.
 """
 input ProductAttributeFilterInput {
-  """Filter product by category id"""
+  """Deprecated: use `category_uid` to filter product by category id."""
   category_id: FilterEqualTypeInput
+
+  """Filter product by the unique ID for a `CategoryInterface` object."""
+  category_uid: FilterEqualTypeInput
 
   """The part of the URL that identifies the product"""
   url_key: FilterEqualTypeInput
@@ -5584,13 +5973,19 @@ type ProductImage implements MediaGalleryInterface {
   url: String
 }
 
+"""Product Information used for Pickup Locations search."""
+input ProductInfoInput {
+  """Product SKU."""
+  sku: String!
+}
+
 """
 The ProductInterface contains attributes that are common to all types of
 products. Note that descriptions may not be available for custom and EAV
 """
 interface ProductInterface {
   """The attribute set assigned to the product."""
-  attribute_set_id: Int
+  attribute_set_id: Int @deprecated(reason: "The field should not be used on the storefront.")
 
   """
   Relative canonical URL. This value is returned only if the system setting 'Use
@@ -5605,7 +6000,7 @@ interface ProductInterface {
   country_of_manufacture: String
 
   """Timestamp indicating when the product was created."""
-  created_at: String
+  created_at: String @deprecated(reason: "The field should not be used on the storefront.")
 
   """Crosssell Products"""
   crosssell_products: [ProductInterface]
@@ -5619,7 +6014,7 @@ interface ProductInterface {
   gift_message_available: String
 
   """The ID number assigned to the product."""
-  id: Int
+  id: Int @deprecated(reason: "Use the `uid` field instead.")
 
   """The relative path to the main image on the product page."""
   image: ProductImage
@@ -5654,10 +6049,10 @@ interface ProductInterface {
   """
   The beginning date for new product listings, and determines if the product is featured as a new product.
   """
-  new_from_date: String
+  new_from_date: String @deprecated(reason: "The field should not be used on the storefront.")
 
   """The end date for new product listings."""
-  new_to_date: String
+  new_to_date: String @deprecated(reason: "The field should not be used on the storefront.")
 
   """Product stock only x left count"""
   only_x_left_in_stock: Float
@@ -5709,7 +6104,7 @@ interface ProductInterface {
   small_image: ProductImage
 
   """The beginning date that a product has a special price."""
-  special_from_date: String
+  special_from_date: String @deprecated(reason: "The field should not be used on the storefront.")
 
   """The discounted price of the product."""
   special_price: Float
@@ -5739,8 +6134,11 @@ interface ProductInterface {
   """
   type_id: String @deprecated(reason: "Use __typename instead.")
 
+  """The unique ID for a `ProductInterface` object."""
+  uid: ID!
+
   """Timestamp indicating when the product was updated."""
-  updated_at: String
+  updated_at: String @deprecated(reason: "The field should not be used on the storefront.")
 
   """Upsell Products"""
   upsell_products: [ProductInterface]
@@ -6165,7 +6563,10 @@ type Products {
 
 type Query {
   """Get a list of available store views and their config information."""
-  availableStores: [StoreConfig]
+  availableStores(
+    """Filter store views by current store group"""
+    useCurrentGroup: Boolean
+  ): [StoreConfig]
 
   """Returns information about shopping cart"""
   cart(cart_id: String!): Cart
@@ -6213,6 +6614,9 @@ type Query {
     """Identifier of the CMS page"""
     identifier: String
   ): CmsPage
+
+  """Return products that have been added to the specified compare list"""
+  compareList(uid: ID!): CompareList
 
   """The countries query provides information for all countries."""
   countries: [Country]
@@ -6273,6 +6677,9 @@ type Query {
     """
     pageSize: Int = 20
 
+    """Information about products which should be delivered."""
+    productsInfo: [ProductInfoInput]
+
     """
     Specifies which attribute to sort on, and whether to return the results in ascending or descending order.
     """
@@ -6321,6 +6728,8 @@ type Query {
 
 type Region {
   code: String
+
+  """The unique ID for a `Region` object."""
   id: Int
   name: String
 }
@@ -6335,11 +6744,24 @@ type RemoveCouponFromCartOutput {
 
 input RemoveItemFromCartInput {
   cart_id: String!
-  cart_item_id: Int!
+
+  """Deprecated. Use `cart_item_uid` instead."""
+  cart_item_id: Int
+
+  """Required field. The unique ID for a `CartItemInterface` object"""
+  cart_item_uid: ID
 }
 
 type RemoveItemFromCartOutput {
   cart: Cart!
+}
+
+input RemoveProductsFromCompareListInput {
+  """An array of product IDs to remove from the compare list"""
+  products: [ID]!
+
+  """The unique identifier of the compare list to modify"""
+  uid: ID!
 }
 
 """Contains the customer's wish list and any errors encountered"""
@@ -6392,36 +6814,59 @@ type SearchResultPageInfo {
 }
 
 type SelectedBundleOption {
-  id: Int!
+  id: Int! @deprecated(reason: "Use `uid` instead")
   label: String!
   type: String!
+
+  """The unique ID for a `SelectedBundleOption` object"""
+  uid: ID!
   values: [SelectedBundleOptionValue]!
 }
 
 type SelectedBundleOptionValue {
+  """Use `uid` instead"""
   id: Int!
   label: String!
   price: Float!
   quantity: Float!
+
+  """The unique ID for a `SelectedBundleOptionValue` object"""
+  uid: ID!
 }
 
 type SelectedConfigurableOption {
-  id: Int!
+  """The unique ID for a `ConfigurableProductOptions` object"""
+  configurable_product_option_uid: ID!
+
+  """The unique ID for a `ConfigurableProductOptionsValues` object"""
+  configurable_product_option_value_uid: ID!
+  id: Int! @deprecated(reason: "Use SelectedConfigurableOption.configurable_product_option_uid instead")
   option_label: String!
-  value_id: Int!
+  value_id: Int! @deprecated(reason: "Use SelectedConfigurableOption.configurable_product_option_value_uid instead")
   value_label: String!
 }
 
 type SelectedCustomizableOption {
-  id: Int!
+  """
+  The unique ID for a `CustomizableRadioOption`, `CustomizableDropDownOption`,
+  `CustomizableMultipleOption`, etc. of `CustomizableOptionInterface` objects
+  """
+  customizable_option_uid: ID!
+  id: Int! @deprecated(reason: "Use SelectedCustomizableOption.customizable_option_uid instead")
   is_required: Boolean!
   label: String!
   sort_order: Int!
+  type: String!
   values: [SelectedCustomizableOptionValue]!
 }
 
 type SelectedCustomizableOptionValue {
-  id: Int!
+  """
+  The unique ID for a `CustomizableMultipleValue`, `CustomizableRadioValue`,
+  `CustomizableCheckboxValue`, `CustomizableDropDownValue`, etc. objects
+  """
+  customizable_option_value_uid: ID!
+  id: Int! @deprecated(reason: "Use SelectedCustomizableOptionValue.customizable_option_value_uid instead")
   label: String!
   price: CartItemSelectedOptionValuePrice!
   value: String!
@@ -6547,7 +6992,7 @@ enum ShipBundleItemsEnum {
 }
 
 type ShipmentItem implements ShipmentItemInterface {
-  """Shipment item unique identifier"""
+  """The unique ID for a `ShipmentItemInterface` object"""
   id: ID!
 
   """Associated order item"""
@@ -6568,7 +7013,7 @@ type ShipmentItem implements ShipmentItemInterface {
 
 """Order shipment item details"""
 interface ShipmentItemInterface {
-  """Shipment item unique identifier"""
+  """The unique ID for a `ShipmentItemInterface` object"""
   id: ID!
 
   """Associated order item"""
@@ -6660,14 +7105,17 @@ input ShippingMethodInput {
 
 """Simple Cart Item"""
 type SimpleCartItem implements CartItemInterface {
-  customizable_options: [SelectedCustomizableOption]
+  customizable_options: [SelectedCustomizableOption]!
 
   """The entered gift message for the cart item"""
   gift_message: GiftMessage
-  id: String!
+  id: String! @deprecated(reason: "Use `uid` instead")
   prices: CartItemPrices
   product: ProductInterface!
   quantity: Float!
+
+  """The unique ID for a `CartItemInterface` object"""
+  uid: ID!
 }
 
 """
@@ -6675,7 +7123,7 @@ A simple product is tangible and are usually sold as single units or in fixed qu
 """
 type SimpleProduct implements CustomizableProductInterface & PhysicalProductInterface & ProductInterface {
   """The attribute set assigned to the product."""
-  attribute_set_id: Int
+  attribute_set_id: Int @deprecated(reason: "The field should not be used on the storefront.")
 
   """
   Relative canonical URL. This value is returned only if the system setting 'Use
@@ -6690,7 +7138,7 @@ type SimpleProduct implements CustomizableProductInterface & PhysicalProductInte
   country_of_manufacture: String
 
   """Timestamp indicating when the product was created."""
-  created_at: String
+  created_at: String @deprecated(reason: "The field should not be used on the storefront.")
 
   """Crosssell Products"""
   crosssell_products: [ProductInterface]
@@ -6704,7 +7152,7 @@ type SimpleProduct implements CustomizableProductInterface & PhysicalProductInte
   gift_message_available: String
 
   """The ID number assigned to the product."""
-  id: Int
+  id: Int @deprecated(reason: "Use the `uid` field instead.")
 
   """The relative path to the main image on the product page."""
   image: ProductImage
@@ -6739,10 +7187,10 @@ type SimpleProduct implements CustomizableProductInterface & PhysicalProductInte
   """
   The beginning date for new product listings, and determines if the product is featured as a new product.
   """
-  new_from_date: String
+  new_from_date: String @deprecated(reason: "The field should not be used on the storefront.")
 
   """The end date for new product listings."""
-  new_to_date: String
+  new_to_date: String @deprecated(reason: "The field should not be used on the storefront.")
 
   """Product stock only x left count"""
   only_x_left_in_stock: Float
@@ -6797,7 +7245,7 @@ type SimpleProduct implements CustomizableProductInterface & PhysicalProductInte
   small_image: ProductImage
 
   """The beginning date that a product has a special price."""
-  special_from_date: String
+  special_from_date: String @deprecated(reason: "The field should not be used on the storefront.")
 
   """The discounted price of the product."""
   special_price: Float
@@ -6827,8 +7275,11 @@ type SimpleProduct implements CustomizableProductInterface & PhysicalProductInte
   """
   type_id: String @deprecated(reason: "Use __typename instead.")
 
+  """The unique ID for a `ProductInterface` object."""
+  uid: ID!
+
   """Timestamp indicating when the product was updated."""
-  updated_at: String
+  updated_at: String @deprecated(reason: "The field should not be used on the storefront.")
 
   """Upsell Products"""
   upsell_products: [ProductInterface]
@@ -6853,6 +7304,27 @@ type SimpleProduct implements CustomizableProductInterface & PhysicalProductInte
 input SimpleProductCartItemInput {
   customizable_options: [CustomizableOptionInput]
   data: CartItemInput!
+}
+
+"""A simple product wish list Item"""
+type SimpleWishlistItem implements WishlistItemInterface {
+  """The date and time the item was added to the wish list"""
+  added_at: String!
+
+  """Custom options selected for the wish list item"""
+  customizable_options: [SelectedCustomizableOption]!
+
+  """The description of the item"""
+  description: String
+
+  """The unique ID for a `WishlistItemInterface` object"""
+  id: ID!
+
+  """Product details of the wish list item"""
+  product: ProductInterface
+
+  """The quantity of this wish list item"""
+  quantity: Float!
 }
 
 """
@@ -6938,7 +7410,12 @@ type StoreConfig {
   cms_no_route: String
 
   """A code assigned to the store to identify it"""
-  code: String
+  code: String @deprecated(reason: "Use `store_code` instead.")
+
+  """
+  The configuration setting determines which thumbnail should be used in the cart for configurable products.
+  """
+  configurable_thumbnail_source: String
 
   """Copyright"""
   copyright: String
@@ -6977,7 +7454,17 @@ type StoreConfig {
   header_logo_src: String
 
   """The ID number assigned to the store"""
-  id: Int
+  id: Int @deprecated(reason: "Use `store_code` instead.")
+
+  """
+  Indicates whether the store view has been designated as the default within the store group
+  """
+  is_default_store: Boolean
+
+  """
+  Indicates whether the store group has been designated as the default within the website
+  """
+  is_default_store_group: Boolean
 
   """List Mode."""
   list_mode: String
@@ -7032,7 +7519,10 @@ type StoreConfig {
   required_character_classes_number: String
 
   """The ID of the root category"""
-  root_category_id: Int
+  root_category_id: Int @deprecated(reason: "Use `root_category_uid` instead")
+
+  """The unique ID for a `CategoryInterface` object."""
+  root_category_uid: ID
 
   """
   Corresponds to the 'Display Prices In Sales Modules' field. It indicates how
@@ -7058,8 +7548,26 @@ type StoreConfig {
   """Show Breadcrumbs for CMS Pages"""
   show_cms_breadcrumbs: Int
 
-  """Name of the store"""
+  """
+  The unique ID of the store view. In the Admin, this is called the Store View
+  Code. When making a GraphQL call, assign this value to the `Store` header to
+  provide the scope
+  """
+  store_code: ID
+
+  """
+  The unique ID assigned to the store group. In the Admin, this is called the Store Name
+  """
+  store_group_code: ID
+
+  """The label assigned to the store group"""
+  store_group_name: String
+
+  """The label assigned to the store view"""
   store_name: String
+
+  """The store view sort order"""
+  store_sort_order: Int
 
   """Timezone of the store"""
   timezone: String
@@ -7073,8 +7581,19 @@ type StoreConfig {
   """Page Title Suffix"""
   title_suffix: String
 
-  """The ID number assigned to the website store belongs"""
-  website_id: Int
+  """
+  The configuration determines if the store code should be used in the URL
+  """
+  use_store_in_url: Boolean
+
+  """The unique ID for the website"""
+  website_code: ID
+
+  """The ID number assigned to the website store"""
+  website_id: Int @deprecated(reason: "The field should not be used on the storefront")
+
+  """The label assigned to the website"""
+  website_name: String
 
   """The unit of weight"""
   weight_unit: String
@@ -7198,11 +7717,14 @@ input VaultTokenInput {
 
 """Virtual Cart Item"""
 type VirtualCartItem implements CartItemInterface {
-  customizable_options: [SelectedCustomizableOption]
-  id: String!
+  customizable_options: [SelectedCustomizableOption]!
+  id: String! @deprecated(reason: "Use `uid` instead")
   prices: CartItemPrices
   product: ProductInterface!
   quantity: Float!
+
+  """The unique ID for a `CartItemInterface` object"""
+  uid: ID!
 }
 
 """
@@ -7210,7 +7732,7 @@ A virtual product is non-tangible product that does not require shipping and is 
 """
 type VirtualProduct implements CustomizableProductInterface & ProductInterface {
   """The attribute set assigned to the product."""
-  attribute_set_id: Int
+  attribute_set_id: Int @deprecated(reason: "The field should not be used on the storefront.")
 
   """
   Relative canonical URL. This value is returned only if the system setting 'Use
@@ -7225,7 +7747,7 @@ type VirtualProduct implements CustomizableProductInterface & ProductInterface {
   country_of_manufacture: String
 
   """Timestamp indicating when the product was created."""
-  created_at: String
+  created_at: String @deprecated(reason: "The field should not be used on the storefront.")
 
   """Crosssell Products"""
   crosssell_products: [ProductInterface]
@@ -7239,7 +7761,7 @@ type VirtualProduct implements CustomizableProductInterface & ProductInterface {
   gift_message_available: String
 
   """The ID number assigned to the product."""
-  id: Int
+  id: Int @deprecated(reason: "Use the `uid` field instead.")
 
   """The relative path to the main image on the product page."""
   image: ProductImage
@@ -7274,10 +7796,10 @@ type VirtualProduct implements CustomizableProductInterface & ProductInterface {
   """
   The beginning date for new product listings, and determines if the product is featured as a new product.
   """
-  new_from_date: String
+  new_from_date: String @deprecated(reason: "The field should not be used on the storefront.")
 
   """The end date for new product listings."""
-  new_to_date: String
+  new_to_date: String @deprecated(reason: "The field should not be used on the storefront.")
 
   """Product stock only x left count"""
   only_x_left_in_stock: Float
@@ -7332,7 +7854,7 @@ type VirtualProduct implements CustomizableProductInterface & ProductInterface {
   small_image: ProductImage
 
   """The beginning date that a product has a special price."""
-  special_from_date: String
+  special_from_date: String @deprecated(reason: "The field should not be used on the storefront.")
 
   """The discounted price of the product."""
   special_price: Float
@@ -7362,8 +7884,11 @@ type VirtualProduct implements CustomizableProductInterface & ProductInterface {
   """
   type_id: String @deprecated(reason: "Use __typename instead.")
 
+  """The unique ID for a `ProductInterface` object."""
+  uid: ID!
+
   """Timestamp indicating when the product was updated."""
-  updated_at: String
+  updated_at: String @deprecated(reason: "The field should not be used on the storefront.")
 
   """Upsell Products"""
   upsell_products: [ProductInterface]
@@ -7385,6 +7910,27 @@ type VirtualProduct implements CustomizableProductInterface & ProductInterface {
 input VirtualProductCartItemInput {
   customizable_options: [CustomizableOptionInput]
   data: CartItemInput!
+}
+
+"""A virtual product wish list item"""
+type VirtualWishlistItem implements WishlistItemInterface {
+  """The date and time the item was added to the wish list"""
+  added_at: String!
+
+  """Custom options selected for the wish list item"""
+  customizable_options: [SelectedCustomizableOption]!
+
+  """The description of the item"""
+  description: String
+
+  """The unique ID for a `WishlistItemInterface` object"""
+  id: ID!
+
+  """Product details of the wish list item"""
+  product: ProductInterface
+
+  """The quantity of this wish list item"""
+  quantity: Float!
 }
 
 """
@@ -7425,14 +7971,15 @@ enum WishListUserInputErrorType {
 }
 
 type Wishlist {
-  """Wishlist unique identifier"""
+  """The unique ID for a `Wishlist` object"""
   id: ID
-
-  """An array of items in the customer's wish list"""
-  items: [WishlistItem]
+  items: [WishlistItem] @deprecated(reason: "Use field `items_v2` from type `Wishlist` instead")
 
   """The number of items in the wish list"""
   items_count: Int
+
+  """An array of items in the customer's wish list"""
+  items_v2(currentPage: Int = 1, pageSize: Int = 20): WishlistItems
 
   """An encrypted code that Magento uses to link to the wish list"""
   sharing_code: String
@@ -7448,7 +7995,7 @@ type WishlistItem {
   """The customer's comment about this item"""
   description: String
 
-  """The wish list item ID"""
+  """The unique ID for a `WishlistItem` object"""
   id: Int
   product: ProductInterface
 
@@ -7476,6 +8023,26 @@ input WishlistItemInput {
   sku: String!
 }
 
+interface WishlistItemInterface {
+  """The date and time the item was added to the wish list"""
+  added_at: String!
+
+  """Custom options selected for the wish list item"""
+  customizable_options: [SelectedCustomizableOption]!
+
+  """The description of the item"""
+  description: String
+
+  """The unique ID for a `WishlistItemInterface` object"""
+  id: ID!
+
+  """Product details of the wish list item"""
+  product: ProductInterface
+
+  """The quantity of this wish list item"""
+  quantity: Float!
+}
+
 """Defines updates to items in a wish list"""
 input WishlistItemUpdateInput {
   """Customer-entered comments about the item"""
@@ -7490,8 +8057,16 @@ input WishlistItemUpdateInput {
   """An array of strings corresponding to options the customer selected"""
   selected_options: [ID]
 
-  """The ID of the wishlist item to update"""
+  """The unique ID for a `WishlistItemInterface` object"""
   wishlist_item_id: ID!
+}
+
+type WishlistItems {
+  """A list of items in the wish list"""
+  items: [WishlistItemInterface]!
+
+  """Contains pagination metadata"""
+  page_info: SearchResultPageInfo
 }
 
 """Deprecated: `Wishlist` type should be used instead"""
