@@ -257,12 +257,32 @@ input AttributeInput {
   entity_type: String
 }
 
+"""Specifies selected option for a select or multiselect attribute value."""
+input AttributeInputSelectedOption {
+  """The attribute option value."""
+  value: String!
+}
+
 """Defines an attribute option."""
 type AttributeOption {
   """The label assigned to the attribute option."""
   label: String
 
   """The attribute option value."""
+  value: String
+}
+
+"""Specifies the value for attribute."""
+input AttributeValueInput {
+  """The code of the attribute."""
+  attribute_code: String!
+
+  """
+  An array containing selected options for a select or multiselect attribute.
+  """
+  selected_options: [AttributeInputSelectedOption]
+
+  """The value assigned to the attribute."""
   value: String
 }
 
@@ -6969,33 +6989,6 @@ type PickupLocations {
   total_count: Int
 }
 
-"""An error encountered while placing an order."""
-type PlaceOrderError {
-  """An error code that is specific to place order."""
-  code: PlaceOrderErrorCodes!
-
-  """A localized error message."""
-  message: String!
-}
-
-""""""
-enum PlaceOrderErrorCodes {
-  """"""
-  CART_NOT_ACTIVE @deprecated
-
-  """"""
-  CART_NOT_FOUND @deprecated
-
-  """"""
-  GUEST_EMAIL_MISSING @deprecated
-
-  """"""
-  UNABLE_TO_PLACE_ORDER @deprecated
-
-  """"""
-  UNDEFINED @deprecated
-}
-
 """Specifies the quote to be converted to an order."""
 input PlaceOrderInput {
   """The unique ID of a `Cart` object."""
@@ -7004,11 +6997,8 @@ input PlaceOrderInput {
 
 """Contains the results of the request to place an order."""
 type PlaceOrderOutput {
-  """An array of place order errors."""
-  errors: [PlaceOrderError]!
-
   """The ID of the order."""
-  order: Order
+  order: Order!
 }
 
 """
