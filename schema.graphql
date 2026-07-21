@@ -77,6 +77,17 @@ type AttributeOption {
   value: String
 }
 
+input AuthorizenetInput {
+  """The last four digits of the credit or debit card"""
+  cc_last_4: Int!
+
+  """Authorize.Net's description of the transaction request"""
+  opaque_data_descriptor: String!
+
+  """The nonce returned by Authorize.Net"""
+  opaque_data_value: String!
+}
+
 type AvailablePaymentMethod {
   """The payment method code"""
   code: String!
@@ -123,148 +134,168 @@ type BillingCartAddress implements CartAddressInterface {
   telephone: String
 }
 
-"""Breadcrumb item"""
+input BraintreeCcVaultInput {
+  device_data: String
+  public_hash: String!
+}
+
+input BraintreeInput {
+  device_data: String
+  is_active_payment_token_enabler: Boolean!
+  payment_method_nonce: String!
+}
+
+"""Breadcrumb item."""
 type Breadcrumb {
-  """Category ID"""
+  """Category ID."""
   category_id: Int
 
-  """Category level"""
+  """Category level."""
   category_level: Int
 
-  """Category name"""
+  """Category name."""
   category_name: String
 
-  """Category URL key"""
+  """Category URL key."""
   category_url_key: String
 }
 
-"""BundleItem defines an individual item in a bundle product"""
+"""BundleItem defines an individual item in a bundle product."""
 type BundleItem {
-  """An ID assigned to each type of item in a bundle product"""
+  """An ID assigned to each type of item in a bundle product."""
   option_id: Int
 
-  """An array of additional options for this bundle item"""
+  """An array of additional options for this bundle item."""
   options: [BundleItemOption]
 
-  """he relative position of this item compared to the other bundle items"""
+  """he relative position of this item compared to the other bundle items."""
   position: Int
 
-  """Indicates whether the item must be included in the bundle"""
+  """Indicates whether the item must be included in the bundle."""
   required: Boolean
 
-  """The SKU of the bundle product"""
+  """The SKU of the bundle product."""
   sku: String
 
-  """The display name of the item"""
+  """The display name of the item."""
   title: String
 
   """
-  The input type that the customer uses to select the item. Examples include radio button and checkbox
+  The input type that the customer uses to select the item. Examples include radio button and checkbox.
   """
   type: String
 }
 
 """
-BundleItemOption defines characteristics and options for a specific bundle item
+BundleItemOption defines characteristics and options for a specific bundle item.
 """
 type BundleItemOption {
   """
-  Indicates whether the customer can change the number of items for this option
+  Indicates whether the customer can change the number of items for this option.
   """
   can_change_quantity: Boolean
 
-  """The ID assigned to the bundled item option"""
+  """The ID assigned to the bundled item option."""
   id: Int
 
-  """Indicates whether this option is the default option"""
+  """Indicates whether this option is the default option."""
   is_default: Boolean
 
-  """The text that identifies the bundled item option"""
+  """The text that identifies the bundled item option."""
   label: String
 
   """
-  When a bundle item contains multiple options, the relative position of this option compared to the other options
+  When a bundle item contains multiple options, the relative position of this option compared to the other options.
   """
   position: Int
 
-  """The price of the selected option"""
+  """The price of the selected option."""
   price: Float
 
-  """One of FIXED, PERCENT, or DYNAMIC"""
+  """One of FIXED, PERCENT, or DYNAMIC."""
   price_type: PriceTypeEnum
 
-  """Contains details about this product option"""
+  """Contains details about this product option."""
   product: ProductInterface
 
-  """Indicates the quantity of this specific bundle item"""
+  """Indicates the quantity of this specific bundle item."""
   qty: Float
+
+  """Indicates the quantity of this specific bundle item."""
+  quantity: Float
 }
 
 """
-BundleProduct defines basic features of a bundle product and contains multiple BundleItems
+BundleProduct defines basic features of a bundle product and contains multiple BundleItems.
 """
 type BundleProduct implements CustomizableProductInterface & PhysicalProductInterface & ProductInterface {
-  """The attribute set assigned to the product"""
+  """The attribute set assigned to the product."""
   attribute_set_id: Int
 
-  """Canonical URL"""
+  """Canonical URL."""
   canonical_url: String
 
-  """The categories assigned to a product"""
+  """The categories assigned to a product."""
   categories: [CategoryInterface]
 
-  """The product's country of origin"""
+  """The product's country of origin."""
   country_of_manufacture: String
 
-  """Timestamp indicating when the product was created"""
+  """Timestamp indicating when the product was created."""
   created_at: String
+
+  """Crosssell Products"""
+  crosssell_products: [ProductInterface]
 
   """
   Detailed information about the product. The value can include simple HTML tags.
   """
   description: ComplexTextValue
 
-  """Indicates whether the bundle product has a dynamic price"""
+  """Indicates whether the bundle product has a dynamic price."""
   dynamic_price: Boolean
 
-  """Indicates whether the bundle product has a dynamic SK"""
+  """Indicates whether the bundle product has a dynamic SK."""
   dynamic_sku: Boolean
 
   """
-  Indicates whether the bundle product has a dynamically calculated weight
+  Indicates whether the bundle product has a dynamically calculated weight.
   """
   dynamic_weight: Boolean
 
-  """Indicates whether a gift message is available"""
+  """Indicates whether a gift message is available."""
   gift_message_available: String
 
-  """The ID number assigned to the product"""
+  """The ID number assigned to the product."""
   id: Int
 
-  """The relative path to the main image on the product page"""
+  """The relative path to the main image on the product page."""
   image: ProductImage
 
-  """An array containing information about individual bundle items"""
+  """An array containing information about individual bundle items."""
   items: [BundleItem]
 
-  """A number representing the product's manufacturer"""
+  """A number representing the product's manufacturer."""
   manufacturer: Int
 
-  """An array of MediaGalleryEntry objects"""
+  """An array of Media Gallery objects."""
+  media_gallery: [MediaGalleryInterface]
+
+  """An array of MediaGalleryEntry objects."""
   media_gallery_entries: [MediaGalleryEntry]
 
   """
-  A brief overview of the product for search results listings, maximum 255 characters
+  A brief overview of the product for search results listings, maximum 255 characters.
   """
   meta_description: String
 
   """
-  A comma-separated list of keywords that are visible only to search engines
+  A comma-separated list of keywords that are visible only to search engines.
   """
   meta_keyword: String
 
   """
-  A string that is displayed in the title bar and tab of the browser and in search results lists
+  A string that is displayed in the title bar and tab of the browser and in search results lists.
   """
   meta_title: String
 
@@ -272,54 +303,57 @@ type BundleProduct implements CustomizableProductInterface & PhysicalProductInte
   name: String
 
   """
-  The beginning date for new product listings, and determines if the product is featured as a new product
+  The beginning date for new product listings, and determines if the product is featured as a new product.
   """
   new_from_date: String
 
-  """The end date for new product listings"""
+  """The end date for new product listings."""
   new_to_date: String
 
   """Product stock only x left count"""
   only_x_left_in_stock: Float
 
-  """An array of options for a customizable product"""
+  """An array of options for a customizable product."""
   options: [CustomizableOptionInterface]
 
   """
-  If the product has multiple options, determines where they appear on the product page
+  If the product has multiple options, determines where they appear on the product page.
   """
   options_container: String
 
-  """A ProductPrices object, indicating the price of an item"""
+  """A ProductPrices object, indicating the price of an item."""
   price: ProductPrices
 
-  """One of PRICE_RANGE or AS_LOW_AS"""
+  """One of PRICE_RANGE or AS_LOW_AS."""
   price_view: PriceViewEnum
 
-  """An array of ProductLinks objects"""
+  """An array of ProductLinks objects."""
   product_links: [ProductLinksInterface]
 
-  """Indicates whether to ship bundle items together or individually"""
+  """Related Products"""
+  related_products: [ProductInterface]
+
+  """Indicates whether to ship bundle items together or individually."""
   ship_bundle_items: ShipBundleItemsEnum
 
   """A short description of the product. Its use depends on the theme."""
   short_description: ComplexTextValue
 
   """
-  A number or code assigned to a product to identify the product, options, price, and manufacturer
+  A number or code assigned to a product to identify the product, options, price, and manufacturer.
   """
   sku: String
 
-  """The relative path to the small image, which is used on catalog pages"""
+  """The relative path to the small image, which is used on catalog pages."""
   small_image: ProductImage
 
-  """The beginning date that a product has a special price"""
+  """The beginning date that a product has a special price."""
   special_from_date: String
 
-  """The discounted price of the product"""
+  """The discounted price of the product."""
   special_price: Float
 
-  """The end date that a product has a special price"""
+  """The end date that a product has a special price."""
   special_to_date: String
 
   """Stock status of the product"""
@@ -328,36 +362,39 @@ type BundleProduct implements CustomizableProductInterface & PhysicalProductInte
   """The file name of a swatch image"""
   swatch_image: String
 
-  """The relative path to the product's thumbnail image"""
+  """The relative path to the product's thumbnail image."""
   thumbnail: ProductImage
 
   """
-  The price when tier pricing is in effect and the items purchased threshold has been reached
+  The price when tier pricing is in effect and the items purchased threshold has been reached.
   """
   tier_price: Float
 
-  """An array of ProductTierPrices objects"""
+  """An array of ProductTierPrices objects."""
   tier_prices: [ProductTierPrices]
 
-  """One of simple, virtual, bundle, downloadable, grouped, or configurable"""
+  """
+  One of simple, virtual, bundle, downloadable, grouped, or configurable.
+  """
   type_id: String
 
-  """Timestamp indicating when the product was updated"""
+  """Timestamp indicating when the product was updated."""
   updated_at: String
+
+  """Upsell Products"""
+  upsell_products: [ProductInterface]
 
   """The part of the URL that identifies the product"""
   url_key: String
-
-  """The part of the URL that precedes the url_key"""
   url_path: String
 
   """URL rewrites list"""
   url_rewrites: [UrlRewrite]
 
-  """An array of websites in which the product is available"""
+  """An array of websites in which the product is available."""
   websites: [Website]
 
-  """The weight of the item, in units defined by the store"""
+  """The weight of the item, in units defined by the store."""
   weight: Float
 }
 
@@ -410,6 +447,11 @@ type CartAddressRegion {
   label: String
 }
 
+type CartDiscount {
+  amount: Money!
+  label: [String]!
+}
+
 input CartItemInput {
   quantity: Float!
   sku: String!
@@ -434,11 +476,13 @@ type CartItemSelectedOptionValuePrice {
 
 input CartItemUpdateInput {
   cart_item_id: Int!
-  quantity: Float!
+  customizable_options: [CustomizableOptionInput]
+  quantity: Float
 }
 
 type CartPrices {
   applied_taxes: [CartTaxItem]
+  discount: CartDiscount
   grand_total: Money
   subtotal_excluding_tax: Money
   subtotal_including_tax: Money
@@ -451,57 +495,57 @@ type CartTaxItem {
 }
 
 """
-CategoryInterface contains the full set of attributes that can be returned in a category search
+CategoryInterface contains the full set of attributes that can be returned in a category search.
 """
 interface CategoryInterface {
   available_sort_by: [String]
 
-  """Breadcrumbs, parent categories info"""
+  """Breadcrumbs, parent categories info."""
   breadcrumbs: [Breadcrumb]
   children_count: String
 
-  """Timestamp indicating when the category was created"""
+  """Timestamp indicating when the category was created."""
   created_at: String
 
-  """The attribute to use for sorting"""
+  """The attribute to use for sorting."""
   default_sort_by: String
 
-  """An optional description of the category"""
+  """An optional description of the category."""
   description: String
   display_mode: String
   filter_price_range: Float
 
-  """An ID that uniquely identifies the category"""
+  """An ID that uniquely identifies the category."""
   id: Int
   image: String
   include_in_menu: Int
   is_anchor: Int
   landing_page: Int
 
-  """Indicates the depth of the category within the tree"""
+  """Indicates the depth of the category within the tree."""
   level: Int
   meta_description: String
   meta_keywords: String
   meta_title: String
 
-  """The display name of the category"""
+  """The display name of the category."""
   name: String
 
-  """Category Path"""
+  """Category Path."""
   path: String
 
-  """Category path in store"""
+  """Category path in store."""
   path_in_store: String
 
   """
-  The position of the category relative to other categories at the same level in tree
+  The position of the category relative to other categories at the same level in tree.
   """
   position: Int
 
-  """The number of products in the category"""
+  """The number of products in the category."""
   product_count: Int
 
-  """The list of products assigned to the category"""
+  """The list of products assigned to the category."""
   products(
     """Specifies which page of results to return. The default value is 1."""
     currentPage: Int = 1
@@ -517,83 +561,83 @@ interface CategoryInterface {
     sort: ProductSortInput
   ): CategoryProducts
 
-  """Timestamp indicating when the category was updated"""
+  """Timestamp indicating when the category was updated."""
   updated_at: String
 
-  """The url key assigned to the category"""
+  """The url key assigned to the category."""
   url_key: String
 
-  """The url path assigned to the category"""
+  """The url path assigned to the category."""
   url_path: String
 }
 
-"""The category products object returned in the Category query"""
+"""The category products object returned in the Category query."""
 type CategoryProducts {
-  """An array of products that are assigned to the category"""
+  """An array of products that are assigned to the category."""
   items: [ProductInterface]
 
   """
-  An object that includes the page_info and currentPage values specified in the query
+  An object that includes the page_info and currentPage values specified in the query.
   """
   page_info: SearchResultPageInfo
 
-  """The number of products returned"""
+  """The number of products returned."""
   total_count: Int
 }
 
-"""Category Tree implementation"""
+"""Category Tree implementation."""
 type CategoryTree implements CategoryInterface {
   available_sort_by: [String]
 
-  """Breadcrumbs, parent categories info"""
+  """Breadcrumbs, parent categories info."""
   breadcrumbs: [Breadcrumb]
 
-  """Child categories tree"""
+  """Child categories tree."""
   children: [CategoryTree]
   children_count: String
 
-  """Timestamp indicating when the category was created"""
+  """Timestamp indicating when the category was created."""
   created_at: String
 
-  """The attribute to use for sorting"""
+  """The attribute to use for sorting."""
   default_sort_by: String
 
-  """An optional description of the category"""
+  """An optional description of the category."""
   description: String
   display_mode: String
   filter_price_range: Float
 
-  """An ID that uniquely identifies the category"""
+  """An ID that uniquely identifies the category."""
   id: Int
   image: String
   include_in_menu: Int
   is_anchor: Int
   landing_page: Int
 
-  """Indicates the depth of the category within the tree"""
+  """Indicates the depth of the category within the tree."""
   level: Int
   meta_description: String
   meta_keywords: String
   meta_title: String
 
-  """The display name of the category"""
+  """The display name of the category."""
   name: String
 
-  """Category Path"""
+  """Category Path."""
   path: String
 
-  """Category path in store"""
+  """Category path in store."""
   path_in_store: String
 
   """
-  The position of the category relative to other categories at the same level in tree
+  The position of the category relative to other categories at the same level in tree.
   """
   position: Int
 
-  """The number of products in the category"""
+  """The number of products in the category."""
   product_count: Int
 
-  """The list of products assigned to the category"""
+  """The list of products assigned to the category."""
   products(
     """Specifies which page of results to return. The default value is 1."""
     currentPage: Int = 1
@@ -609,14 +653,41 @@ type CategoryTree implements CategoryInterface {
     sort: ProductSortInput
   ): CategoryProducts
 
-  """Timestamp indicating when the category was updated"""
+  """Timestamp indicating when the category was updated."""
   updated_at: String
 
-  """The url key assigned to the category"""
+  """The url key assigned to the category."""
   url_key: String
 
-  """The url path assigned to the category"""
+  """The url path assigned to the category."""
   url_path: String
+}
+
+"""Defines all Checkout Agreement information"""
+type CheckoutAgreement {
+  """Checkout Agreement identifier"""
+  agreement_id: Int!
+
+  """Checkout Agreement checkbox text"""
+  checkbox_text: String!
+
+  """Checkout Agreement content"""
+  content: String!
+
+  """Checkout Agreement content height"""
+  content_height: String
+
+  """Is Checkout Agreement content in HTML format"""
+  is_html: Boolean!
+  mode: CheckoutAgreementMode!
+
+  """Checkout Agreement name"""
+  name: String!
+}
+
+enum CheckoutAgreementMode {
+  AUTO
+  MANUAL
 }
 
 """CMS block defines all CMS block information"""
@@ -644,6 +715,9 @@ type CmsPage {
 
   """CMS page content heading"""
   content_heading: String
+
+  """Identifier of the CMS page"""
+  identifier: String
 
   """CMS page meta description"""
   meta_description: String
@@ -695,56 +769,62 @@ type ConfigurableCartItem implements CartItemInterface {
 ConfigurableProduct defines basic features of a configurable product and its simple product variants
 """
 type ConfigurableProduct implements CustomizableProductInterface & PhysicalProductInterface & ProductInterface {
-  """The attribute set assigned to the product"""
+  """The attribute set assigned to the product."""
   attribute_set_id: Int
 
-  """Canonical URL"""
+  """Canonical URL."""
   canonical_url: String
 
-  """The categories assigned to a product"""
+  """The categories assigned to a product."""
   categories: [CategoryInterface]
 
   """An array of linked simple product items"""
   configurable_options: [ConfigurableProductOptions]
 
-  """The product's country of origin"""
+  """The product's country of origin."""
   country_of_manufacture: String
 
-  """Timestamp indicating when the product was created"""
+  """Timestamp indicating when the product was created."""
   created_at: String
+
+  """Crosssell Products"""
+  crosssell_products: [ProductInterface]
 
   """
   Detailed information about the product. The value can include simple HTML tags.
   """
   description: ComplexTextValue
 
-  """Indicates whether a gift message is available"""
+  """Indicates whether a gift message is available."""
   gift_message_available: String
 
-  """The ID number assigned to the product"""
+  """The ID number assigned to the product."""
   id: Int
 
-  """The relative path to the main image on the product page"""
+  """The relative path to the main image on the product page."""
   image: ProductImage
 
-  """A number representing the product's manufacturer"""
+  """A number representing the product's manufacturer."""
   manufacturer: Int
 
-  """An array of MediaGalleryEntry objects"""
+  """An array of Media Gallery objects."""
+  media_gallery: [MediaGalleryInterface]
+
+  """An array of MediaGalleryEntry objects."""
   media_gallery_entries: [MediaGalleryEntry]
 
   """
-  A brief overview of the product for search results listings, maximum 255 characters
+  A brief overview of the product for search results listings, maximum 255 characters.
   """
   meta_description: String
 
   """
-  A comma-separated list of keywords that are visible only to search engines
+  A comma-separated list of keywords that are visible only to search engines.
   """
   meta_keyword: String
 
   """
-  A string that is displayed in the title bar and tab of the browser and in search results lists
+  A string that is displayed in the title bar and tab of the browser and in search results lists.
   """
   meta_title: String
 
@@ -752,48 +832,51 @@ type ConfigurableProduct implements CustomizableProductInterface & PhysicalProdu
   name: String
 
   """
-  The beginning date for new product listings, and determines if the product is featured as a new product
+  The beginning date for new product listings, and determines if the product is featured as a new product.
   """
   new_from_date: String
 
-  """The end date for new product listings"""
+  """The end date for new product listings."""
   new_to_date: String
 
   """Product stock only x left count"""
   only_x_left_in_stock: Float
 
-  """An array of options for a customizable product"""
+  """An array of options for a customizable product."""
   options: [CustomizableOptionInterface]
 
   """
-  If the product has multiple options, determines where they appear on the product page
+  If the product has multiple options, determines where they appear on the product page.
   """
   options_container: String
 
-  """A ProductPrices object, indicating the price of an item"""
+  """A ProductPrices object, indicating the price of an item."""
   price: ProductPrices
 
-  """An array of ProductLinks objects"""
+  """An array of ProductLinks objects."""
   product_links: [ProductLinksInterface]
+
+  """Related Products"""
+  related_products: [ProductInterface]
 
   """A short description of the product. Its use depends on the theme."""
   short_description: ComplexTextValue
 
   """
-  A number or code assigned to a product to identify the product, options, price, and manufacturer
+  A number or code assigned to a product to identify the product, options, price, and manufacturer.
   """
   sku: String
 
-  """The relative path to the small image, which is used on catalog pages"""
+  """The relative path to the small image, which is used on catalog pages."""
   small_image: ProductImage
 
-  """The beginning date that a product has a special price"""
+  """The beginning date that a product has a special price."""
   special_from_date: String
 
-  """The discounted price of the product"""
+  """The discounted price of the product."""
   special_price: Float
 
-  """The end date that a product has a special price"""
+  """The end date that a product has a special price."""
   special_to_date: String
 
   """Stock status of the product"""
@@ -802,27 +885,30 @@ type ConfigurableProduct implements CustomizableProductInterface & PhysicalProdu
   """The file name of a swatch image"""
   swatch_image: String
 
-  """The relative path to the product's thumbnail image"""
+  """The relative path to the product's thumbnail image."""
   thumbnail: ProductImage
 
   """
-  The price when tier pricing is in effect and the items purchased threshold has been reached
+  The price when tier pricing is in effect and the items purchased threshold has been reached.
   """
   tier_price: Float
 
-  """An array of ProductTierPrices objects"""
+  """An array of ProductTierPrices objects."""
   tier_prices: [ProductTierPrices]
 
-  """One of simple, virtual, bundle, downloadable, grouped, or configurable"""
+  """
+  One of simple, virtual, bundle, downloadable, grouped, or configurable.
+  """
   type_id: String
 
-  """Timestamp indicating when the product was updated"""
+  """Timestamp indicating when the product was updated."""
   updated_at: String
+
+  """Upsell Products"""
+  upsell_products: [ProductInterface]
 
   """The part of the URL that identifies the product"""
   url_key: String
-
-  """The part of the URL that precedes the url_key"""
   url_path: String
 
   """URL rewrites list"""
@@ -831,17 +917,20 @@ type ConfigurableProduct implements CustomizableProductInterface & PhysicalProdu
   """An array of variants of products"""
   variants: [ConfigurableVariant]
 
-  """An array of websites in which the product is available"""
+  """An array of websites in which the product is available."""
   websites: [Website]
 
-  """The weight of the item, in units defined by the store"""
+  """The weight of the item, in units defined by the store."""
   weight: Float
 }
 
 input ConfigurableProductCartItemInput {
   customizable_options: [CustomizableOptionInput]
   data: CartItemInput!
-  variant_sku: String!
+
+  """Configurable product SKU."""
+  parent_sku: String
+  variant_sku: String
 }
 
 """
@@ -1033,13 +1122,13 @@ enum CountryCodeEnum {
   """Cocos (Keeling) Islands"""
   CC
 
-  """Congo - Kinshasa"""
+  """Congo-Kinshasa"""
   CD
 
   """Central African Republic"""
   CF
 
-  """Congo -Brazzaville"""
+  """Congo-Brazzaville"""
   CG
 
   """Switzerland"""
@@ -1652,6 +1741,21 @@ enum CountryCodeEnum {
   ZW
 }
 
+"""Required fields for Payflow Pro and Payments Pro credit card payments"""
+input CreditCardDetailsInput {
+  """Credit card expiration month"""
+  cc_exp_month: Int!
+
+  """Credit card expiration year"""
+  cc_exp_year: Int!
+
+  """Last 4 digits of the credit card"""
+  cc_last_4: Int!
+
+  """Credit card type"""
+  cc_type: String!
+}
+
 type Currency {
   available_currency_codes: [String]
   base_currency_code: String
@@ -2152,107 +2256,107 @@ type CustomerToken {
 }
 
 """
-CustomizableAreaOption contains information about a text area that is defined as part of a customizable option
+CustomizableAreaOption contains information about a text area that is defined as part of a customizable option.
 """
 type CustomizableAreaOption implements CustomizableOptionInterface {
-  """Option ID"""
+  """Option ID."""
   option_id: Int
 
-  """The Stock Keeping Unit of the base product"""
+  """The Stock Keeping Unit of the base product."""
   product_sku: String
 
-  """Indicates whether the option is required"""
+  """Indicates whether the option is required."""
   required: Boolean
 
-  """The order in which the option is displayed"""
+  """The order in which the option is displayed."""
   sort_order: Int
 
-  """The display name for this option"""
+  """The display name for this option."""
   title: String
 
-  """An object that defines a text area"""
+  """An object that defines a text area."""
   value: CustomizableAreaValue
 }
 
 """
-CustomizableAreaValue defines the price and sku of a product whose page contains a customized text area
+CustomizableAreaValue defines the price and sku of a product whose page contains a customized text area.
 """
 type CustomizableAreaValue {
   """
-  The maximum number of characters that can be entered for this customizable option
+  The maximum number of characters that can be entered for this customizable option.
   """
   max_characters: Int
 
-  """The price assigned to this option"""
+  """The price assigned to this option."""
   price: Float
 
-  """FIXED, PERCENT, or DYNAMIC"""
+  """FIXED, PERCENT, or DYNAMIC."""
   price_type: PriceTypeEnum
 
-  """The Stock Keeping Unit for this option"""
+  """The Stock Keeping Unit for this option."""
   sku: String
 }
 
 """
-CustomizableCheckbbixOption contains information about a set of checkbox values that are defined as part of a customizable option
+CustomizableCheckbbixOption contains information about a set of checkbox values that are defined as part of a customizable option.
 """
 type CustomizableCheckboxOption implements CustomizableOptionInterface {
-  """Option ID"""
+  """Option ID."""
   option_id: Int
 
-  """Indicates whether the option is required"""
+  """Indicates whether the option is required."""
   required: Boolean
 
-  """The order in which the option is displayed"""
+  """The order in which the option is displayed."""
   sort_order: Int
 
-  """The display name for this option"""
+  """The display name for this option."""
   title: String
 
-  """An array that defines a set of checkbox values"""
+  """An array that defines a set of checkbox values."""
   value: [CustomizableCheckboxValue]
 }
 
 """
-CustomizableCheckboxValue defines the price and sku of a product whose page contains a customized set of checkbox values
+CustomizableCheckboxValue defines the price and sku of a product whose page contains a customized set of checkbox values.
 """
 type CustomizableCheckboxValue {
-  """The ID assigned to the value"""
+  """The ID assigned to the value."""
   option_type_id: Int
 
-  """The price assigned to this option"""
+  """The price assigned to this option."""
   price: Float
 
-  """FIXED, PERCENT, or DYNAMIC"""
+  """FIXED, PERCENT, or DYNAMIC."""
   price_type: PriceTypeEnum
 
-  """The Stock Keeping Unit for this option"""
+  """The Stock Keeping Unit for this option."""
   sku: String
 
-  """The order in which the checkbox value is displayed"""
+  """The order in which the checkbox value is displayed."""
   sort_order: Int
 
-  """The display name for this option"""
+  """The display name for this option."""
   title: String
 }
 
 """
-CustomizableDateOption contains information about a date picker that is defined as part of a customizable option
+CustomizableDateOption contains information about a date picker that is defined as part of a customizable option.
 """
 type CustomizableDateOption implements CustomizableOptionInterface {
-  """Option ID"""
+  """Option ID."""
   option_id: Int
 
-  """The Stock Keeping Unit of the base product"""
+  """The Stock Keeping Unit of the base product."""
   product_sku: String
 
-  """Indicates whether the option is required"""
+  """Indicates whether the option is required."""
   required: Boolean
 
-  """The order in which the option is displayed"""
+  """The order in which the option is displayed."""
   sort_order: Int
 
-  """The display name for this option"""
+  """The display name for this option."""
   title: String
 
   """An object that defines a date field in a customizable option."""
@@ -2260,190 +2364,190 @@ type CustomizableDateOption implements CustomizableOptionInterface {
 }
 
 """
-CustomizableDateValue defines the price and sku of a product whose page contains a customized date picker
+CustomizableDateValue defines the price and sku of a product whose page contains a customized date picker.
 """
 type CustomizableDateValue {
-  """The price assigned to this option"""
+  """The price assigned to this option."""
   price: Float
 
-  """FIXED, PERCENT, or DYNAMIC"""
+  """FIXED, PERCENT, or DYNAMIC."""
   price_type: PriceTypeEnum
 
-  """The Stock Keeping Unit for this option"""
+  """The Stock Keeping Unit for this option."""
   sku: String
 }
 
 """
-CustomizableDropDownOption contains information about a drop down menu that is defined as part of a customizable option
+CustomizableDropDownOption contains information about a drop down menu that is defined as part of a customizable option.
 """
 type CustomizableDropDownOption implements CustomizableOptionInterface {
-  """Option ID"""
+  """Option ID."""
   option_id: Int
 
-  """Indicates whether the option is required"""
+  """Indicates whether the option is required."""
   required: Boolean
 
-  """The order in which the option is displayed"""
+  """The order in which the option is displayed."""
   sort_order: Int
 
-  """The display name for this option"""
+  """The display name for this option."""
   title: String
 
-  """An array that defines the set of options for a drop down menu"""
+  """An array that defines the set of options for a drop down menu."""
   value: [CustomizableDropDownValue]
 }
 
 """
-CustomizableDropDownValue defines the price and sku of a product whose page contains a customized drop down menu
+CustomizableDropDownValue defines the price and sku of a product whose page contains a customized drop down menu.
 """
 type CustomizableDropDownValue {
-  """The ID assigned to the value"""
+  """The ID assigned to the value."""
   option_type_id: Int
 
-  """The price assigned to this option"""
+  """The price assigned to this option."""
   price: Float
 
-  """FIXED, PERCENT, or DYNAMIC"""
+  """FIXED, PERCENT, or DYNAMIC."""
   price_type: PriceTypeEnum
 
-  """The Stock Keeping Unit for this option"""
+  """The Stock Keeping Unit for this option."""
   sku: String
 
-  """The order in which the option is displayed"""
+  """The order in which the option is displayed."""
   sort_order: Int
 
-  """The display name for this option"""
+  """The display name for this option."""
   title: String
 }
 
 """
-CustomizableFieldOption contains information about a text field that is defined as part of a customizable option
+CustomizableFieldOption contains information about a text field that is defined as part of a customizable option.
 """
 type CustomizableFieldOption implements CustomizableOptionInterface {
-  """Option ID"""
+  """Option ID."""
   option_id: Int
 
-  """The Stock Keeping Unit of the base product"""
+  """The Stock Keeping Unit of the base product."""
   product_sku: String
 
-  """Indicates whether the option is required"""
+  """Indicates whether the option is required."""
   required: Boolean
 
-  """The order in which the option is displayed"""
+  """The order in which the option is displayed."""
   sort_order: Int
 
-  """The display name for this option"""
+  """The display name for this option."""
   title: String
 
-  """An object that defines a text field"""
+  """An object that defines a text field."""
   value: CustomizableFieldValue
 }
 
 """
-CustomizableFieldValue defines the price and sku of a product whose page contains a customized text field
+CustomizableFieldValue defines the price and sku of a product whose page contains a customized text field.
 """
 type CustomizableFieldValue {
   """
-  The maximum number of characters that can be entered for this customizable option
+  The maximum number of characters that can be entered for this customizable option.
   """
   max_characters: Int
 
-  """The price of the custom value"""
+  """The price of the custom value."""
   price: Float
 
-  """FIXED, PERCENT, or DYNAMIC"""
+  """FIXED, PERCENT, or DYNAMIC."""
   price_type: PriceTypeEnum
 
-  """The Stock Keeping Unit for this option"""
+  """The Stock Keeping Unit for this option."""
   sku: String
 }
 
 """
-CustomizableFileOption contains information about a file picker that is defined as part of a customizable option
+CustomizableFileOption contains information about a file picker that is defined as part of a customizable option.
 """
 type CustomizableFileOption implements CustomizableOptionInterface {
-  """Option ID"""
+  """Option ID."""
   option_id: Int
 
-  """The Stock Keeping Unit of the base product"""
+  """The Stock Keeping Unit of the base product."""
   product_sku: String
 
-  """Indicates whether the option is required"""
+  """Indicates whether the option is required."""
   required: Boolean
 
-  """The order in which the option is displayed"""
+  """The order in which the option is displayed."""
   sort_order: Int
 
-  """The display name for this option"""
+  """The display name for this option."""
   title: String
 
-  """An object that defines a file value"""
+  """An object that defines a file value."""
   value: CustomizableFileValue
 }
 
 """
-CustomizableFileValue defines the price and sku of a product whose page contains a customized file picker
+CustomizableFileValue defines the price and sku of a product whose page contains a customized file picker.
 """
 type CustomizableFileValue {
-  """The file extension to accept"""
+  """The file extension to accept."""
   file_extension: String
 
-  """The maximum width of an image"""
+  """The maximum width of an image."""
   image_size_x: Int
 
-  """The maximum height of an image"""
+  """The maximum height of an image."""
   image_size_y: Int
 
-  """The price assigned to this option"""
+  """The price assigned to this option."""
   price: Float
 
-  """FIXED, PERCENT, or DYNAMIC"""
+  """FIXED, PERCENT, or DYNAMIC."""
   price_type: PriceTypeEnum
 
-  """The Stock Keeping Unit for this option"""
+  """The Stock Keeping Unit for this option."""
   sku: String
 }
 
 """
-CustomizableMultipleOption contains information about a multiselect that is defined as part of a customizable option
+CustomizableMultipleOption contains information about a multiselect that is defined as part of a customizable option.
 """
 type CustomizableMultipleOption implements CustomizableOptionInterface {
-  """Option ID"""
+  """Option ID."""
   option_id: Int
 
-  """Indicates whether the option is required"""
+  """Indicates whether the option is required."""
   required: Boolean
 
-  """The order in which the option is displayed"""
+  """The order in which the option is displayed."""
   sort_order: Int
 
-  """The display name for this option"""
+  """The display name for this option."""
   title: String
 
-  """An array that defines the set of options for a multiselect"""
+  """An array that defines the set of options for a multiselect."""
   value: [CustomizableMultipleValue]
 }
 
 """
-CustomizableMultipleValue defines the price and sku of a product whose page contains a customized multiselect
+CustomizableMultipleValue defines the price and sku of a product whose page contains a customized multiselect.
 """
 type CustomizableMultipleValue {
-  """The ID assigned to the value"""
+  """The ID assigned to the value."""
   option_type_id: Int
 
-  """The price assigned to this option"""
+  """The price assigned to this option."""
   price: Float
 
-  """FIXED, PERCENT, or DYNAMIC"""
+  """FIXED, PERCENT, or DYNAMIC."""
   price_type: PriceTypeEnum
 
-  """The Stock Keeping Unit for this option"""
+  """The Stock Keeping Unit for this option."""
   sku: String
 
-  """The order in which the option is displayed"""
+  """The order in which the option is displayed."""
   sort_order: Int
 
-  """The display name for this option"""
+  """The display name for this option."""
   title: String
 }
 
@@ -2456,16 +2560,16 @@ input CustomizableOptionInput {
 The CustomizableOptionInterface contains basic information about a customizable option. It can be implemented by several types of configurable options.
 """
 interface CustomizableOptionInterface {
-  """Option ID"""
+  """Option ID."""
   option_id: Int
 
-  """Indicates whether the option is required"""
+  """Indicates whether the option is required."""
   required: Boolean
 
-  """The order in which the option is displayed"""
+  """The order in which the option is displayed."""
   sort_order: Int
 
-  """The display name for this option"""
+  """The display name for this option."""
   title: String
 }
 
@@ -2473,50 +2577,50 @@ interface CustomizableOptionInterface {
 CustomizableProductInterface contains information about customizable product options.
 """
 interface CustomizableProductInterface {
-  """An array of options for a customizable product"""
+  """An array of options for a customizable product."""
   options: [CustomizableOptionInterface]
 }
 
 """
-CustomizableRadioOption contains information about a set of radio buttons that are defined as part of a customizable option
+CustomizableRadioOption contains information about a set of radio buttons that are defined as part of a customizable option.
 """
 type CustomizableRadioOption implements CustomizableOptionInterface {
-  """Option ID"""
+  """Option ID."""
   option_id: Int
 
-  """Indicates whether the option is required"""
+  """Indicates whether the option is required."""
   required: Boolean
 
-  """The order in which the option is displayed"""
+  """The order in which the option is displayed."""
   sort_order: Int
 
-  """The display name for this option"""
+  """The display name for this option."""
   title: String
 
-  """An array that defines a set of radio buttons"""
+  """An array that defines a set of radio buttons."""
   value: [CustomizableRadioValue]
 }
 
 """
-CustomizableRadioValue defines the price and sku of a product whose page contains a customized set of radio buttons
+CustomizableRadioValue defines the price and sku of a product whose page contains a customized set of radio buttons.
 """
 type CustomizableRadioValue {
-  """The ID assigned to the value"""
+  """The ID assigned to the value."""
   option_type_id: Int
 
-  """The price assigned to this option"""
+  """The price assigned to this option."""
   price: Float
 
-  """FIXED, PERCENT, or DYNAMIC"""
+  """FIXED, PERCENT, or DYNAMIC."""
   price_type: PriceTypeEnum
 
-  """The Stock Keeping Unit for this option"""
+  """The Stock Keeping Unit for this option."""
   sku: String
 
-  """The order in which the radio button is displayed"""
+  """The order in which the radio button is displayed."""
   sort_order: Int
 
-  """The display name for this option"""
+  """The display name for this option."""
   title: String
 }
 
@@ -2525,7 +2629,6 @@ type DeletePaymentTokenOutput {
   result: Boolean!
 }
 
-"""This enumeration specifies whether a link or sample is a file or URL"""
 enum DownloadableFileTypeEnum {
   FILE
   URL
@@ -2533,20 +2636,23 @@ enum DownloadableFileTypeEnum {
 
 """DownloadableProduct defines a product that the customer downloads"""
 type DownloadableProduct implements CustomizableProductInterface & ProductInterface {
-  """The attribute set assigned to the product"""
+  """The attribute set assigned to the product."""
   attribute_set_id: Int
 
-  """Canonical URL"""
+  """Canonical URL."""
   canonical_url: String
 
-  """The categories assigned to a product"""
+  """The categories assigned to a product."""
   categories: [CategoryInterface]
 
-  """The product's country of origin"""
+  """The product's country of origin."""
   country_of_manufacture: String
 
-  """Timestamp indicating when the product was created"""
+  """Timestamp indicating when the product was created."""
   created_at: String
+
+  """Crosssell Products"""
+  crosssell_products: [ProductInterface]
 
   """
   Detailed information about the product. The value can include simple HTML tags.
@@ -2563,13 +2669,13 @@ type DownloadableProduct implements CustomizableProductInterface & ProductInterf
   """
   downloadable_product_samples: [DownloadableProductSamples]
 
-  """Indicates whether a gift message is available"""
+  """Indicates whether a gift message is available."""
   gift_message_available: String
 
-  """The ID number assigned to the product"""
+  """The ID number assigned to the product."""
   id: Int
 
-  """The relative path to the main image on the product page"""
+  """The relative path to the main image on the product page."""
   image: ProductImage
 
   """
@@ -2580,24 +2686,27 @@ type DownloadableProduct implements CustomizableProductInterface & ProductInterf
   """The heading above the list of downloadable products"""
   links_title: String
 
-  """A number representing the product's manufacturer"""
+  """A number representing the product's manufacturer."""
   manufacturer: Int
 
-  """An array of MediaGalleryEntry objects"""
+  """An array of Media Gallery objects."""
+  media_gallery: [MediaGalleryInterface]
+
+  """An array of MediaGalleryEntry objects."""
   media_gallery_entries: [MediaGalleryEntry]
 
   """
-  A brief overview of the product for search results listings, maximum 255 characters
+  A brief overview of the product for search results listings, maximum 255 characters.
   """
   meta_description: String
 
   """
-  A comma-separated list of keywords that are visible only to search engines
+  A comma-separated list of keywords that are visible only to search engines.
   """
   meta_keyword: String
 
   """
-  A string that is displayed in the title bar and tab of the browser and in search results lists
+  A string that is displayed in the title bar and tab of the browser and in search results lists.
   """
   meta_title: String
 
@@ -2605,48 +2714,51 @@ type DownloadableProduct implements CustomizableProductInterface & ProductInterf
   name: String
 
   """
-  The beginning date for new product listings, and determines if the product is featured as a new product
+  The beginning date for new product listings, and determines if the product is featured as a new product.
   """
   new_from_date: String
 
-  """The end date for new product listings"""
+  """The end date for new product listings."""
   new_to_date: String
 
   """Product stock only x left count"""
   only_x_left_in_stock: Float
 
-  """An array of options for a customizable product"""
+  """An array of options for a customizable product."""
   options: [CustomizableOptionInterface]
 
   """
-  If the product has multiple options, determines where they appear on the product page
+  If the product has multiple options, determines where they appear on the product page.
   """
   options_container: String
 
-  """A ProductPrices object, indicating the price of an item"""
+  """A ProductPrices object, indicating the price of an item."""
   price: ProductPrices
 
-  """An array of ProductLinks objects"""
+  """An array of ProductLinks objects."""
   product_links: [ProductLinksInterface]
+
+  """Related Products"""
+  related_products: [ProductInterface]
 
   """A short description of the product. Its use depends on the theme."""
   short_description: ComplexTextValue
 
   """
-  A number or code assigned to a product to identify the product, options, price, and manufacturer
+  A number or code assigned to a product to identify the product, options, price, and manufacturer.
   """
   sku: String
 
-  """The relative path to the small image, which is used on catalog pages"""
+  """The relative path to the small image, which is used on catalog pages."""
   small_image: ProductImage
 
-  """The beginning date that a product has a special price"""
+  """The beginning date that a product has a special price."""
   special_from_date: String
 
-  """The discounted price of the product"""
+  """The discounted price of the product."""
   special_price: Float
 
-  """The end date that a product has a special price"""
+  """The end date that a product has a special price."""
   special_to_date: String
 
   """Stock status of the product"""
@@ -2655,33 +2767,36 @@ type DownloadableProduct implements CustomizableProductInterface & ProductInterf
   """The file name of a swatch image"""
   swatch_image: String
 
-  """The relative path to the product's thumbnail image"""
+  """The relative path to the product's thumbnail image."""
   thumbnail: ProductImage
 
   """
-  The price when tier pricing is in effect and the items purchased threshold has been reached
+  The price when tier pricing is in effect and the items purchased threshold has been reached.
   """
   tier_price: Float
 
-  """An array of ProductTierPrices objects"""
+  """An array of ProductTierPrices objects."""
   tier_prices: [ProductTierPrices]
 
-  """One of simple, virtual, bundle, downloadable, grouped, or configurable"""
+  """
+  One of simple, virtual, bundle, downloadable, grouped, or configurable.
+  """
   type_id: String
 
-  """Timestamp indicating when the product was updated"""
+  """Timestamp indicating when the product was updated."""
   updated_at: String
+
+  """Upsell Products"""
+  upsell_products: [ProductInterface]
 
   """The part of the URL that identifies the product"""
   url_key: String
-
-  """The part of the URL that precedes the url_key"""
   url_path: String
 
   """URL rewrites list"""
   url_rewrites: [UrlRewrite]
 
-  """An array of websites in which the product is available"""
+  """An array of websites in which the product is available."""
   websites: [Website]
 }
 
@@ -2689,30 +2804,17 @@ type DownloadableProduct implements CustomizableProductInterface & ProductInterf
 DownloadableProductLinks defines characteristics of a downloadable product
 """
 type DownloadableProductLinks {
-  """The unique ID for the link to the downloadable product"""
   id: Int
-
-  """Indicates whether the link is shareable"""
   is_shareable: Boolean
-
-  """Either FILE or URL"""
   link_type: DownloadableFileTypeEnum
-
-  """
-  The maximum number of times the product can be downloaded. A value of 0 means unlimited.
-  """
   number_of_downloads: Int
 
   """The price of the downloadable product"""
   price: Float
-
-  """The relative path to the downloadable sample"""
   sample_file: String
-
-  """Either FILE or URL"""
   sample_type: DownloadableFileTypeEnum
 
-  """The relative URL to the downloadable sample"""
+  """URL to the downloadable sample"""
   sample_url: String
 
   """A number indicating the sort order"""
@@ -2726,16 +2828,11 @@ type DownloadableProductLinks {
 DownloadableProductSamples defines characteristics of a downloadable product
 """
 type DownloadableProductSamples {
-  """The unique ID for the downloadable product sample"""
   id: Int
-
-  """The relative path to the downloadable sample"""
   sample_file: String
-
-  """Either FILE or URL"""
   sample_type: DownloadableFileTypeEnum
 
-  """The relative URL to the downloadable sample"""
+  """URL to the downloadable sample"""
   sample_url: String
 
   """A number indicating the sort order"""
@@ -2774,8 +2871,6 @@ type ExchangeRate {
 input FilterTypeInput {
   """Equals"""
   eq: String
-
-  """Find in set. The value can contain a set of comma-separated values"""
   finset: [String]
 
   """From. Must be used with 'to'"""
@@ -2822,56 +2917,62 @@ input FilterTypeInput {
 
 """GroupedProduct defines a grouped product"""
 type GroupedProduct implements PhysicalProductInterface & ProductInterface {
-  """The attribute set assigned to the product"""
+  """The attribute set assigned to the product."""
   attribute_set_id: Int
 
-  """Canonical URL"""
+  """Canonical URL."""
   canonical_url: String
 
-  """The categories assigned to a product"""
+  """The categories assigned to a product."""
   categories: [CategoryInterface]
 
-  """The product's country of origin"""
+  """The product's country of origin."""
   country_of_manufacture: String
 
-  """Timestamp indicating when the product was created"""
+  """Timestamp indicating when the product was created."""
   created_at: String
+
+  """Crosssell Products"""
+  crosssell_products: [ProductInterface]
 
   """
   Detailed information about the product. The value can include simple HTML tags.
   """
   description: ComplexTextValue
 
-  """Indicates whether a gift message is available"""
+  """Indicates whether a gift message is available."""
   gift_message_available: String
 
-  """The ID number assigned to the product"""
+  """The ID number assigned to the product."""
   id: Int
 
-  """The relative path to the main image on the product page"""
+  """The relative path to the main image on the product page."""
   image: ProductImage
 
   """An array containing grouped product items"""
   items: [GroupedProductItem]
 
-  """A number representing the product's manufacturer"""
+  """A number representing the product's manufacturer."""
   manufacturer: Int
 
-  """An array of MediaGalleryEntry objects"""
+  """An array of Media Gallery objects."""
+  media_gallery: [MediaGalleryInterface]
+
+  """An array of MediaGalleryEntry objects."""
   media_gallery_entries: [MediaGalleryEntry]
 
   """
-  A brief overview of the product for search results listings, maximum 255 characters
+  A brief overview of the product for search results listings, maximum 255 characters.
   """
   meta_description: String
 
   """
-  A comma-separated list of keywords that are visible only to search engines
+  A comma-separated list of keywords that are visible only to search engines.
   """
   meta_keyword: String
 
   """
-  A string that is displayed in the title bar and tab of the browser and in search results lists
+  A string that is displayed in the title bar and tab of the browser and in search results lists.
   """
   meta_title: String
 
@@ -2879,45 +2980,48 @@ type GroupedProduct implements PhysicalProductInterface & ProductInterface {
   name: String
 
   """
-  The beginning date for new product listings, and determines if the product is featured as a new product
+  The beginning date for new product listings, and determines if the product is featured as a new product.
   """
   new_from_date: String
 
-  """The end date for new product listings"""
+  """The end date for new product listings."""
   new_to_date: String
 
   """Product stock only x left count"""
   only_x_left_in_stock: Float
 
   """
-  If the product has multiple options, determines where they appear on the product page
+  If the product has multiple options, determines where they appear on the product page.
   """
   options_container: String
 
-  """A ProductPrices object, indicating the price of an item"""
+  """A ProductPrices object, indicating the price of an item."""
   price: ProductPrices
 
-  """An array of ProductLinks objects"""
+  """An array of ProductLinks objects."""
   product_links: [ProductLinksInterface]
+
+  """Related Products"""
+  related_products: [ProductInterface]
 
   """A short description of the product. Its use depends on the theme."""
   short_description: ComplexTextValue
 
   """
-  A number or code assigned to a product to identify the product, options, price, and manufacturer
+  A number or code assigned to a product to identify the product, options, price, and manufacturer.
   """
   sku: String
 
-  """The relative path to the small image, which is used on catalog pages"""
+  """The relative path to the small image, which is used on catalog pages."""
   small_image: ProductImage
 
-  """The beginning date that a product has a special price"""
+  """The beginning date that a product has a special price."""
   special_from_date: String
 
-  """The discounted price of the product"""
+  """The discounted price of the product."""
   special_price: Float
 
-  """The end date that a product has a special price"""
+  """The end date that a product has a special price."""
   special_to_date: String
 
   """Stock status of the product"""
@@ -2926,36 +3030,39 @@ type GroupedProduct implements PhysicalProductInterface & ProductInterface {
   """The file name of a swatch image"""
   swatch_image: String
 
-  """The relative path to the product's thumbnail image"""
+  """The relative path to the product's thumbnail image."""
   thumbnail: ProductImage
 
   """
-  The price when tier pricing is in effect and the items purchased threshold has been reached
+  The price when tier pricing is in effect and the items purchased threshold has been reached.
   """
   tier_price: Float
 
-  """An array of ProductTierPrices objects"""
+  """An array of ProductTierPrices objects."""
   tier_prices: [ProductTierPrices]
 
-  """One of simple, virtual, bundle, downloadable, grouped, or configurable"""
+  """
+  One of simple, virtual, bundle, downloadable, grouped, or configurable.
+  """
   type_id: String
 
-  """Timestamp indicating when the product was updated"""
+  """Timestamp indicating when the product was updated."""
   updated_at: String
+
+  """Upsell Products"""
+  upsell_products: [ProductInterface]
 
   """The part of the URL that identifies the product"""
   url_key: String
-
-  """The part of the URL that precedes the url_key"""
   url_path: String
 
   """URL rewrites list"""
   url_rewrites: [UrlRewrite]
 
-  """An array of websites in which the product is available"""
+  """An array of websites in which the product is available."""
   websites: [Website]
 
-  """The weight of the item, in units defined by the store"""
+  """The weight of the item, in units defined by the store."""
   weight: Float
 }
 
@@ -2975,6 +3082,34 @@ type GroupedProductItem {
   qty: Float
 }
 
+"""
+A set of relative URLs that PayPal will use in response to various actions during the authorization process. Magento prepends the base URL to this value to create a full URL. For example, if the full URL is https://www.example.com/path/to/page.html, the relative URL is path/to/page.html. Use this input for Payments Pro Hosted Solution payment
+"""
+input HostedProInput {
+  """
+  The relative URL of the page that PayPal will redirect to when the buyer cancels the transaction in order to choose a different payment method. If the full URL to this page is https://www.example.com/paypal/action/cancel.html, the relative URL is paypal/action/cancel.html.
+  """
+  cancel_url: String!
+
+  """
+  The relative URL of the final confirmation page that PayPal will redirect to upon payment success. If the full URL to this page is https://www.example.com/paypal/action/return.html, the relative URL is paypal/action/return.html.
+  """
+  return_url: String!
+}
+
+type HostedProUrl {
+  """Secure Url generated by PayPal"""
+  secure_form_url: String
+}
+
+"""
+The required input to request the secure URL for Payments Pro Hosted Solution payment.
+"""
+input HostedProUrlInput {
+  """The unique ID that identifies the customer's cart"""
+  cart_id: String!
+}
+
 """The object details of target path parameters"""
 type HttpQueryParameter {
   """Parameter name"""
@@ -2990,73 +3125,82 @@ type IsEmailAvailableOutput {
 }
 
 type LayerFilter {
-  """Array of filter items"""
+  """Array of filter items."""
   filter_items: [LayerFilterItemInterface]
 
-  """Count of filter items in filter group"""
+  """Count of filter items in filter group."""
   filter_items_count: Int
 
-  """Layered navigation filter name"""
+  """Layered navigation filter name."""
   name: String
 
-  """Request variable name for filter query"""
+  """Request variable name for filter query."""
   request_var: String
 }
 
 type LayerFilterItem implements LayerFilterItemInterface {
-  """Count of items by filter"""
+  """Count of items by filter."""
   items_count: Int
 
-  """Filter label"""
+  """Filter label."""
   label: String
 
-  """Value for filter request variable to be used in query"""
+  """Value for filter request variable to be used in query."""
   value_string: String
 }
 
 interface LayerFilterItemInterface {
-  """Count of items by filter"""
+  """Count of items by filter."""
   items_count: Int
 
-  """Filter label"""
+  """Filter label."""
   label: String
 
-  """Value for filter request variable to be used in query"""
+  """Value for filter request variable to be used in query."""
   value_string: String
 }
 
 """
-MediaGalleryEntry defines characteristics about images and videos associated with a specific product
+MediaGalleryEntry defines characteristics about images and videos associated with a specific product.
 """
 type MediaGalleryEntry {
-  """Contains a ProductMediaGalleryEntriesContent object"""
+  """Contains a ProductMediaGalleryEntriesContent object."""
   content: ProductMediaGalleryEntriesContent
 
-  """Whether the image is hidden from vie"""
+  """Whether the image is hidden from vie."""
   disabled: Boolean
 
-  """The path of the image on the server"""
+  """The path of the image on the server."""
   file: String
 
-  """The identifier assigned to the object"""
+  """The identifier assigned to the object."""
   id: Int
 
-  """The alt text displayed on the UI when the user points to the image"""
+  """The alt text displayed on the UI when the user points to the image."""
   label: String
 
-  """image or video"""
+  """image or video."""
   media_type: String
 
-  """The media item's position after it has been sorted"""
+  """The media item's position after it has been sorted."""
   position: Int
 
   """
-  Array of image types. It can have the following values: image, small_image, thumbnail
+  Array of image types. It can have the following values: image, small_image, thumbnail.
   """
   types: [String]
 
-  """Contains a ProductMediaGalleryEntriesVideoContent object"""
+  """Contains a ProductMediaGalleryEntriesVideoContent object."""
   video_content: ProductMediaGalleryEntriesVideoContent
+}
+
+"""Contains basic information about a product image or video."""
+interface MediaGalleryInterface {
+  """The label of the product image or video."""
+  label: String
+
+  """The URL of the product image or video."""
+  url: String
 }
 
 """
@@ -3079,6 +3223,9 @@ type Mutation {
   """Changes the password for the logged-in customer"""
   changeCustomerPassword(currentPassword: String!, newPassword: String!): Customer
 
+  """Creates Braintree Client Token for creating client-side nonce."""
+  createBraintreeClientToken: String!
+
   """Create customer account"""
   createCustomer(input: CustomerInput!): CustomerOutput
 
@@ -3088,6 +3235,16 @@ type Mutation {
   """Creates an empty shopping cart for a guest or logged in user"""
   createEmptyCart(input: createEmptyCartInput): String
 
+  """
+  Initiates a transaction and receives a token. Use this mutation for Payflow Pro and Payments Pro payment methods
+  """
+  createPayflowProToken(input: PayflowProTokenInput!): PayflowProToken
+
+  """
+  Initiates an Express Checkout transaction and receives a token. Use this mutation for Express Checkout and Payments Standard payment methods.
+  """
+  createPaypalExpressToken(input: PaypalExpressTokenInput!): PaypalExpressToken
+
   """Delete customer address"""
   deleteCustomerAddress(id: Int!): Boolean
 
@@ -3096,6 +3253,11 @@ type Mutation {
 
   """Retrieve the customer token"""
   generateCustomerToken(email: String!, password: String!): CustomerToken
+
+  """
+  Handles payment response and saves payment in Quote. Use this mutations for Payflow Pro and Payments Pro payment methods.
+  """
+  handlePayflowProResponse(input: PayflowProResponseInput!): PayflowProResponseOutput
   placeOrder(input: PlaceOrderInput): PlaceOrderOutput
   removeCouponFromCart(input: RemoveCouponFromCartInput): RemoveCouponFromCartOutput
   removeItemFromCart(input: RemoveItemFromCartInput): RemoveItemFromCartOutput
@@ -3107,6 +3269,7 @@ type Mutation {
   sendEmailToFriend(input: SendEmailToFriendInput): SendEmailToFriendOutput
   setBillingAddressOnCart(input: SetBillingAddressOnCartInput): SetBillingAddressOnCartOutput
   setGuestEmailOnCart(input: SetGuestEmailOnCartInput): SetGuestEmailOnCartOutput
+  setPaymentMethodAndPlaceOrder(input: SetPaymentMethodAndPlaceOrderInput): PlaceOrderOutput
   setPaymentMethodOnCart(input: SetPaymentMethodOnCartInput): SetPaymentMethodOnCartOutput
   setShippingAddressesOnCart(input: SetShippingAddressesOnCartInput): SetShippingAddressesOnCartOutput
   setShippingMethodsOnCart(input: SetShippingMethodsOnCartInput): SetShippingMethodsOnCartOutput
@@ -3123,9 +3286,151 @@ type Order {
   order_id: String
 }
 
+"""Required input for Payflow Express Checkout payments"""
+input PayflowExpressInput {
+  """The unique ID of the PayPal user"""
+  payer_id: String!
+
+  """The token returned by the createPaypalExpressToken mutation"""
+  token: String!
+}
+
+"""
+A set of relative URLs that PayPal will use in response to various actions during the authorization process. Magento prepends the base URL to this value to create a full URL. For example, if the full URL is https://www.example.com/path/to/page.html, the relative URL is path/to/page.html. Use this input for Payflow Link and Payments Advanced payment
+"""
+input PayflowLinkInput {
+  """
+  The relative URL of the page that PayPal will redirect to when the buyer cancels the transaction in order to choose a different payment method. If the full URL to this page is https://www.example.com/paypal/action/cancel.html, the relative URL is paypal/action/cancel.html.
+  """
+  cancel_url: String!
+
+  """
+  The relative URL of the transaction error page that PayPal will redirect to upon payment error. If the full URL to this page is https://www.example.com/paypal/action/error.html, the relative URL is paypal/action/error.html.
+  """
+  error_url: String!
+
+  """
+  The relative URL of the order confirmation page that PayPal will redirect to when the payment is successful and additional confirmation is not needed. If the full URL to this page is https://www.example.com/paypal/action/return.html, the relative URL is paypal/action/return.html.
+  """
+  return_url: String!
+}
+
+"""
+Mode for payment: TEST or LIVE. Applies to Payflow Link and Payments Advanced payment methods.
+"""
+enum PayflowLinkMode {
+  LIVE
+  TEST
+}
+
+"""
+Contains information used to generate PayPal iframe for transaction. Applies to Payflow Link and Payments Advanced payment methods.
+"""
+type PayflowLinkToken {
+  """Mode for Payflow transaction"""
+  mode: PayflowLinkMode
+
+  """PayPal URL used for requesting Payflow form"""
+  paypal_url: String
+
+  """Secure token generated by PayPal"""
+  secure_token: String
+
+  """Secure token ID generated by PayPal"""
+  secure_token_id: String
+}
+
+"""
+Input required to fetch payment token information for Payflow Link and Payments Advanced payment methods.
+"""
+input PayflowLinkTokenInput {
+  """The unique ID that identifies the customer's cart"""
+  cart_id: String!
+}
+
+"""Required input for Payflow Pro and Payments Pro payment methods."""
+input PayflowProInput {
+  """Required input for credit card related information"""
+  cc_details: CreditCardDetailsInput!
+}
+
+"""
+Input required to complete payment. Applies to Payflow Pro and Payments Pro payment methods.
+"""
+input PayflowProResponseInput {
+  cart_id: String!
+  paypal_payload: String!
+}
+
+type PayflowProResponseOutput {
+  cart: Cart!
+}
+
+"""
+Contains the secure information used to authorize transaction. Applies to Payflow Pro and Payments Pro payment methods.
+"""
+type PayflowProToken {
+  response_message: String!
+  result: Int!
+  result_code: Int!
+  secure_token: String!
+  secure_token_id: String!
+}
+
+"""
+Input required to fetch payment token information for Payflow Pro and Payments Pro payment methods.
+"""
+input PayflowProTokenInput {
+  """The unique ID that identifies the customer's cart"""
+  cart_id: String!
+
+  """A set of relative URLs that PayPal uses for callback."""
+  urls: PayflowProUrlInput!
+}
+
+"""
+A set of relative URLs that PayPal will use in response to various actions during the authorization process. Magento prepends the base URL to this value to create a full URL. For example, if the full URL is https://www.example.com/path/to/page.html, the relative URL is path/to/page.html. Use this input for Payflow Pro and Payment Pro payment
+"""
+input PayflowProUrlInput {
+  """
+  The relative URL of the page that PayPal will redirect to when the buyer cancels the transaction in order to choose a different payment method. If the full URL to this page is https://www.example.com/paypal/action/cancel.html, the relative URL is paypal/action/cancel.html.
+  """
+  cancel_url: String!
+
+  """
+  The relative URL of the transaction error page that PayPal will redirect to upon payment error. If the full URL to this page is https://www.example.com/paypal/action/error.html, the relative URL is paypal/action/error.html.
+  """
+  error_url: String!
+
+  """
+  The relative URL of the final confirmation page that PayPal will redirect to upon payment success. If the full URL to this page is https://www.example.com/paypal/action/return.html, the relative URL is paypal/action/return.html.
+  """
+  return_url: String!
+}
+
 input PaymentMethodInput {
+  """Defines the required attributes for Authorize.Net payments"""
+  authorizenet_acceptjs: AuthorizenetInput
+  braintree: BraintreeInput
+  braintree_cc_vault: BraintreeCcVaultInput
+
   """Payment method code"""
   code: String!
+
+  """Required input for PayPal Hosted pro payments"""
+  hosted_pro: HostedProInput
+
+  """Required input for Payflow Express Checkout payments"""
+  payflow_express: PayflowExpressInput
+
+  """Required input for PayPal Payflow Link and Payments Advanced payments"""
+  payflow_link: PayflowLinkInput
+
+  """Required input type for PayPal Payflow Pro and Payment Pro payments"""
+  payflowpro: PayflowProInput
+
+  """Required input for Express Checkout and Payments Standard payments"""
+  paypal_express: PaypalExpressInput
 
   """Purchase order number"""
   purchase_order_number: String
@@ -3150,11 +3455,95 @@ enum PaymentTokenTypeEnum {
   card
 }
 
+"""Required input for Express Checkout and Payments Standard payments"""
+input PaypalExpressInput {
+  """The unique ID of the PayPal user"""
+  payer_id: String!
+
+  """The token returned by the createPaypalExpressToken mutation"""
+  token: String!
+}
+
 """
-PhysicalProductInterface contains attributes specific to tangible products
+Contains the token returned by PayPal and a set of URLs that allow the buyer to authorize payment and adjust checkout details. Applies to Express Checkout and Payments Standard payment methods.
+"""
+type PaypalExpressToken {
+  """
+  A set of URLs that allow the buyer to authorize payment and adjust checkout details
+  """
+  paypal_urls: PaypalExpressUrlList
+
+  """The token returned by PayPal"""
+  token: String
+}
+
+"""
+Defines the attributes required to receive a payment token for Express Checkout and Payments Standard payment methods.
+"""
+input PaypalExpressTokenInput {
+  """The unique ID that identifies the customer's cart"""
+  cart_id: String!
+
+  """Payment method code"""
+  code: String!
+
+  """
+  Indicates whether the buyer selected the quick checkout button. The default value is false
+  """
+  express_button: Boolean
+
+  """
+  A set of relative URLs that PayPal uses in response to various actions during the authorization process
+  """
+  urls: PaypalExpressUrlsInput!
+
+  """
+  Indicates whether the buyer clicked the PayPal credit button. The default value is false
+  """
+  use_paypal_credit: Boolean
+}
+
+"""
+A set of URLs that allow the buyer to authorize payment and adjust checkout details for Express Checkout and Payments Standard transactions.
+"""
+type PaypalExpressUrlList {
+  """The PayPal URL that allows the buyer to edit their checkout details"""
+  edit: String
+
+  """The URL to the PayPal login page"""
+  start: String
+}
+
+"""
+A set of relative URLs that PayPal will use in response to various actions during the authorization process. Magento prepends the base URL to this value to create a full URL. For example, if the full URL is https://www.example.com/path/to/page.html, the relative URL is path/to/page.html. Use this input for Express Checkout and Payments Standard payment methods.
+"""
+input PaypalExpressUrlsInput {
+  """
+  The relative URL of the page that PayPal will redirect to when the buyer cancels the transaction in order to choose a different payment method. If the full URL to this page is https://www.example.com/paypal/action/cancel.html, the relative URL is paypal/action/cancel.html.
+  """
+  cancel_url: String!
+
+  """
+  The relative URL of the page that PayPal will redirect to when the payment has been put on hold for additional review. This condition mostly applies to ACH transactions, and is not applicable to most PayPal solutions. If the full URL to this page is https://www.example.com/paypal/action/success_pending.html, the relative URL is paypal/action/success_pending.html.
+  """
+  pending_url: String
+
+  """
+  The relative URL of the final confirmation page that PayPal will redirect to upon payment success. If the full URL to this page is https://www.example.com/paypal/action/return.html, the relative URL is paypal/action/return.html.
+  """
+  return_url: String!
+
+  """
+  The relative URL of the order confirmation page that PayPal will redirect to when the payment is successful and additional confirmation is not needed. Not applicable to most PayPal solutions. If the full URL to this page is https://www.example.com/paypal/action/success.html, the relative URL is paypal/action/success.html.
+  """
+  success_url: String
+}
+
+"""
+PhysicalProductInterface contains attributes specific to tangible products.
 """
 interface PhysicalProductInterface {
-  """The weight of the item, in units defined by the store"""
+  """The weight of the item, in units defined by the store."""
   weight: Float
 }
 
@@ -3171,11 +3560,11 @@ The Price object defines the price of a product as well as any tax-related adjus
 """
 type Price {
   """
-  An array that provides information about tax, weee, or weee_tax adjustments
+  An array that provides information about tax, weee, or weee_tax adjustments.
   """
   adjustments: [PriceAdjustment]
 
-  """The price of a product plus a three-letter currency code"""
+  """The price of a product plus a three-letter currency code."""
   amount: Money
 }
 
@@ -3183,14 +3572,14 @@ type Price {
 The PricedAdjustment object defines the amount of money to apply as an adjustment, the type of adjustment to apply, and whether the item is included or excluded from the adjustment.
 """
 type PriceAdjustment {
-  """The amount of the price adjustment and its currency code"""
+  """The amount of the price adjustment and its currency code."""
   amount: Money
 
-  """Indicates whether the adjustment involves tax, weee, or weee_tax"""
+  """Indicates whether the adjustment involves tax, weee, or weee_tax."""
   code: PriceAdjustmentCodesEnum
 
   """
-  Indicates whether the entity described by the code attribute is included or excluded from the adjustment
+  Indicates whether the entity described by the code attribute is included or excluded from the adjustment.
   """
   description: PriceAdjustmentDescriptionEnum
 }
@@ -3231,19 +3620,19 @@ enum PriceViewEnum {
 ProductFilterInput defines the filters to be used in the search. A filter contains at least one attribute, a comparison operator, and the value that is being searched for.
 """
 input ProductFilterInput {
-  """Category ID the product belongs to"""
+  """Category ID the product belongs to."""
   category_id: FilterTypeInput
 
-  """The product's country of origin"""
+  """The product's country of origin."""
   country_of_manufacture: FilterTypeInput
 
-  """Timestamp indicating when the product was created"""
+  """Timestamp indicating when the product was created."""
   created_at: FilterTypeInput
 
-  """The name of a custom layout"""
+  """The name of a custom layout."""
   custom_layout: FilterTypeInput
 
-  """XML code that is applied as a layout update to the product page"""
+  """XML code that is applied as a layout update to the product page."""
   custom_layout_update: FilterTypeInput
 
   """
@@ -3251,21 +3640,21 @@ input ProductFilterInput {
   """
   description: FilterTypeInput
 
-  """Indicates whether a gift message is available"""
+  """Indicates whether a gift message is available."""
   gift_message_available: FilterTypeInput
 
   """
-  Indicates whether additional attributes have been created for the product
+  Indicates whether additional attributes have been created for the product.
   """
   has_options: FilterTypeInput
 
-  """The relative path to the main image on the product page"""
+  """The relative path to the main image on the product page."""
   image: FilterTypeInput
 
-  """The label assigned to a product image"""
+  """The label assigned to a product image."""
   image_label: FilterTypeInput
 
-  """A number representing the product's manufacturer"""
+  """A number representing the product's manufacturer."""
   manufacturer: FilterTypeInput
 
   """
@@ -3274,17 +3663,17 @@ input ProductFilterInput {
   max_price: FilterTypeInput
 
   """
-  A brief overview of the product for search results listings, maximum 255 characters
+  A brief overview of the product for search results listings, maximum 255 characters.
   """
   meta_description: FilterTypeInput
 
   """
-  A comma-separated list of keywords that are visible only to search engines
+  A comma-separated list of keywords that are visible only to search engines.
   """
   meta_keyword: FilterTypeInput
 
   """
-  A string that is displayed in the title bar and tab of the browser and in search results lists
+  A string that is displayed in the title bar and tab of the browser and in search results lists.
   """
   meta_title: FilterTypeInput
 
@@ -3297,80 +3686,81 @@ input ProductFilterInput {
   name: FilterTypeInput
 
   """
-  The beginning date for new product listings, and determines if the product is featured as a new product
+  The beginning date for new product listings, and determines if the product is featured as a new product.
   """
   news_from_date: FilterTypeInput
 
-  """The end date for new product listings"""
+  """The end date for new product listings."""
   news_to_date: FilterTypeInput
 
   """
-  If the product has multiple options, determines where they appear on the product page
+  If the product has multiple options, determines where they appear on the product page.
   """
   options_container: FilterTypeInput
 
-  """The keyword required to perform a logical OR comparison"""
+  """The keyword required to perform a logical OR comparison."""
   or: ProductFilterInput
 
-  """The price of an item"""
+  """The price of an item."""
   price: FilterTypeInput
 
-  """Indicates whether the product has required options"""
+  """Indicates whether the product has required options."""
   required_options: FilterTypeInput
 
   """A short description of the product. Its use depends on the theme."""
   short_description: FilterTypeInput
 
   """
-  A number or code assigned to a product to identify the product, options, price, and manufacturer
+  A number or code assigned to a product to identify the product, options, price, and manufacturer.
   """
   sku: FilterTypeInput
 
-  """The relative path to the small image, which is used on catalog pages"""
+  """The relative path to the small image, which is used on catalog pages."""
   small_image: FilterTypeInput
 
-  """The label assigned to a product's small image"""
+  """The label assigned to a product's small image."""
   small_image_label: FilterTypeInput
 
-  """The beginning date that a product has a special price"""
+  """The beginning date that a product has a special price."""
   special_from_date: FilterTypeInput
 
   """The discounted price of the product. Do not include the currency code."""
   special_price: FilterTypeInput
 
-  """The end date that a product has a special price"""
+  """The end date that a product has a special price."""
   special_to_date: FilterTypeInput
 
   """The file name of a swatch image"""
   swatch_image: FilterTypeInput
 
-  """The relative path to the product's thumbnail image"""
+  """The relative path to the product's thumbnail image."""
   thumbnail: FilterTypeInput
 
-  """The label assigned to a product's thumbnail image"""
+  """The label assigned to a product's thumbnail image."""
   thumbnail_label: FilterTypeInput
 
   """
-  The price when tier pricing is in effect and the items purchased threshold has been reached
+  The price when tier pricing is in effect and the items purchased threshold has been reached.
   """
   tier_price: FilterTypeInput
 
-  """Timestamp indicating when the product was updated"""
+  """Timestamp indicating when the product was updated."""
   updated_at: FilterTypeInput
 
   """The part of the URL that identifies the product"""
   url_key: FilterTypeInput
-
-  """The part of the URL that precedes the url_key"""
   url_path: FilterTypeInput
 
-  """The weight of the item, in units defined by the store"""
+  """The weight of the item, in units defined by the store."""
   weight: FilterTypeInput
 }
 
-"""Product image information. Contains image relative path, URL and label"""
-type ProductImage {
+"""Product image information. Contains the image URL and label."""
+type ProductImage implements MediaGalleryInterface {
+  """The label of the product image or video."""
   label: String
+
+  """The URL of the product image or video."""
   url: String
 }
 
@@ -3378,53 +3768,59 @@ type ProductImage {
 The ProductInterface contains attributes that are common to all types of products. Note that descriptions may not be available for custom and EAV
 """
 interface ProductInterface {
-  """The attribute set assigned to the product"""
+  """The attribute set assigned to the product."""
   attribute_set_id: Int
 
-  """Canonical URL"""
+  """Canonical URL."""
   canonical_url: String
 
-  """The categories assigned to a product"""
+  """The categories assigned to a product."""
   categories: [CategoryInterface]
 
-  """The product's country of origin"""
+  """The product's country of origin."""
   country_of_manufacture: String
 
-  """Timestamp indicating when the product was created"""
+  """Timestamp indicating when the product was created."""
   created_at: String
+
+  """Crosssell Products"""
+  crosssell_products: [ProductInterface]
 
   """
   Detailed information about the product. The value can include simple HTML tags.
   """
   description: ComplexTextValue
 
-  """Indicates whether a gift message is available"""
+  """Indicates whether a gift message is available."""
   gift_message_available: String
 
-  """The ID number assigned to the product"""
+  """The ID number assigned to the product."""
   id: Int
 
-  """The relative path to the main image on the product page"""
+  """The relative path to the main image on the product page."""
   image: ProductImage
 
-  """A number representing the product's manufacturer"""
+  """A number representing the product's manufacturer."""
   manufacturer: Int
 
-  """An array of MediaGalleryEntry objects"""
+  """An array of Media Gallery objects."""
+  media_gallery: [MediaGalleryInterface]
+
+  """An array of MediaGalleryEntry objects."""
   media_gallery_entries: [MediaGalleryEntry]
 
   """
-  A brief overview of the product for search results listings, maximum 255 characters
+  A brief overview of the product for search results listings, maximum 255 characters.
   """
   meta_description: String
 
   """
-  A comma-separated list of keywords that are visible only to search engines
+  A comma-separated list of keywords that are visible only to search engines.
   """
   meta_keyword: String
 
   """
-  A string that is displayed in the title bar and tab of the browser and in search results lists
+  A string that is displayed in the title bar and tab of the browser and in search results lists.
   """
   meta_title: String
 
@@ -3432,45 +3828,48 @@ interface ProductInterface {
   name: String
 
   """
-  The beginning date for new product listings, and determines if the product is featured as a new product
+  The beginning date for new product listings, and determines if the product is featured as a new product.
   """
   new_from_date: String
 
-  """The end date for new product listings"""
+  """The end date for new product listings."""
   new_to_date: String
 
   """Product stock only x left count"""
   only_x_left_in_stock: Float
 
   """
-  If the product has multiple options, determines where they appear on the product page
+  If the product has multiple options, determines where they appear on the product page.
   """
   options_container: String
 
-  """A ProductPrices object, indicating the price of an item"""
+  """A ProductPrices object, indicating the price of an item."""
   price: ProductPrices
 
-  """An array of ProductLinks objects"""
+  """An array of ProductLinks objects."""
   product_links: [ProductLinksInterface]
+
+  """Related Products"""
+  related_products: [ProductInterface]
 
   """A short description of the product. Its use depends on the theme."""
   short_description: ComplexTextValue
 
   """
-  A number or code assigned to a product to identify the product, options, price, and manufacturer
+  A number or code assigned to a product to identify the product, options, price, and manufacturer.
   """
   sku: String
 
-  """The relative path to the small image, which is used on catalog pages"""
+  """The relative path to the small image, which is used on catalog pages."""
   small_image: ProductImage
 
-  """The beginning date that a product has a special price"""
+  """The beginning date that a product has a special price."""
   special_from_date: String
 
-  """The discounted price of the product"""
+  """The discounted price of the product."""
   special_price: Float
 
-  """The end date that a product has a special price"""
+  """The end date that a product has a special price."""
   special_to_date: String
 
   """Stock status of the product"""
@@ -3479,53 +3878,56 @@ interface ProductInterface {
   """The file name of a swatch image"""
   swatch_image: String
 
-  """The relative path to the product's thumbnail image"""
+  """The relative path to the product's thumbnail image."""
   thumbnail: ProductImage
 
   """
-  The price when tier pricing is in effect and the items purchased threshold has been reached
+  The price when tier pricing is in effect and the items purchased threshold has been reached.
   """
   tier_price: Float
 
-  """An array of ProductTierPrices objects"""
+  """An array of ProductTierPrices objects."""
   tier_prices: [ProductTierPrices]
 
-  """One of simple, virtual, bundle, downloadable, grouped, or configurable"""
+  """
+  One of simple, virtual, bundle, downloadable, grouped, or configurable.
+  """
   type_id: String
 
-  """Timestamp indicating when the product was updated"""
+  """Timestamp indicating when the product was updated."""
   updated_at: String
+
+  """Upsell Products"""
+  upsell_products: [ProductInterface]
 
   """The part of the URL that identifies the product"""
   url_key: String
-
-  """The part of the URL that precedes the url_key"""
   url_path: String
 
   """URL rewrites list"""
   url_rewrites: [UrlRewrite]
 
-  """An array of websites in which the product is available"""
+  """An array of websites in which the product is available."""
   websites: [Website]
 }
 
 """ProductLinks is an implementation of ProductLinksInterface."""
 type ProductLinks implements ProductLinksInterface {
-  """One of related, associated, upsell, or crosssell"""
+  """One of related, associated, upsell, or crosssell."""
   link_type: String
 
-  """The SKU of the linked product"""
+  """The SKU of the linked product."""
   linked_product_sku: String
 
   """
-  The type of linked product (simple, virtual, bundle, downloadable, grouped, configurable)
+  The type of linked product (simple, virtual, bundle, downloadable, grouped, configurable).
   """
   linked_product_type: String
 
-  """The position within the list of product links"""
+  """The position within the list of product links."""
   position: Int
 
-  """The identifier of the linked product"""
+  """The identifier of the linked product."""
   sku: String
 }
 
@@ -3533,58 +3935,58 @@ type ProductLinks implements ProductLinksInterface {
 ProductLinks contains information about linked products, including the link type and product type of each item.
 """
 interface ProductLinksInterface {
-  """One of related, associated, upsell, or crosssell"""
+  """One of related, associated, upsell, or crosssell."""
   link_type: String
 
-  """The SKU of the linked product"""
+  """The SKU of the linked product."""
   linked_product_sku: String
 
   """
-  The type of linked product (simple, virtual, bundle, downloadable, grouped, configurable)
+  The type of linked product (simple, virtual, bundle, downloadable, grouped, configurable).
   """
   linked_product_type: String
 
-  """The position within the list of product links"""
+  """The position within the list of product links."""
   position: Int
 
-  """The identifier of the linked product"""
+  """The identifier of the linked product."""
   sku: String
 }
 
 """
-ProductMediaGalleryEntriesContent contains an image in base64 format and basic information about the image
+ProductMediaGalleryEntriesContent contains an image in base64 format and basic information about the image.
 """
 type ProductMediaGalleryEntriesContent {
-  """The image in base64 format"""
+  """The image in base64 format."""
   base64_encoded_data: String
 
-  """The file name of the image"""
+  """The file name of the image."""
   name: String
 
-  """The MIME type of the file, such as image/png"""
+  """The MIME type of the file, such as image/png."""
   type: String
 }
 
 """
-ProductMediaGalleryEntriesVideoContent contains a link to a video file and basic information about the video
+ProductMediaGalleryEntriesVideoContent contains a link to a video file and basic information about the video.
 """
 type ProductMediaGalleryEntriesVideoContent {
-  """Must be external-video"""
+  """Must be external-video."""
   media_type: String
 
-  """A description of the video"""
+  """A description of the video."""
   video_description: String
 
-  """Optional data about the video"""
+  """Optional data about the video."""
   video_metadata: String
 
-  """Describes the video source"""
+  """Describes the video source."""
   video_provider: String
 
-  """The title of the video"""
+  """The title of the video."""
   video_title: String
 
-  """The URL to the video"""
+  """The URL to the video."""
   video_url: String
 }
 
@@ -3607,19 +4009,19 @@ type ProductPrices {
 }
 
 """
-ProductSortInput specifies the attribute to use for sorting search results and indicates whether the results are sorted in ascending or descending order
+ProductSortInput specifies the attribute to use for sorting search results and indicates whether the results are sorted in ascending or descending order.
 """
 input ProductSortInput {
-  """The product's country of origin"""
+  """The product's country of origin."""
   country_of_manufacture: SortEnum
 
-  """Timestamp indicating when the product was created"""
+  """Timestamp indicating when the product was created."""
   created_at: SortEnum
 
-  """The name of a custom layout"""
+  """The name of a custom layout."""
   custom_layout: SortEnum
 
-  """XML code that is applied as a layout update to the product page"""
+  """XML code that is applied as a layout update to the product page."""
   custom_layout_update: SortEnum
 
   """
@@ -3627,35 +4029,35 @@ input ProductSortInput {
   """
   description: SortEnum
 
-  """Indicates whether a gift message is available"""
+  """Indicates whether a gift message is available."""
   gift_message_available: SortEnum
 
   """
-  Indicates whether additional attributes have been created for the product
+  Indicates whether additional attributes have been created for the product.
   """
   has_options: SortEnum
 
-  """The relative path to the main image on the product page"""
+  """The relative path to the main image on the product page."""
   image: SortEnum
 
-  """The label assigned to a product image"""
+  """The label assigned to a product image."""
   image_label: SortEnum
 
-  """A number representing the product's manufacturer"""
+  """A number representing the product's manufacturer."""
   manufacturer: SortEnum
 
   """
-  A brief overview of the product for search results listings, maximum 255 characters
+  A brief overview of the product for search results listings, maximum 255 characters.
   """
   meta_description: SortEnum
 
   """
-  A comma-separated list of keywords that are visible only to search engines
+  A comma-separated list of keywords that are visible only to search engines.
   """
   meta_keyword: SortEnum
 
   """
-  A string that is displayed in the title bar and tab of the browser and in search results lists
+  A string that is displayed in the title bar and tab of the browser and in search results lists.
   """
   meta_title: SortEnum
 
@@ -3663,71 +4065,69 @@ input ProductSortInput {
   name: SortEnum
 
   """
-  The beginning date for new product listings, and determines if the product is featured as a new product
+  The beginning date for new product listings, and determines if the product is featured as a new product.
   """
   news_from_date: SortEnum
 
-  """The end date for new product listings"""
+  """The end date for new product listings."""
   news_to_date: SortEnum
 
   """
-  If the product has multiple options, determines where they appear on the product page
+  If the product has multiple options, determines where they appear on the product page.
   """
   options_container: SortEnum
 
-  """The price of the item"""
+  """The price of the item."""
   price: SortEnum
 
-  """Indicates whether the product has required options"""
+  """Indicates whether the product has required options."""
   required_options: SortEnum
 
   """A short description of the product. Its use depends on the theme."""
   short_description: SortEnum
 
   """
-  A number or code assigned to a product to identify the product, options, price, and manufacturer
+  A number or code assigned to a product to identify the product, options, price, and manufacturer.
   """
   sku: SortEnum
 
-  """The relative path to the small image, which is used on catalog pages"""
+  """The relative path to the small image, which is used on catalog pages."""
   small_image: SortEnum
 
-  """The label assigned to a product's small image"""
+  """The label assigned to a product's small image."""
   small_image_label: SortEnum
 
-  """The beginning date that a product has a special price"""
+  """The beginning date that a product has a special price."""
   special_from_date: SortEnum
 
-  """The discounted price of the product"""
+  """The discounted price of the product."""
   special_price: SortEnum
 
-  """The end date that a product has a special price"""
+  """The end date that a product has a special price."""
   special_to_date: SortEnum
 
   """The file name of a swatch image"""
   swatch_image: SortEnum
 
-  """The relative path to the product's thumbnail image"""
+  """The relative path to the product's thumbnail image."""
   thumbnail: SortEnum
 
-  """The label assigned to a product's thumbnail image"""
+  """The label assigned to a product's thumbnail image."""
   thumbnail_label: SortEnum
 
   """
-  The price when tier pricing is in effect and the items purchased threshold has been reached
+  The price when tier pricing is in effect and the items purchased threshold has been reached.
   """
   tier_price: SortEnum
 
-  """Timestamp indicating when the product was updated"""
+  """Timestamp indicating when the product was updated."""
   updated_at: SortEnum
 
   """The part of the URL that identifies the product"""
   url_key: SortEnum
-
-  """The part of the URL that precedes the url_key"""
   url_path: SortEnum
 
-  """The weight of the item, in units defined by the store"""
+  """The weight of the item, in units defined by the store."""
   weight: SortEnum
 }
 
@@ -3743,43 +4143,57 @@ enum ProductStockStatus {
 The ProductTierPrices object defines a tier price, which is a quantity discount offered to a specific customer group.
 """
 type ProductTierPrices {
-  """The ID of the customer group"""
+  """The ID of the customer group."""
   customer_group_id: String
 
-  """The percentage discount of the item"""
+  """The percentage discount of the item."""
   percentage_value: Float
 
-  """The number of items that must be purchased to qualify for tier pricing"""
+  """
+  The number of items that must be purchased to qualify for tier pricing.
+  """
   qty: Float
 
-  """The price of the fixed price item"""
+  """The price of the fixed price item."""
   value: Float
 
-  """The ID assigned to the website"""
+  """The ID assigned to the website."""
   website_id: Float
 }
 
+"""Contains information about a product video."""
+type ProductVideo implements MediaGalleryInterface {
+  """The label of the product image or video."""
+  label: String
+
+  """The URL of the product image or video."""
+  url: String
+
+  """Contains a ProductMediaGalleryEntriesVideoContent object."""
+  video_content: ProductMediaGalleryEntriesVideoContent
+}
+
 """
-The Products object is the top-level object returned in a product search
+The Products object is the top-level object returned in a product search.
 """
 type Products {
-  """Layered navigation filters array"""
+  """Layered navigation filters array."""
   filters: [LayerFilter]
 
-  """An array of products that match the specified search criteria"""
+  """An array of products that match the specified search criteria."""
   items: [ProductInterface]
 
   """
-  An object that includes the page_info and currentPage values specified in the query
+  An object that includes the page_info and currentPage values specified in the query.
   """
   page_info: SearchResultPageInfo
 
   """
-  An object that includes the default sort field and all available sort fields
+  An object that includes the default sort field and all available sort fields.
   """
   sort_fields: SortFields
 
-  """The number of products returned"""
+  """The number of products returned."""
   total_count: Int
 }
 
@@ -3788,12 +4202,15 @@ type Query {
   cart(cart_id: String!): Cart
 
   """
-  The category query searches for categories that match the criteria specified in the search and filter attributes
+  The category query searches for categories that match the criteria specified in the search and filter attributes.
   """
   category(
-    """Id of the category"""
+    """Id of the category."""
     id: Int
   ): CategoryTree
+
+  """The Checkout Agreements information"""
+  checkoutAgreements: [CheckoutAgreement]
 
   """The CMS block query returns information about CMS blocks"""
   cmsBlocks(
@@ -3805,6 +4222,9 @@ type Query {
   cmsPage(
     """Id of the CMS page"""
     id: Int
+
+    """Identifier of the CMS page"""
+    identifier: String
   ): CmsPage
 
   """The countries query provides information for all countries."""
@@ -3832,13 +4252,23 @@ type Query {
 
   """Return a list of customer payment tokens"""
   customerPaymentTokens: CustomerPaymentTokens
+
+  """
+  Retrieve secure PayPal url for Payments Pro Hosted Solution transaction.
+  """
+  getHostedProUrl(input: HostedProUrlInput!): HostedProUrl
+
+  """
+  Retrieve payment credentials for transaction. Use this query for Payflow Link and Payments Advanced payment methods.
+  """
+  getPayflowLinkToken(input: PayflowLinkTokenInput!): PayflowLinkToken
   isEmailAvailable(
     """The new customer email"""
     email: String!
   ): IsEmailAvailableOutput
 
   """
-  The products query searches for products that match the criteria specified in the search and filter attributes
+  The products query searches for products that match the criteria specified in the search and filter attributes.
   """
   products(
     """Specifies which page of results to return. The default value is 1."""
@@ -3931,7 +4361,7 @@ type SelectedCustomizableOptionValue {
   id: Int!
   label: String!
   price: CartItemSelectedOptionValuePrice!
-  value: String
+  value: String!
 }
 
 type SelectedPaymentMethod {
@@ -4005,6 +4435,11 @@ type SetGuestEmailOnCartOutput {
   cart: Cart!
 }
 
+input SetPaymentMethodAndPlaceOrderInput {
+  cart_id: String!
+  payment_method: PaymentMethodInput!
+}
+
 input SetPaymentMethodOnCartInput {
   cart_id: String!
   payment_method: PaymentMethodInput!
@@ -4076,56 +4511,62 @@ type SimpleCartItem implements CartItemInterface {
 }
 
 """
-A simple product is tangible and are usually sold as single units or in fixed quantities
+A simple product is tangible and are usually sold as single units or in fixed quantities.
 """
 type SimpleProduct implements CustomizableProductInterface & PhysicalProductInterface & ProductInterface {
-  """The attribute set assigned to the product"""
+  """The attribute set assigned to the product."""
   attribute_set_id: Int
 
-  """Canonical URL"""
+  """Canonical URL."""
   canonical_url: String
 
-  """The categories assigned to a product"""
+  """The categories assigned to a product."""
   categories: [CategoryInterface]
 
-  """The product's country of origin"""
+  """The product's country of origin."""
   country_of_manufacture: String
 
-  """Timestamp indicating when the product was created"""
+  """Timestamp indicating when the product was created."""
   created_at: String
+
+  """Crosssell Products"""
+  crosssell_products: [ProductInterface]
 
   """
   Detailed information about the product. The value can include simple HTML tags.
   """
   description: ComplexTextValue
 
-  """Indicates whether a gift message is available"""
+  """Indicates whether a gift message is available."""
   gift_message_available: String
 
-  """The ID number assigned to the product"""
+  """The ID number assigned to the product."""
   id: Int
 
-  """The relative path to the main image on the product page"""
+  """The relative path to the main image on the product page."""
   image: ProductImage
 
-  """A number representing the product's manufacturer"""
+  """A number representing the product's manufacturer."""
   manufacturer: Int
 
-  """An array of MediaGalleryEntry objects"""
+  """An array of Media Gallery objects."""
+  media_gallery: [MediaGalleryInterface]
+
+  """An array of MediaGalleryEntry objects."""
   media_gallery_entries: [MediaGalleryEntry]
 
   """
-  A brief overview of the product for search results listings, maximum 255 characters
+  A brief overview of the product for search results listings, maximum 255 characters.
   """
   meta_description: String
 
   """
-  A comma-separated list of keywords that are visible only to search engines
+  A comma-separated list of keywords that are visible only to search engines.
   """
   meta_keyword: String
 
   """
-  A string that is displayed in the title bar and tab of the browser and in search results lists
+  A string that is displayed in the title bar and tab of the browser and in search results lists.
   """
   meta_title: String
 
@@ -4133,48 +4574,51 @@ type SimpleProduct implements CustomizableProductInterface & PhysicalProductInte
   name: String
 
   """
-  The beginning date for new product listings, and determines if the product is featured as a new product
+  The beginning date for new product listings, and determines if the product is featured as a new product.
   """
   new_from_date: String
 
-  """The end date for new product listings"""
+  """The end date for new product listings."""
   new_to_date: String
 
   """Product stock only x left count"""
   only_x_left_in_stock: Float
 
-  """An array of options for a customizable product"""
+  """An array of options for a customizable product."""
   options: [CustomizableOptionInterface]
 
   """
-  If the product has multiple options, determines where they appear on the product page
+  If the product has multiple options, determines where they appear on the product page.
   """
   options_container: String
 
-  """A ProductPrices object, indicating the price of an item"""
+  """A ProductPrices object, indicating the price of an item."""
   price: ProductPrices
 
-  """An array of ProductLinks objects"""
+  """An array of ProductLinks objects."""
   product_links: [ProductLinksInterface]
+
+  """Related Products"""
+  related_products: [ProductInterface]
 
   """A short description of the product. Its use depends on the theme."""
   short_description: ComplexTextValue
 
   """
-  A number or code assigned to a product to identify the product, options, price, and manufacturer
+  A number or code assigned to a product to identify the product, options, price, and manufacturer.
   """
   sku: String
 
-  """The relative path to the small image, which is used on catalog pages"""
+  """The relative path to the small image, which is used on catalog pages."""
   small_image: ProductImage
 
-  """The beginning date that a product has a special price"""
+  """The beginning date that a product has a special price."""
   special_from_date: String
 
-  """The discounted price of the product"""
+  """The discounted price of the product."""
   special_price: Float
 
-  """The end date that a product has a special price"""
+  """The end date that a product has a special price."""
   special_to_date: String
 
   """Stock status of the product"""
@@ -4183,36 +4627,39 @@ type SimpleProduct implements CustomizableProductInterface & PhysicalProductInte
   """The file name of a swatch image"""
   swatch_image: String
 
-  """The relative path to the product's thumbnail image"""
+  """The relative path to the product's thumbnail image."""
   thumbnail: ProductImage
 
   """
-  The price when tier pricing is in effect and the items purchased threshold has been reached
+  The price when tier pricing is in effect and the items purchased threshold has been reached.
   """
   tier_price: Float
 
-  """An array of ProductTierPrices objects"""
+  """An array of ProductTierPrices objects."""
   tier_prices: [ProductTierPrices]
 
-  """One of simple, virtual, bundle, downloadable, grouped, or configurable"""
+  """
+  One of simple, virtual, bundle, downloadable, grouped, or configurable.
+  """
   type_id: String
 
-  """Timestamp indicating when the product was updated"""
+  """Timestamp indicating when the product was updated."""
   updated_at: String
+
+  """Upsell Products"""
+  upsell_products: [ProductInterface]
 
   """The part of the URL that identifies the product"""
   url_key: String
-
-  """The part of the URL that precedes the url_key"""
   url_path: String
 
   """URL rewrites list"""
   url_rewrites: [UrlRewrite]
 
-  """An array of websites in which the product is available"""
+  """An array of websites in which the product is available."""
   websites: [Website]
 
-  """The weight of the item, in units defined by the store"""
+  """The weight of the item, in units defined by the store."""
   weight: Float
 }
 
@@ -4230,21 +4677,21 @@ enum SortEnum {
 }
 
 type SortField {
-  """Label of sort field"""
+  """Label of sort field."""
   label: String
 
-  """Attribute code of sort field"""
+  """Attribute code of sort field."""
   value: String
 }
 
 """
-SortFields contains a default value for sort fields and all available sort fields
+SortFields contains a default value for sort fields and all available sort fields.
 """
 type SortFields {
-  """Default value of sort fields"""
+  """Default value of sort fields."""
   default: String
 
-  """Available sort fields"""
+  """Available sort fields."""
   options: [SortField]
 }
 
@@ -4267,6 +4714,12 @@ type StoreConfig {
 
   """Base URL for the store"""
   base_url: String
+
+  """Default Sort By."""
+  catalog_default_sort_by: String
+
+  """Category URL Suffix."""
+  category_url_suffix: String
 
   """CMS Home Page"""
   cms_home_page: String
@@ -4301,6 +4754,12 @@ type StoreConfig {
   """Default Web URL"""
   front: String
 
+  """Products per Page on Grid Default Value."""
+  grid_per_page: Int
+
+  """Products per Page on Grid Allowed Values."""
+  grid_per_page_values: String
+
   """Scripts and Style Sheets"""
   head_includes: String
 
@@ -4312,6 +4771,15 @@ type StoreConfig {
 
   """The ID number assigned to the store"""
   id: Int
+
+  """List Mode."""
+  list_mode: String
+
+  """Products per Page on List Default Value."""
+  list_per_page: Int
+
+  """Products per Page on List Allowed Values."""
+  list_per_page_values: String
 
   """Store locale"""
   locale: String
@@ -4327,6 +4795,9 @@ type StoreConfig {
 
   """Default No-route URL"""
   no_route: String
+
+  """Product URL Suffix."""
+  product_url_suffix: String
 
   """Secure base link URL for the store"""
   secure_base_link_url: String
@@ -4348,6 +4819,9 @@ type StoreConfig {
 
   """Page Title Prefix"""
   title_prefix: String
+
+  """Page Title Separator."""
+  title_separator: String
 
   """Page Title Suffix"""
   title_suffix: String
@@ -4371,16 +4845,16 @@ type SwatchData {
 }
 
 type SwatchLayerFilterItem implements LayerFilterItemInterface & SwatchLayerFilterItemInterface {
-  """Count of items by filter"""
+  """Count of items by filter."""
   items_count: Int
 
-  """Filter label"""
+  """Filter label."""
   label: String
 
   """Data required to render swatch filter item"""
   swatch_data: SwatchData
 
-  """Value for filter request variable to be used in query"""
+  """Value for filter request variable to be used in query."""
   value_string: String
 }
 
@@ -4423,56 +4897,62 @@ type VirtualCartItem implements CartItemInterface {
 }
 
 """
-A virtual product is non-tangible product that does not require shipping and is not kept in inventory
+A virtual product is non-tangible product that does not require shipping and is not kept in inventory.
 """
 type VirtualProduct implements CustomizableProductInterface & ProductInterface {
-  """The attribute set assigned to the product"""
+  """The attribute set assigned to the product."""
   attribute_set_id: Int
 
-  """Canonical URL"""
+  """Canonical URL."""
   canonical_url: String
 
-  """The categories assigned to a product"""
+  """The categories assigned to a product."""
   categories: [CategoryInterface]
 
-  """The product's country of origin"""
+  """The product's country of origin."""
   country_of_manufacture: String
 
-  """Timestamp indicating when the product was created"""
+  """Timestamp indicating when the product was created."""
   created_at: String
+
+  """Crosssell Products"""
+  crosssell_products: [ProductInterface]
 
   """
   Detailed information about the product. The value can include simple HTML tags.
   """
   description: ComplexTextValue
 
-  """Indicates whether a gift message is available"""
+  """Indicates whether a gift message is available."""
   gift_message_available: String
 
-  """The ID number assigned to the product"""
+  """The ID number assigned to the product."""
   id: Int
 
-  """The relative path to the main image on the product page"""
+  """The relative path to the main image on the product page."""
   image: ProductImage
 
-  """A number representing the product's manufacturer"""
+  """A number representing the product's manufacturer."""
   manufacturer: Int
 
-  """An array of MediaGalleryEntry objects"""
+  """An array of Media Gallery objects."""
+  media_gallery: [MediaGalleryInterface]
+
+  """An array of MediaGalleryEntry objects."""
   media_gallery_entries: [MediaGalleryEntry]
 
   """
-  A brief overview of the product for search results listings, maximum 255 characters
+  A brief overview of the product for search results listings, maximum 255 characters.
   """
   meta_description: String
 
   """
-  A comma-separated list of keywords that are visible only to search engines
+  A comma-separated list of keywords that are visible only to search engines.
   """
   meta_keyword: String
 
   """
-  A string that is displayed in the title bar and tab of the browser and in search results lists
+  A string that is displayed in the title bar and tab of the browser and in search results lists.
   """
   meta_title: String
 
@@ -4480,48 +4960,51 @@ type VirtualProduct implements CustomizableProductInterface & ProductInterface {
   name: String
 
   """
-  The beginning date for new product listings, and determines if the product is featured as a new product
+  The beginning date for new product listings, and determines if the product is featured as a new product.
   """
   new_from_date: String
 
-  """The end date for new product listings"""
+  """The end date for new product listings."""
   new_to_date: String
 
   """Product stock only x left count"""
   only_x_left_in_stock: Float
 
-  """An array of options for a customizable product"""
+  """An array of options for a customizable product."""
   options: [CustomizableOptionInterface]
 
   """
-  If the product has multiple options, determines where they appear on the product page
+  If the product has multiple options, determines where they appear on the product page.
   """
   options_container: String
 
-  """A ProductPrices object, indicating the price of an item"""
+  """A ProductPrices object, indicating the price of an item."""
   price: ProductPrices
 
-  """An array of ProductLinks objects"""
+  """An array of ProductLinks objects."""
   product_links: [ProductLinksInterface]
+
+  """Related Products"""
+  related_products: [ProductInterface]
 
   """A short description of the product. Its use depends on the theme."""
   short_description: ComplexTextValue
 
   """
-  A number or code assigned to a product to identify the product, options, price, and manufacturer
+  A number or code assigned to a product to identify the product, options, price, and manufacturer.
   """
   sku: String
 
-  """The relative path to the small image, which is used on catalog pages"""
+  """The relative path to the small image, which is used on catalog pages."""
   small_image: ProductImage
 
-  """The beginning date that a product has a special price"""
+  """The beginning date that a product has a special price."""
   special_from_date: String
 
-  """The discounted price of the product"""
+  """The discounted price of the product."""
   special_price: Float
 
-  """The end date that a product has a special price"""
+  """The end date that a product has a special price."""
   special_to_date: String
 
   """Stock status of the product"""
@@ -4530,33 +5013,36 @@ type VirtualProduct implements CustomizableProductInterface & ProductInterface {
   """The file name of a swatch image"""
   swatch_image: String
 
-  """The relative path to the product's thumbnail image"""
+  """The relative path to the product's thumbnail image."""
   thumbnail: ProductImage
 
   """
-  The price when tier pricing is in effect and the items purchased threshold has been reached
+  The price when tier pricing is in effect and the items purchased threshold has been reached.
   """
   tier_price: Float
 
-  """An array of ProductTierPrices objects"""
+  """An array of ProductTierPrices objects."""
   tier_prices: [ProductTierPrices]
 
-  """One of simple, virtual, bundle, downloadable, grouped, or configurable"""
+  """
+  One of simple, virtual, bundle, downloadable, grouped, or configurable.
+  """
   type_id: String
 
-  """Timestamp indicating when the product was updated"""
+  """Timestamp indicating when the product was updated."""
   updated_at: String
+
+  """Upsell Products"""
+  upsell_products: [ProductInterface]
 
   """The part of the URL that identifies the product"""
   url_key: String
-
-  """The part of the URL that precedes the url_key"""
   url_path: String
 
   """URL rewrites list"""
   url_rewrites: [UrlRewrite]
 
-  """An array of websites in which the product is available"""
+  """An array of websites in which the product is available."""
   websites: [Website]
 }
 
