@@ -96,6 +96,19 @@ type ApplyCouponToCartOutput {
 }
 
 """
+AreaInput defines the parameters which will be used for filter by specified location.
+"""
+input AreaInput {
+  """The radius for the search in KM."""
+  radius: Int!
+
+  """
+  The country code where search must be performed. Required parameter together with region, city or postcode.
+  """
+  search_term: String!
+}
+
+"""
 Attribute contains the attribute_type of the specified attribute_code and entity_type
 """
 type Attribute {
@@ -135,17 +148,6 @@ type AttributeOption {
 
   """Attribute option value."""
   value: String
-}
-
-input AuthorizenetInput {
-  """The last four digits of the credit or debit card"""
-  cc_last_4: Int!
-
-  """Authorize.Net's description of the transaction request"""
-  opaque_data_descriptor: String!
-
-  """The nonce returned by Authorize.Net"""
-  opaque_data_value: String!
 }
 
 type AvailablePaymentMethod {
@@ -544,6 +546,11 @@ input CartAddressInput {
   lastname: String!
   postcode: String
   region: String
+  region_id: Int
+
+  """
+  Determines whether to save the address in the customer's address book. The default value is true
+  """
   save_in_address_book: Boolean
   street: [String]!
   telephone: String!
@@ -562,8 +569,9 @@ interface CartAddressInterface {
 }
 
 type CartAddressRegion {
-  code: String!
-  label: String!
+  code: String
+  label: String
+  region_id: Int
 }
 
 type CartDiscount {
@@ -641,8 +649,11 @@ input CategoryFilterInput {
   """Filter by the display name of the category."""
   name: FilterMatchTypeInput
 
-  """Filter by the part of the URL that identifies the category"""
+  """Filter by the part of the URL that identifies the category."""
   url_key: FilterEqualTypeInput
+
+  """Filter by the URL path for the category."""
+  url_path: FilterEqualTypeInput
 }
 
 """
@@ -702,7 +713,9 @@ interface CategoryInterface {
   """
   position: Int
 
-  """The number of products in the category."""
+  """
+  The number of products in the category that are marked as visible. By default, in complex products, parent products are visible, but their child products are
+  """
   product_count: Int
 
   """The list of products assigned to the category."""
@@ -744,7 +757,23 @@ type CategoryProducts {
   """
   page_info: SearchResultPageInfo
 
-  """The number of products returned."""
+  """
+  The number of products in the category that are marked as visible. By default, in complex products, parent products are visible, but their child products are
+  """
+  total_count: Int
+}
+
+"""A collection of CategoryTree objects and pagination information."""
+type CategoryResult {
+  """A list of categories that match the filter criteria."""
+  items: [CategoryTree]
+
+  """
+  An object that includes the page_info and currentPage values specified in the query.
+  """
+  page_info: SearchResultPageInfo
+
+  """The total number of categories that match the criteria."""
   total_count: Int
 }
 
@@ -806,7 +835,9 @@ type CategoryTree implements CategoryInterface {
   """
   position: Int
 
-  """The number of products in the category."""
+  """
+  The number of products in the category that are marked as visible. By default, in complex products, parent products are visible, but their child products are
+  """
   product_count: Int
 
   """The list of products assigned to the category."""
@@ -863,6 +894,28 @@ type CheckoutAgreement {
 enum CheckoutAgreementMode {
   AUTO
   MANUAL
+}
+
+"""An error encountered while adding an item the the cart."""
+type CheckoutUserInputError {
+  """Checkout-specific error code"""
+  code: CheckoutUserInputErrorCodes!
+
+  """Localized error message"""
+  message: String!
+
+  """
+  Path to the input field that caused an error. See the GraphQL specification about path errors for details: http://spec.graphql.org/draft/#sec-Errors
+  """
+  path: [String]!
+}
+
+enum CheckoutUserInputErrorCodes {
+  INSUFFICIENT_STOCK
+  NOT_SALABLE
+  PRODUCT_NOT_FOUND
+  REORDER_NOT_AVAILABLE
+  UNDEFINED
 }
 
 """CMS block defines all CMS block information"""
@@ -1133,7 +1186,10 @@ type ConfigurableProductOptions {
   attribute_code: String
 
   """The ID assigned to the attribute"""
-  attribute_id: String
+  attribute_id: String @deprecated(reason: "Use attribute_id_v2 instead")
+
+  """The ID assigned to the attribute"""
+  attribute_id_v2: Int
 
   """The configurable option ID number assigned by the system"""
   id: Int
@@ -2000,7 +2056,7 @@ enum CurrencyEnum {
   BTN
   BUK
   BWP
-  BYR
+  BYN
   BZD
   CAD
   CDF
@@ -2270,7 +2326,9 @@ type CustomerAddress {
 
   """An object containing the region name, region code, and region ID"""
   region: CustomerAddressRegion
-  region_id: Int @deprecated(reason: "Region ID is excessive on storefront and region code should suffice for all scenarios")
+
+  """The unique ID for a pre-defined region"""
+  region_id: Int
 
   """An array of strings that define the street number and name"""
   street: [String]
@@ -2370,7 +2428,9 @@ type CustomerAddressRegion {
 
   """The address region code"""
   region_code: String
-  region_id: Int @deprecated(reason: "Region ID is excessive on storefront and region code should suffice for all scenarios")
+
+  """The unique ID for a pre-defined region"""
+  region_id: Int
 }
 
 """CustomerAddressRegionInput defines the customer's state or province"""
@@ -2381,9 +2441,7 @@ input CustomerAddressRegionInput {
   """The address region code"""
   region_code: String
 
-  """
-  region_id is deprecated. Region ID is excessive on storefront and region code should suffice for all scenarios
-  """
+  """The unique ID for a pre-defined region"""
   region_id: Int
 }
 
@@ -3627,6 +3685,19 @@ type Mutation {
   removeCouponFromCart(input: RemoveCouponFromCartInput): RemoveCouponFromCartOutput
   removeItemFromCart(input: RemoveItemFromCartInput): RemoveItemFromCartOutput
 
+  """Adds all products from a customer's previous order to the cart."""
+  reorderItems(orderNumber: String!): ReorderItemsOutput
+
+  """
+  Request an email with a reset password token for the registered customer identified by the specified email.
+  """
+  requestPasswordResetEmail(email: String!): Boolean
+
+  """
+  Reset a customer's password using the reset password token that the customer received in an email after requesting it using requestPasswordResetEmail.
+  """
+  resetPassword(email: String!, newPassword: String!, resetPasswordToken: String!): Boolean
+
   """Revoke the customer token"""
   revokeCustomerToken: RevokeCustomerTokenOutput
 
@@ -3775,8 +3846,6 @@ input PayflowProUrlInput {
 }
 
 input PaymentMethodInput {
-  """Defines the required attributes for Authorize.Net payments"""
-  authorizenet_acceptjs: AuthorizenetInput
   braintree: BraintreeInput
   braintree_cc_vault: BraintreeCcVaultInput
 
@@ -3922,6 +3991,125 @@ PhysicalProductInterface contains attributes specific to tangible products.
 interface PhysicalProductInterface {
   """The weight of the item, in units defined by the store."""
   weight: Float
+}
+
+"""Defines Pickup Location information."""
+type PickupLocation {
+  city: String
+  contact_name: String
+  country_id: String
+  description: String
+  email: String
+  fax: String
+  latitude: Float
+  longitude: Float
+  name: String
+  phone: String
+  pickup_location_code: String
+  postcode: String
+  region: String
+  region_id: Int
+  street: String
+}
+
+"""
+PickupLocationFilterInput defines the list of attributes and filters for the search.
+"""
+input PickupLocationFilterInput {
+  """Filter by city."""
+  city: FilterTypeInput
+
+  """Filter by country."""
+  country_id: FilterTypeInput
+
+  """Filter by pickup location name."""
+  name: FilterTypeInput
+
+  """Filter by pickup location code."""
+  pickup_location_code: FilterTypeInput
+
+  """Filter by postcode."""
+  postcode: FilterTypeInput
+
+  """Filter by region."""
+  region: FilterTypeInput
+
+  """Filter by region id."""
+  region_id: FilterTypeInput
+
+  """Filter by street."""
+  street: FilterTypeInput
+}
+
+"""
+PickupLocationSortInput specifies attribute to use for sorting search results and indicates whether the results are sorted in ascending or descending order.
+"""
+input PickupLocationSortInput {
+  """City where pickup location is placed."""
+  city: SortEnum
+
+  """Name of the contact person."""
+  contact_name: SortEnum
+
+  """Id of the country in two letters."""
+  country_id: SortEnum
+
+  """Description of the pickup location."""
+  description: SortEnum
+
+  """
+  Distance to the address, requested by distance filter. Applicable only with distance filter. If distance sort order is present, all other sort orders will
+  """
+  distance: SortEnum
+
+  """Contact email of the pickup location."""
+  email: SortEnum
+
+  """Contact fax of the pickup location."""
+  fax: SortEnum
+
+  """Geographic latitude where pickup location is placed."""
+  latitude: SortEnum
+
+  """Geographic longitude where pickup location is placed."""
+  longitude: SortEnum
+
+  """
+  The pickup location name. Customer use this to identify the pickup location.
+  """
+  name: SortEnum
+
+  """Contact phone number of the pickup location."""
+  phone: SortEnum
+
+  """A code assigned to pickup location to identify the source."""
+  pickup_location_code: SortEnum
+
+  """Postcode where pickup location is placed."""
+  postcode: SortEnum
+
+  """Name of the region."""
+  region: SortEnum
+
+  """Id of the region."""
+  region_id: SortEnum
+
+  """Street where pickup location is placed."""
+  street: SortEnum
+}
+
+"""Top level object returned in a pickup locations search."""
+type PickupLocations {
+  """An array of pickup locations that match the specific search request."""
+  items: [PickupLocation]
+
+  """
+  An object that includes the page_info and currentPage values specified in the query.
+  """
+  page_info: SearchResultPageInfo
+
+  """The number of products returned."""
+  total_count: Int
 }
 
 input PlaceOrderInput {
@@ -4655,13 +4843,27 @@ type Products {
   """
   sort_fields: SortFields
 
-  """The number of products returned."""
+  """
+  The number of products that are marked as visible. By default, in complex products, parent products are visible, but their child products are not.
+  """
   total_count: Int
 }
 
 type Query {
   """Returns information about shopping cart"""
   cart(cart_id: String!): Cart
+  categories(
+    """Specifies which page of results to return. The default value is 1."""
+    currentPage: Int = 1
+
+    """Identifies which Category filter inputs to search for and return."""
+    filters: CategoryFilterInput
+
+    """
+    Specifies the maximum number of results to return at once. This attribute is optional.
+    """
+    pageSize: Int = 20
+  ): CategoryResult
 
   """
   The category query searches for categories that match the criteria specified in the search and filter attributes.
@@ -4739,6 +4941,30 @@ type Query {
   ): IsEmailAvailableOutput
 
   """
+  The pickup locations query searches for locations that match the search request requirements.
+  """
+  pickupLocations(
+    """Perform search by location using radius and search term."""
+    area: AreaInput
+
+    """Specifies which page of results to return. The default value is 1."""
+    currentPage: Int = 1
+
+    """Apply filters by attributes."""
+    filters: PickupLocationFilterInput
+
+    """
+    The maximum number of pickup locations to return at once. The attribute is optional.
+    """
+    pageSize: Int = 20
+
+    """
+    Specifies which attribute to sort on, and whether to return the results in ascending or descending order.
+    """
+    sort: PickupLocationSortInput
+  ): PickupLocations
+
+  """
   The products query searches for products that match the criteria specified in the search and filter attributes.
   """
   products(
@@ -4795,6 +5021,14 @@ input RemoveItemFromCartInput {
 
 type RemoveItemFromCartOutput {
   cart: Cart!
+}
+
+type ReorderItemsOutput {
+  """Contains detailed information about the customer's cart."""
+  cart: Cart!
+
+  """An array of reordering errors."""
+  userInputErrors: [CheckoutUserInputError]!
 }
 
 type RevokeCustomerTokenOutput {
@@ -4902,6 +5136,14 @@ input SendEmailToFriendSenderInput {
   name: String!
 }
 
+type SendFriendConfiguration {
+  """Indicates whether the Email to a Friend feature is enabled."""
+  enabled_for_customers: Boolean!
+
+  """Indicates whether the Email to a Friend feature is enabled for guests."""
+  enabled_for_guests: Boolean!
+}
+
 input SetBillingAddressOnCartInput {
   billing_address: BillingAddressInput!
   cart_id: String!
@@ -4964,6 +5206,9 @@ input ShippingAddressInput {
   address: CartAddressInput
   customer_address_id: Int
   customer_notes: String
+
+  """The code of Pickup Location which will be used for In-Store Pickup."""
+  pickup_location_code: String
 }
 
 type ShippingCartAddress implements CartAddressInterface {
@@ -4977,6 +5222,7 @@ type ShippingCartAddress implements CartAddressInterface {
   firstname: String!
   items_weight: Float @deprecated(reason: "This information shoud not be exposed on frontend")
   lastname: String!
+  pickup_location_code: String
   postcode: String
   region: CartAddressRegion
   selected_shipping_method: SelectedShippingMethod
@@ -5199,6 +5445,9 @@ type StoreConfig {
   """Footer Miscellaneous HTML"""
   absolute_footer: String
 
+  """Enable autocomplete on login and forgot password forms"""
+  autocomplete_on_storefront: Boolean
+
   """Base currency code"""
   base_currency_code: String
 
@@ -5297,6 +5546,9 @@ type StoreConfig {
   """Logo Attribute Width"""
   logo_width: Int
 
+  """The minimum number of characters required for a valid password."""
+  minimum_password_length: String
+
   """Default No-route URL"""
   no_route: String
 
@@ -5307,6 +5559,11 @@ type StoreConfig {
 
   """Product URL Suffix."""
   product_url_suffix: String
+
+  """
+  The number of different character classes required in a password (lowercase, uppercase, digits, special characters).
+  """
+  required_character_classes_number: String
 
   """The ID of the root category"""
   root_category_id: Int
@@ -5327,6 +5584,9 @@ type StoreConfig {
 
   """Secure base URL for the store"""
   secure_base_url: String
+
+  """Email to a Friend configuration."""
+  send_friend: SendFriendConfiguration
 
   """Show Breadcrumbs for CMS Pages"""
   show_cms_breadcrumbs: Int
