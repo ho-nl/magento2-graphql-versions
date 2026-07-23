@@ -20,8 +20,9 @@ compares a tag against the previous release in the same column — patch rows (`
 their own patch line, which branches off its base version. The **←** column compares core against
 the bundled Magento build of the same row (what the bundled extensions add); the **→** column
 compares core against the Mage-OS release of the same row (how Mage-OS differs from its base).
-All links are direct two-dot diffs. **Released** is the Magento release date; **Supported** shows
-whether the release line still receives regular Adobe support (and until when).
+All links are direct two-dot diffs. **Released** is the Magento release date; **Supported** marks
+the currently-supported release of each still-maintained Magento line with its Adobe support end
+date — only the latest tracked patch of a line carries it, since earlier patches are superseded.
 
 | Magento | ← | Magento core | → | Mage-OS | Released | Supported |
 |---------|:-:|--------------|:-:|---------|----------|-----------|
@@ -37,15 +38,15 @@ whether the release line still receives regular Adobe support (and until when).
 | 2.4.3 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/2.4.2..2.4.3) | [←](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.3..2.4.3) | core-2.4.3 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.2..core-2.4.3) |  |  | 2021-08-10 | ❌ EOL |
 | 2.4.4 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/2.4.3..2.4.4) | [←](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.4..2.4.4) | core-2.4.4 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.3..core-2.4.4) |  |  | 2022-04-12 | ❌ EOL |
 | 2.4.5 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/2.4.4..2.4.5) | [←](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.5..2.4.5) | core-2.4.5 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.4..core-2.4.5) |  |  | 2022-08-09 | ❌ EOL |
-| 2.4.6 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/2.4.5..2.4.6) | [←](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.6..2.4.6) | core-2.4.6 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.5..core-2.4.6) | [→](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.6..mage-os-1.0.0) | mage-os-1.0.0 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/2.4.6..mage-os-1.0.0) | 2023-03-14 | ✅ until 2026-08-11 |
-| 2.4.6-p8 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/2.4.6..2.4.6-p8) | [←](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.6-p8..2.4.6-p8) | core-2.4.6-p8 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.6..core-2.4.6-p8) |  |  | 2024-10-08 | ✅ until 2026-08-11 |
-| 2.4.6-p9 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/2.4.6-p8..2.4.6-p9) | [←](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.6-p9..2.4.6-p9) | core-2.4.6-p9 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.6-p8..core-2.4.6-p9) |  |  | 2025-02-11 | ✅ until 2026-08-11 |
-| 2.4.6-p15 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/2.4.6-p9..2.4.6-p15) | [←](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.6-p15..2.4.6-p15) | core-2.4.6-p15 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.6-p9..core-2.4.6-p15) |  |  | 2026-05-12 | ✅ until 2026-08-11 |
-| 2.4.7 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/2.4.6..2.4.7) | [←](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.7..2.4.7) | core-2.4.7 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.6..core-2.4.7) |  |  | 2024-04-09 | ✅ until 2027-04-09 |
-| 2.4.8 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/2.4.7..2.4.8) | [←](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.8..2.4.8) | core-2.4.8 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.7..core-2.4.8) | [→](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.8..mage-os-1.1.0) | mage-os-1.1.0 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/mage-os-1.0.0..mage-os-1.1.0) | 2025-04-08 | ✅ until 2028-04-11 |
-| 2.4.8-p1 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/2.4.8..2.4.8-p1) | [←](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.8-p1..2.4.8-p1) | core-2.4.8-p1 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.8..core-2.4.8-p1) | [→](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.8-p1..mage-os-1.2.0) | mage-os-1.2.0 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/mage-os-1.1.0..mage-os-1.2.0) | 2025-06-10 | ✅ until 2028-04-11 |
-|  |  |  | [→](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.8-p1..mage-os-2.0.0) | mage-os-2.0.0 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/mage-os-1.2.0..mage-os-2.0.0) |  |  |
-| 2.4.9 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/2.4.8..2.4.9) | [←](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.9..2.4.9) | core-2.4.9 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.8..core-2.4.9) | [→](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.9..mage-os-3.0.0) | mage-os-3.0.0 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/mage-os-2.0.0..mage-os-3.0.0) | 2026-05-12 | ✅ until 2029-05 |
+| 2.4.6 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/2.4.5..2.4.6) | [←](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.6..2.4.6) | core-2.4.6 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.5..core-2.4.6) | [→](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.6..mage-os-1.0.0) | mage-os-1.0.0 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/2.4.6..mage-os-1.0.0) | 2023-03-14 |  |
+| 2.4.6-p8 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/2.4.6..2.4.6-p8) | [←](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.6-p8..2.4.6-p8) | core-2.4.6-p8 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.6..core-2.4.6-p8) |  |  | 2024-10-08 |  |
+| 2.4.6-p9 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/2.4.6-p8..2.4.6-p9) | [←](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.6-p9..2.4.6-p9) | core-2.4.6-p9 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.6-p8..core-2.4.6-p9) |  |  | 2025-02-11 |  |
+| 2.4.6-p15 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/2.4.6-p9..2.4.6-p15) | [←](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.6-p15..2.4.6-p15) | core-2.4.6-p15 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.6-p9..core-2.4.6-p15) |  |  | 2026-05-12 | ✅ 2026-08-11 |
+| 2.4.7 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/2.4.6..2.4.7) | [←](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.7..2.4.7) | core-2.4.7 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.6..core-2.4.7) |  |  | 2024-04-09 | ✅ 2027-04-09 |
+| 2.4.8 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/2.4.7..2.4.8) | [←](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.8..2.4.8) | core-2.4.8 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.7..core-2.4.8) | [→](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.8..mage-os-1.1.0) | mage-os-1.1.0 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/mage-os-1.0.0..mage-os-1.1.0) | 2025-04-08 |  |
+| 2.4.8-p1 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/2.4.8..2.4.8-p1) | [←](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.8-p1..2.4.8-p1) | core-2.4.8-p1 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.8..core-2.4.8-p1) | [→](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.8-p1..mage-os-1.2.0) | mage-os-1.2.0 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/mage-os-1.1.0..mage-os-1.2.0) | 2025-06-10 | ✅ 2028-04-11 |
+|  |  |  | [→](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.8-p3..mage-os-2.0.0) | mage-os-2.0.0 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/mage-os-1.2.0..mage-os-2.0.0) |  |  |
+| 2.4.9 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/2.4.8..2.4.9) | [←](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.9..2.4.9) | core-2.4.9 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.8..core-2.4.9) | [→](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.9..mage-os-3.0.0) | mage-os-3.0.0 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/mage-os-2.0.0..mage-os-3.0.0) | 2026-05-12 | ✅ 2029-05 |
 
 Notes:
 
@@ -60,12 +61,15 @@ Notes:
   all other `-pN` releases are schema-identical to their base. Patch commits live on small side
   branches off their base version — reachable through their tags — so the main chain stays a
   linear minor-version history.
-- **Mage-OS** rows sit next to the Magento version their release is based on
-  (1.0.0 → 2.4.6, 1.1.0 → 2.4.8, 1.2.0+ → 2.4.8-p1, 3.x → 2.4.9). Releases without schema
-  changes (1.3.0, 2.1.0 – 2.3.0, 3.1.0, 3.2.0) are omitted from the table; they are still tagged
-  (on their predecessor's commit), and the ↓ links chain across them.
+- **Mage-OS** rows sit next to the Magento version their release is based on, per the
+  [Mage-OS compatibility matrix](https://mage-os.org/get-started/system-requirements/)
+  (1.0.0 → 2.4.6, 1.1.0 → 2.4.8, 1.2.0 → 2.4.8-p1, 2.0.0 → 2.4.8-p3, 3.x → 2.4.9). Releases
+  without schema changes (1.3.0, 2.1.0 – 2.3.0, 3.1.0, 3.2.0) are omitted from the table; they are
+  still tagged (on their predecessor's commit), and the ↓ links chain across them.
 - Mage-OS ships without the Adobe-bundled extensions, which is why its → comparisons are against
   the `core-*` tags; comparing against plain Magento would drown real differences in bundled noise.
+- The **Released** and **Supported** columns describe the Magento release line only. Mage-OS
+  follows its own community-driven lifecycle and is not marked as supported here.
 - Full ranges: [Magento 2.3.0..2.4.9](https://github.com/ho-nl/magento2-graphql-versions/compare/2.3.0..2.4.9),
   [core-2.3.0..core-2.4.9](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.3.0..core-2.4.9).
   Any other pair works by editing a compare URL — every version is a tag.
