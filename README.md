@@ -60,12 +60,12 @@ Notes:
   2.4.7, with `Magento_PaymentServicesPaypalGraphQl` disabled (Adobe Payment Services is bundled
   but not covered by the replace list). core-2.3.2 cannot be built: its republished module set
   produces an internally inconsistent schema (`CartItemInput` referenced but never defined).
-- **Patch versions**: the GraphQL schema only ever changed in a handful of patch releases
-  (2.4.6-p8/p9/p15 and 2.4.8-p1, determined by diffing `*schema.graphqls` between all patch tags of
-  the magento2 repository). The remaining `-pN` rows are present as Mage-OS base anchors and are
-  schema-identical to their line's last changing patch — their tags point at that same commit, so a
-  ↓ between two of them shows an empty ("identical") diff. Schema-changing patch commits live on
-  small side branches off their base version, so the main chain stays a linear minor-version history.
+- **Patch versions**: every patch release that changes the GraphQL schema or that a Mage-OS release
+  is based on is built and tagged. The schema only ever changed in a few (2.4.6-p8/p9/p15 and
+  2.4.8-p1, found by diffing `*schema.graphqls` across all magento2 patch tags); the other `-pN`
+  rows are distinct commits with an unchanged schema, so a ↓ between two of them shows an empty
+  diff. All patch commits live on small side branches off their base version, so the main chain
+  stays a linear minor-version history.
 - **Mage-OS** rows sit next to the Magento version their release is based on, per the
   [Mage-OS compatibility matrix](https://mage-os.org/get-started/system-requirements/)
   (1.0.0 → 2.4.6, 1.1.0 → 2.4.8, 1.2.0 → 2.4.8-p1, 1.3.0 → 2.4.8-p2, 2.0.0 / 2.1.0 → 2.4.8-p3,
