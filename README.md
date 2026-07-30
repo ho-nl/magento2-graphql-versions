@@ -79,17 +79,54 @@ Notes:
 
 ## Adding a new version
 
-Dispatch the `register-schema.yml` workflow with the new `magento_version` (plus matching
-`php_version`, `mysql_version`, `search_engine`, `search_image` inputs). It installs Magento,
-generates the schema, sorts it and commits + tags it. **Dispatch one version at a time, oldest
-first, and wait for each run to finish** — commit order is the diff chain.
+To add the newest Magento minor (e.g. a future 2.4.10):
+
+1. Dispatch `register-schema.yml` on `main` with the version and matching inputs (see
+   [Version compatibility](#version-compatibility)). It installs Magento, generates + sorts the
+   schema, and commits + tags it on `main`. Because the schema is newer than the trunk tip, the
+   commit lands correctly at the end of the linear history.
+2. Rebuild the same version on `magento-core` and `mage-os` too (see below) so all three chains
+   stay in step.
+3. Add a row to [`.github/scripts/gen-diff-table.py`](.github/scripts/gen-diff-table.py), run it,
+   and commit the refreshed README table.
+
+**Dispatch one version at a time, oldest first, and wait for each run to finish** — commit order is
+the diff chain.
+
+## Patch versions & branch layout
+
+`main` and `magento-core` are **linear minor-version histories**; schema-changing patch releases
+live on **side branches off their base version** (e.g. `2.4.8-p1 … p5` branch off the `2.4.8`
+commit), reachable only through their tags. This keeps the trunk readable while still capturing
+every patch. Find which patches changed the schema — only a few ever do — by diffing the SDL files
+across consecutive patch tags in a blobless clone of `magento/magento2`:
+
+```
+git diff --name-only <base>..<base>-pN -- '*schema.graphqls'
+```
+
+**Gotcha — the workflow always commits onto the branch tip it runs on.** For the newest minor that
+is correct. For a *patch* (or any back-filled older version) whose schema differs from the trunk
+tip, the run leaves a **stray commit on the trunk** that must be relocated:
+
+1. Let the run finish (it pushes the stray commit and the tag).
+2. Re-create the patch as a commit chained off its base's last patch on the side branch
+   (`git commit --allow-empty` when the schema is unchanged) and move the tag there.
+3. Reset the trunk back to before the stray commit and `git push -f`.
+
+Every `-pN` release that a Mage-OS version is based on is built and tagged this way — even when its
+schema is unchanged — so its compare links resolve.
 
 ## Mage-OS
 
 The `mage-os` branch tracks the [Mage-OS](https://mage-os.org/) distribution the same way, with
-tags like `mage-os-3.2.0`. The branch forks from the `2.4.6` tag (Mage-OS 1.0.0's Magento base),
-so the first Mage-OS commit diffs against its Magento parent. Only feature releases (`x.y.0`) are
-tracked. To add a Mage-OS version, dispatch `register-schema.yml` **on the `mage-os` branch** with:
+tags like `mage-os-3.2.0`. It forks from the `2.4.6` tag (Mage-OS 1.0.0's Magento base), so the
+first Mage-OS commit diffs against its Magento parent. **All** releases are built; ones with no
+schema change are tagged on their predecessor's commit. Each release's Magento base — used for the
+→ cross-diff and to place its row in the table — comes from the
+[Mage-OS compatibility matrix](https://mage-os.org/get-started/system-requirements/); check it when
+adding a version. To add a Mage-OS version, dispatch `register-schema.yml` **on the `mage-os`
+branch** with:
 
 ```
 magento_version:  <mage-os version, e.g. 3.2.0>
