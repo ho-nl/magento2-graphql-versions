@@ -51,6 +51,8 @@ All links are direct two-dot diffs.
 | 2.4.9 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/2.4.8..2.4.9) | [←](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.9..2.4.9) | core-2.4.9 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.8..core-2.4.9) | [→](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.9..mage-os-3.0.0) | mage-os-3.0.0 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/mage-os-2.3.0..mage-os-3.0.0) |
 |  |  |  | [→](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.9..mage-os-3.1.0) | mage-os-3.1.0 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/mage-os-3.0.0..mage-os-3.1.0) |
 |  |  |  | [→](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.9..mage-os-3.2.0) | mage-os-3.2.0 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/mage-os-3.1.0..mage-os-3.2.0) |
+|  |  |  | [→](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.9..mage-os-3.3.0) | mage-os-3.3.0 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/mage-os-3.2.0..mage-os-3.3.0) |
+|  |  |  | [→](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.9..mage-os-3.4.0) | mage-os-3.4.0 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/mage-os-3.3.0..mage-os-3.4.0) |
 
 Notes:
 
