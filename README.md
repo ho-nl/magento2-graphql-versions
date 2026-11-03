@@ -53,6 +53,9 @@ All links are direct two-dot diffs.
 |  |  |  | [→](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.9..mage-os-3.2.0) | mage-os-3.2.0 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/mage-os-3.1.0..mage-os-3.2.0) |
 |  |  |  | [→](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.9..mage-os-3.3.0) | mage-os-3.3.0 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/mage-os-3.2.0..mage-os-3.3.0) |
 |  |  |  | [→](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.9..mage-os-3.4.0) | mage-os-3.4.0 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/mage-os-3.3.0..mage-os-3.4.0) |
+|  |  |  | [→](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.9..mage-os-3.5.0) | mage-os-3.5.0 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/mage-os-3.4.0..mage-os-3.5.0) |
+|  |  |  | [→](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.9..mage-os-3.6.0) | mage-os-3.6.0 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/mage-os-3.5.0..mage-os-3.6.0) |
+|  |  |  | [→](https://github.com/ho-nl/magento2-graphql-versions/compare/core-2.4.9..mage-os-4.0.0) | mage-os-4.0.0 [↓](https://github.com/ho-nl/magento2-graphql-versions/compare/mage-os-3.6.0..mage-os-4.0.0) |
 
 Notes:
 
@@ -71,7 +74,7 @@ Notes:
 - **Mage-OS** rows sit next to the Magento version their release is based on, per the
   [Mage-OS compatibility matrix](https://mage-os.org/get-started/system-requirements/)
   (1.0.0 → 2.4.6, 1.1.0 → 2.4.8, 1.2.0 → 2.4.8-p1, 1.3.0 → 2.4.8-p2, 2.0.0 / 2.1.0 → 2.4.8-p3,
-  2.2.0 → 2.4.8-p4, 2.3.0 → 2.4.8-p5, 3.x → 2.4.9). Mage-OS releases with no schema change are
+  2.2.0 → 2.4.8-p4, 2.3.0 → 2.4.8-p5, 3.x / 4.0.0 → 2.4.9). Mage-OS releases with no schema change are
   tagged on their predecessor's commit, so their ↓ links show an empty diff.
 - Mage-OS ships without the Adobe-bundled extensions, which is why its → comparisons are against
   the `core-*` tags; comparing against plain Magento would drown real differences in bundled noise.
@@ -137,7 +140,7 @@ composer_repo:    https://repo.mage-os.org/
 label:            mage-os-<version>
 search_engine:    opensearch (all versions)
 php_version:      8.2 for 1.0.0, 8.3 from 1.1.0
-mysql_version:    8.0 for 1.x/2.x, 8.4 for 3.x
+mysql_version:    8.0 for 1.x/2.x, 8.4 from 3.0.0
 ```
 
 Comparing across distributions works through tags: `git diff 2.4.9 mage-os-3.2.0 -- schema.graphql`.

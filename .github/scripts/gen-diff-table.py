@@ -60,6 +60,9 @@ rows = [
     (None, None, None, None, "mage-os-3.2.0", "mage-os-3.1.0", "core-2.4.9"),
     (None, None, None, None, "mage-os-3.3.0", "mage-os-3.2.0", "core-2.4.9"),
     (None, None, None, None, "mage-os-3.4.0", "mage-os-3.3.0", "core-2.4.9"),
+    (None, None, None, None, "mage-os-3.5.0", "mage-os-3.4.0", "core-2.4.9"),
+    (None, None, None, None, "mage-os-3.6.0", "mage-os-3.5.0", "core-2.4.9"),
+    (None, None, None, None, "mage-os-4.0.0", "mage-os-3.6.0", "core-2.4.9"),
 ]
 
 out = ["| Magento | ← | Magento core | → | Mage-OS |",
