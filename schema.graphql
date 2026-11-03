@@ -1964,9 +1964,6 @@ interface CategoryInterface {
 
   """The display name of the category."""
   name: String
-  no_archive: Int
-  no_follow: Int
-  no_index: Int
 
   """The full category path."""
   path: String
@@ -2092,9 +2089,6 @@ type CategoryTree implements CategoryInterface & RoutableInterface {
 
   """The display name of the category."""
   name: String
-  no_archive: Int
-  no_follow: Int
-  no_index: Int
 
   """The full category path."""
   path: String
@@ -5182,6 +5176,24 @@ type CustomerOutput {
   customer: Customer!
 }
 
+"""A WebAuthn credential registered on a customer account."""
+type CustomerPasskey {
+  """Creation timestamp (UTC)."""
+  created_at: String
+
+  """Credential entity ID."""
+  id: Int!
+
+  """Last successful authentication timestamp (UTC)."""
+  last_used_at: String
+
+  """Customer-assigned friendly name."""
+  name: String
+
+  """Authenticator transports reported at registration."""
+  transports: [String]
+}
+
 """Contains payment tokens stored in the customer's vault."""
 type CustomerPaymentTokens {
   """An array of payment tokens."""
@@ -5724,6 +5736,11 @@ type CustomizableRadioValue {
 type DeleteCompareListOutput {
   """Indicates whether the compare list was successfully deleted."""
   result: Boolean!
+}
+
+""""""
+type DeleteCustomerPasskeyOutput {
+  success: Boolean!
 }
 
 """
@@ -7323,6 +7340,16 @@ type Mutation {
   createGuestReturn(input: CreateGuestReturnInput!): CreateReturnOutput
 
   """
+  Start passkey authentication. Email is optional; when omitted, discoverable credentials are used. Returns WebAuthn request options (JSON) including a single-use challenge_token.
+  """
+  createPasskeyAuthenticationOptions(email: String): PasskeyCeremonyOptions
+
+  """
+  Start passkey registration for the logged-in customer. Returns WebAuthn creation options (JSON) including a single-use challenge_token.
+  """
+  createPasskeyRegistrationOptions: PasskeyCeremonyOptions
+
+  """
   Initiate a transaction and receive a token. Use this mutation for Payflow Pro and Payments Pro payment methods
   """
   createPayflowProToken(
@@ -7370,6 +7397,9 @@ type Mutation {
     """The unique ID of the customer address to be deleted."""
     uid: ID!
   ): Boolean
+
+  """Delete one of the logged-in customer's passkeys."""
+  deleteCustomerPasskey(passkeyId: Int!): DeleteCustomerPasskeyOutput
 
   """Delete a customer's payment token."""
   deletePaymentToken(
@@ -7469,6 +7499,9 @@ type Mutation {
     """An array of item IDs representing products to be removed."""
     wishlistItemsIds: [ID!]!
   ): RemoveProductsFromWishlistOutput
+
+  """Rename one of the logged-in customer's passkeys."""
+  renameCustomerPasskey(name: String!, passkeyId: Int!): CustomerPasskey
 
   """Add all products from a customer's previous order to the cart."""
   reorderItems(orderNumber: String!): ReorderItemsOutput
@@ -7611,6 +7644,16 @@ type Mutation {
     """An array of items to be updated."""
     wishlistItems: [WishlistItemUpdateInput!]!
   ): UpdateProductsInWishlistOutput
+
+  """
+  Complete passkey authentication with the serialized assertion response. Returns a customer token usable as the Authorization bearer token.
+  """
+  verifyPasskeyAuthentication(input: VerifyPasskeyAuthenticationInput!): PasskeyAuthenticationResult
+
+  """
+  Complete passkey registration for the logged-in customer with the serialized attestation response.
+  """
+  verifyPasskeyRegistration(input: VerifyPasskeyRegistrationInput!): CustomerPasskey
 }
 
 """Contains an error message when an invalid UID was specified."""
@@ -7979,6 +8022,20 @@ type OrderTotal {
 
   """The amount of tax applied to the order."""
   total_tax: Money!
+}
+
+""""""
+type PasskeyAuthenticationResult {
+  """
+  Customer token; send as 'Authorization: Bearer' on subsequent requests.
+  """
+  customer_token: String!
+}
+
+"""WebAuthn ceremony options produced by the server."""
+type PasskeyCeremonyOptions {
+  """JSON-encoded WebAuthn options, including the challengeToken field."""
+  options_json: String!
 }
 
 """Contains required input for Payflow Express Checkout payments."""
@@ -9502,6 +9559,9 @@ type Query {
   """Provides Customer Group assigned to the Customer or Guest."""
   customerGroup: CustomerGroupStorefront!
   customerOrders: CustomerOrders @deprecated(reason: "Use the `customer` query instead.")
+
+  """List the passkeys registered on the current customer account."""
+  customerPasskeys: [CustomerPasskey]
 
   """Return a list of customer payment tokens stored in the vault."""
   customerPaymentTokens: CustomerPaymentTokens
@@ -11692,6 +11752,29 @@ enum ValidationRuleEnum {
 input VaultTokenInput {
   """The public hash of the payment token."""
   public_hash: String!
+}
+
+""""""
+input VerifyPasskeyAuthenticationInput {
+  """JSON-serialized PublicKeyCredential from navigator.credentials.get()."""
+  assertion_response: String!
+
+  """The challengeToken returned by createPasskeyAuthenticationOptions."""
+  challenge_token: String!
+}
+
+""""""
+input VerifyPasskeyRegistrationInput {
+  """
+  JSON-serialized PublicKeyCredential from navigator.credentials.create().
+  """
+  attestation_response: String!
+
+  """The challengeToken returned by createPasskeyRegistrationOptions."""
+  challenge_token: String!
+
+  """Optional friendly name for the new passkey."""
+  name: String
 }
 
 """An implementation for virtual product cart items."""
